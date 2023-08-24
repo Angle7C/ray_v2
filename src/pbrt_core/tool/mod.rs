@@ -312,8 +312,9 @@ impl<'a> SurfaceInteraction<'a> {
         }
     }
     pub fn compute_scattering(&mut self,ray:RayDiff,mode:TransportMode){
-        if let Some(shape)=&self.shape{
-            shape.compute_scattering(self,TransportMode::Importance);
+        if let Some( shape)=self.shape{
+            let primitive = unsafe { &*shape };
+            primitive.compute_scattering(self,TransportMode::Importance);
         }
     }
 }

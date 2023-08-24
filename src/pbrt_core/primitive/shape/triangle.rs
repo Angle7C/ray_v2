@@ -154,7 +154,7 @@ impl Primitive for Triangle {
             Some(surface)
         }
     }
-    fn compute_scattering(&mut self,isct:&mut SurfaceInteraction,mode:TransportMode) {
+    fn compute_scattering(&self,isct:&mut SurfaceInteraction,mode:TransportMode) {
         match &self.materail {
             Some(material) => {
                 material.compute_scattering_functions()

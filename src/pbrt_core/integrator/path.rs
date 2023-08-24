@@ -1,18 +1,20 @@
+use glam::{f64::DVec3, u32::UVec2};
+use image::{Rgb, RgbImage};
+use pbr::ProgressBar;
 use std::{
     path::Path,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
-use glam::{f64::DVec3, u32::UVec2};
-use image::{Rgb, RgbImage};
-use pbr::ProgressBar;
 
 use crate::pbrt_core::{
+    bxdf::BxDFType,
     camera::{Camera, CameraSample},
     integrator::to_color,
+    material::BSDF,
     primitive::Primitive,
     sampler::Sampler,
-    tool::{sence::Sence, Film, RayDiff, Ray}, material::BSDF, bxdf::BxDFType,
+    tool::{sence::Sence, Film, Ray, RayDiff},
 };
 
 //路径追踪积分器
@@ -82,7 +84,7 @@ impl PathIntegrator {
                     for _ in 0..n {
                         let camera_sample = CameraSample::new(u, v, &mut sampler);
                         let ray = camera.generate_ray(camera_sample);
-                        color += self.fi(ray, sence);
+                        color += self.fi(ray, sence,&mut  sampler);
                     }
                     send.send((u as u64, v as u64, color))
                         .expect(&format!("传输color失败 x:{u},y:{v},color:{color}"));
@@ -106,35 +108,39 @@ impl PathIntegrator {
             .save_with_format(path, image::ImageFormat::Jpeg)
             .expect("图片保存失败");
     }
-    fn fi(&self, ray: RayDiff, sence: &Sence,sampler:&mut Sampler) -> DVec3 {
-        let mut ans=DVec3::ZERO;
-        let mut dept=0;
-        let mut wegith:DVec3=DVec3::ONE;
-        let mut ray=ray.clone();
-        while let Some(p)=self.is_next(&mut dept){
+    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> DVec3 {
+        let mut ans = DVec3::ZERO;
+        let mut dept = 0;
+        let mut wegith: DVec3 = DVec3::ONE;
+        let mut ray = ray.clone();
+        while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
-            
-                item.compute_scattering(ray,crate::pbrt_core::bxdf::TransportMode::Radiance);        
-                //对SBDF采样
-                let mut wi=DVec3::default();
-                let mut pdf=Default::default();
-                let wo=-ray.o.dir;
-                if let Some(ref bsdf)=item.bsdf{
-                     wegith*=(bsdf.sample_f(&wo,&mut wi,sampler.sample_2d_d(),&mut pdf,BxDFType::All as u32));
-
-                }
-                if item.common.is_light{
-                    return ans+wegith;
-                }
                 //对光源采样
-                 ans+=wegith* sence.sample_light(&item);
-            
+                ans += wegith * sence.sample_light(&item)/p;
+
+                item.compute_scattering(ray, crate::pbrt_core::bxdf::TransportMode::Radiance);
+                //对SBDF采样
+                let mut wi = DVec3::default();
+                let mut pdf = Default::default();
+                let wo = -ray.o.dir;
+                if let Some(ref bsdf) = item.bsdf {
+                    wegith *= (bsdf.sample_f(
+                        &wo,
+                        &mut wi,
+                        sampler.sample_2d_d(),
+                        &mut pdf,
+                        BxDFType::All as u32,
+                    ));
+                }
+                if item.common.is_light {
+                    return ans + wegith;
+                }
+
                 //生成光线
                 ray = RayDiff::new(Ray::new(item.common.p, wi));
             }
-        };
+        }
         ans
-
     }
     pub fn render_process_debug(self, name: &str, num: u64, size: UVec2, sence: &Sence) {
         let (sender, receiver) = mpsc::channel::<(u64, u64, DVec3)>();
@@ -151,12 +157,12 @@ impl PathIntegrator {
                 for _ in 0..n {
                     let camera_sample = CameraSample::new(u, v, &mut sampler);
                     let ray = camera.generate_ray(camera_sample);
-                    color += self.fi(ray, sence);
+                    color += self.fi(ray, sence,&mut sampler);
                 }
                 image.put_pixel(u as u32, v as u32, to_color(color, num as f64));
                 bar.inc();
-            };
-        };
+            }
+        }
         let path =
             Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
         format!("渲染完成，图像输出:{}", path.display());

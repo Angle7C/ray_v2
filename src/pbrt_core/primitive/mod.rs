@@ -23,7 +23,7 @@ pub trait Primitive:Debug {
     fn interacect_bound(&self,ray:&RayDiff)->bool{
         self.world_bound().intesect(ray)
     }
-    fn compute_scattering(&mut self,isct:&mut SurfaceInteraction,mode:TransportMode){
+    fn compute_scattering(&self,isct:&mut SurfaceInteraction,mode:TransportMode){
 
     }
 }
@@ -78,7 +78,7 @@ impl<'a> BHShape for GeometricePrimitive<'a>{
 }
 impl<'a> Primitive for GeometricePrimitive<'a>
 {
-    fn compute_scattering(&mut self,isct:&mut SurfaceInteraction,mode:TransportMode) {
+    fn compute_scattering(&self,isct:&mut SurfaceInteraction,mode:TransportMode) {
         self.shape.compute_scattering(isct, mode)
     }
     fn interacect(&self,ray:RayDiff)->Option<SurfaceInteraction> {
