@@ -1,0 +1,220 @@
+{
+	"asset": {
+		"generator": "Unity 5.5.4p3",
+		"extras": {
+			"exporterVersion" : "2.2.1"
+		},
+		"version": "2.0"
+	},
+	"accessors": [
+		{
+			"bufferView": 2,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 21274,
+			"max": [ 0.11412, 0.1186083, 0.084351 ],
+			"min": [ -0.11412, -0.09316872, -0.1596275 ],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 2,
+			"byteOffset": 255288,
+			"componentType": 5126,
+			"count": 21274,
+			"max": [ 1, 0.9995962, 1 ],
+			"min": [ -1, -0.9995962, -1 ],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 1,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 21274,
+			"max": [ 0.9972774, 0.9961879 ],
+			"min": [ 0.002510557, 0.001571844 ],
+			"type": "DVec2"
+		},
+		{
+			"bufferView": 3,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 21274,
+			"max": [ 1, 1, 0.9999287, 1 ],
+			"min": [ -0.9999136, -0.9995075, -0.9999993, -1 ],
+			"type": "VEC4"
+		},
+		{
+			"bufferView": 0,
+			"byteOffset": 0,
+			"componentType": 5123,
+			"count": 61074,
+			"max": [ 21273 ],
+			"min": [ 0 ],
+			"type": "SCALAR"
+		}
+	],
+	"buffers": [
+		{
+			"byteLength": 1143300,
+			"uri": "Unity2Skfb.bin"
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 122148,
+			"target": 34963,
+			"byteOffset": 1021152
+		},
+		{
+			"buffer": 0,
+			"byteLength": 170192,
+			"target": 34962,
+			"byteStride": 8,
+			"byteOffset": 0
+		},
+		{
+			"buffer": 0,
+			"byteLength": 510576,
+			"target": 34962,
+			"byteStride": 12,
+			"byteOffset": 170192
+		},
+		{
+			"buffer": 0,
+			"byteLength": 340384,
+			"target": 34962,
+			"byteStride": 16,
+			"byteOffset": 680768
+		}
+	],
+	"extensionsRequired": [
+		"KHR_materials_pbrSpecularGlossiness"
+	],
+	"extensionsUsed": [
+		"KHR_materials_pbrSpecularGlossiness"
+	],
+	"images": [
+		{
+			"uri": "Assets/Helmet/Helmet_01.fbm/base_Helmet2_02.jpg"
+		},
+		{
+			"uri": "Assets/Helmet/rough_Helmet2_02.png"
+		},
+		{
+			"uri": "Assets/Helmet/normal_Helmet2_01.jpg"
+		},
+		{
+			"uri": "Assets/Helmet/emit_Helmet2_01.jpg"
+		},
+		{
+			"uri": "Assets/Helmet/AOHelmet01.jpg"
+		}
+	],
+	"materials": [
+		{
+			"extensions": {
+				"KHR_materials_pbrSpecularGlossiness": {
+					"diffuseTexture" : {
+						"index" : 0,
+						"texCoord" : 0
+					},
+					"diffuseFactor": [1, 1, 1, 1],
+					"specularGlossinessTexture" : {
+						"index" : 1,
+						"texCoord" : 0
+					},
+					"specularFactor": [1, 1, 1],
+					"glossinessFactor": 1				}
+
+			},
+			"normalTexture" : {
+				"index" : 2,
+				"texCoord" : 0,
+				"scale" : 1
+			},
+			"emissiveTexture" : {
+				"index" : 3,
+				"texCoord" : 0
+			},
+			"emissiveFactor": [1, 1, 1],
+			"occlusionTexture" : {
+				"index" : 4,
+				"texCoord" : 0,
+				"strength" : 0.75
+			},
+			"doubleSided": false,
+			"name": "Helmet"
+		}
+	],
+	"meshes": [
+		{
+			"name": "mesh_Helmet02_3percent_01_14934Helmet_01",
+			"primitives": [
+				{
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2,
+						"TANGENT": 3
+					},
+					"indices": 4,
+					"material": 0,
+					"mode": 4
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"name": "UnityGlTF_root",
+			"children": [
+				1
+			]
+		},
+		{
+			"name": "node_Helmet_01_-147688",
+			"mesh": 0,
+			"matrix": [1, 0, 0, 0, 0, 1, -1.629207E-07, 0, 0, 1.629207E-07, 1, 0, 0, 0, 0, 1]
+		}
+	],
+	"samplers": [
+		{
+			"magFilter": 9729,
+			"minFilter": 9985,
+			"wrapS": 10497,
+			"wrapT": 10497
+		}
+	],
+	"scenes": [
+		{
+			"name":"defaultScene",
+			"nodes": [
+				0
+			]
+		}
+	],
+	"scene": 0,
+	"textures": [
+		{
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"sampler": 0,
+			"source": 2
+		},
+		{
+			"sampler": 0,
+			"source": 3
+		},
+		{
+			"sampler": 0,
+			"source": 4
+		}
+	]
+}

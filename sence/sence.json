@@ -1,0 +1,59 @@
+{
+  "setting": {
+    "core_num": 7,
+    "size": {
+      "x": 1024,
+      "y": 1024
+    },
+    "sampler_mode": "Stratifie",
+    "sample_num":1,
+    "integrator_mode": "Path",
+    "name": "c",
+    "path":"./object/shpere.glb"
+  },
+  "camera": {
+    "eye": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 2.0
+    },
+    "center": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "up": {
+      "x": 0.0,
+      "y": 1.0,
+      "z": 0.0
+    },
+    "mode": "P",
+    "near": 0.01,
+    "far": 100.0,
+    "fov": 60.0,
+    "aspect":1.0,
+    "button":-1.0,
+    "top":1.0,
+    "left":-1.0,
+    "right":1.0,
+    "size": {
+      "x": 1024,
+      "y": 1024
+    }
+  },
+  "lights": [
+    {
+      "mode": "point",
+      "pos": {
+        "x": -5.0,
+        "y": -5.0,
+        "z": -5.0
+      },
+      "i": {
+        "x": 10.0,
+        "y": 10.0,
+        "z": 10.0
+      }
+    }
+  ]
+}
