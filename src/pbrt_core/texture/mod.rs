@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use glam::f64::{DVec2, DVec3};
 
 use super::tool::InteractionCommon;
@@ -6,7 +8,7 @@ pub mod scale;
 pub mod mix;
 pub mod bilinear;
 pub mod image;
-pub trait Texture<T:Copy> {
+pub trait Texture<T:Copy>:Debug {
     fn  evaluate(&self,inter:&InteractionCommon)->T;
 }
 pub trait TextureMapping2D {

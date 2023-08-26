@@ -21,14 +21,21 @@ impl<'a> Aggregate for BVH<'a>{
         let mut ray=Ray::new(o_ray.o.origin.as_vec3(), o_ray.o.dir.as_vec3());
         let iter = self.accel.traverse(&mut ray,&self.geo);
         let mut ans:Option<SurfaceInteraction>=None;
+        let mut t_max=o_ray.o.t_max;
+        let mut t_min=o_ray.o.t_min;
+        let mut t=f64::INFINITY;
         for shape in iter{
             match (shape.shape.interacect(o_ray),&ans){
                 (None,_)=>continue,
                 (Some(v),None)=>{
-                    ans=Some(v);
+                    if v.common.time>=t_min&&v.common.time<=t_max&&v.common.time<=t{
+                        t=v.common.time;
+                        ans=Some(v);
+                    }
                 },
                 (Some(v),Some(item))=>{
-                    if v.common.time<item.common.time{
+                    if v.common.time>=t_min&&v.common.time<=t_max&&v.common.time<=t{
+                        t=v.common.time;
                         ans=Some(v)
                     }
                 }

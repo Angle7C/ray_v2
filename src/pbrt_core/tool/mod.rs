@@ -6,10 +6,13 @@ use glam::{
     UVec2,
 };
 
+use self::sence::Sence;
+
 use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode};
 
 pub mod sence;
 pub mod setting;
+pub mod func;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
@@ -259,6 +262,7 @@ impl Iterator for FilmIter {
 }
 
 /// 求交集合
+#[derive(Default)]
 pub struct InteractionCommon {
     pub w0: DVec3,
     pub p: DVec3,
@@ -266,15 +270,21 @@ pub struct InteractionCommon {
     pub time: f64,
     pub is_light:bool
 }
+#[derive(Default)]
 pub struct SurfaceInteraction<'a> {
     pub common: InteractionCommon,
     uv: DVec2,
     dpdu: DVec3,
     dpdv: DVec3,
     shape: Option<&'a dyn Primitive>,
-    shading: Shading,
+    pub shading: Shading,
     pub bsdf:Option<BSDF>
 }
+// impl Default for SurfaceInteraction{
+//     fn default() -> Self {
+
+//     }
+// }
 impl<'a> SurfaceInteraction<'a> {
     pub fn new(
         p: DVec3,
@@ -337,8 +347,15 @@ impl Shading {
         }
     }
 }
-
+#[derive(Default)]
 pub struct Visibility{
     pub p1:DVec3,
     pub p2:DVec3
+}
+impl Visibility{
+    pub fn hit(&self,sence:&Sence)->f64{
+        let dir=(self.p2-self.p1);
+        let raydiff = RayDiff::new(Ray::from_with_t(self.p2, dir,0.001,dir.length()-0.001));
+        if sence.interacect(raydiff).is_none(){0.0}else{1.0}
+    }
 }

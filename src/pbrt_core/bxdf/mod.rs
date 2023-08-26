@@ -1,21 +1,39 @@
 use glam::f64::{DVec2, DVec3};
+
+use self::reflection::LambertianReflection;
 // 菲涅尔反射率
-mod frensnel;
+pub mod frensnel;
 // 高光
-mod specular;
+pub mod specular;
 //反射
-mod reflection;
+pub mod reflection;
 pub trait BxDFAble {
     //匹配BxDF类型
-    fn match_type(&self, flag: BxDFType) -> bool;
+    fn match_type(&self, flag: u32) -> bool;
     //计算，从wi射入，到wo射出时，光线被反射了多少回去[Vec3::ZERO,Vec3::ONE]
-    fn fi(&self, w_in: DVec3, w_out: DVec3) -> DVec3;
+    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3;
     //根据采样点sample_point计算，从wi射入，到wo射出时，的双向分布函数值。
     fn sample_fi(&self, w_in: &mut DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3;
     //根据采样点sample_point计算，从wi射入，到wo射出时的反射率
     fn rho(&self, w_in:DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3;
 }
-pub enum BxDF {}
+pub enum BxDF {
+    LambertianReflection(LambertianReflection)
+}
+impl BxDF{
+    pub fn match_type(&self,flag:u32)->bool{
+        match &self {
+            Self::LambertianReflection(lambert)=>{
+                lambert.match_type(flag)
+            }
+        }
+    }
+    pub fn f(&self,w_out:&DVec3,w_in:&mut DVec3)->DVec3{
+        match &self{
+            BxDF::LambertianReflection(lam) => lam.fi(w_in, w_out),
+        }
+    }
+}
 #[derive(Debug, Clone, Copy)]
 pub enum BxDFType {
     None = 0,

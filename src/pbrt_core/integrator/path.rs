@@ -22,6 +22,7 @@ pub struct PathIntegrator {
     q: f64,
     max_path: usize,
     sampler: Sampler,
+    size:UVec2,
 }
 impl Default for PathIntegrator {
     fn default() -> Self {
@@ -29,15 +30,17 @@ impl Default for PathIntegrator {
             q: 0.9,
             max_path: 10,
             sampler: Sampler::default(),
+            size:UVec2::new(512,512)
         }
     }
 }
 impl PathIntegrator {
-    pub fn new(q: f64, max_path: usize, sampler: Sampler) -> Self {
+    pub fn new(q: f64, max_path: usize, sampler: Sampler,size:UVec2) -> Self {
         Self {
             q,
             max_path,
             sampler,
+            size
         }
     }
     fn is_next(&self, dept: &mut usize) -> Option<f64> {
@@ -53,16 +56,16 @@ impl PathIntegrator {
             Some(1.0)
         }
     }
-    pub fn render_process(self, name: &str, num: u64, size: UVec2, sence: &Sence) {
+    pub fn render_process(self, name: &str, num: u64, sence: &Sence) {
         let (sender, receiver) = mpsc::channel::<(u64, u64, DVec3)>();
-        let film = Film::new(size);
+        let film = Film::new(self.size);
         let camera = sence.camera;
         thread::scope(|f| {
             for _ in 0..num {
                 f.spawn(self.render_core(&film, &camera, sender.clone(), sence));
             }
             drop(sender);
-            f.spawn(move || Self::output(receiver, size, name, num));
+            f.spawn(move || Self::output(receiver, self.size, name, num));
         });
     }
     fn render_core<'a, 'b>(
@@ -116,41 +119,42 @@ impl PathIntegrator {
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 //对光源采样
-                ans += wegith * sence.sample_light(&item)/p;
+                ans += wegith * sence.uniform_sample_one_light(&item, sampler);
 
                 item.compute_scattering(ray, crate::pbrt_core::bxdf::TransportMode::Radiance);
                 //对SBDF采样
                 let mut wi = DVec3::default();
-                let mut pdf = Default::default();
+                // let mut pdf = Default::default();
                 let wo = -ray.o.dir;
                 if let Some(ref bsdf) = item.bsdf {
-                    wegith *= (bsdf.sample_f(
+                    wegith *= (bsdf.f(
                         &wo,
                         &mut wi,
-                        sampler.sample_2d_d(),
-                        &mut pdf,
+                        // sampler.sample_2d_d(),
+                        // &mut pdf,
                         BxDFType::All as u32,
                     ));
                 }
                 if item.common.is_light {
                     return ans + wegith;
                 }
-
                 //生成光线
-                ray = RayDiff::new(Ray::new(item.common.p, wi));
+                ray = RayDiff::new(Ray::new(item.common.p, sampler.smapel_dir()));
+            }else{
+                return ans;
             }
         }
         ans
     }
-    pub fn render_process_debug(self, name: &str, num: u64, size: UVec2, sence: &Sence) {
+    pub fn render_process_debug(self, name: &str, num: u64, sence: &Sence) {
         let (sender, receiver) = mpsc::channel::<(u64, u64, DVec3)>();
-        let film = Film::new(size);
-        let bar_size = size.x * size.y;
+        let film = Film::new(self.size);
+        let bar_size =self.size.x * self.size.y;
         let n = self.sampler.num;
         let mut sampler = self.sampler.clone();
         let camera = sence.camera;
         let mut bar = ProgressBar::new(bar_size as u64);
-        let mut image = RgbImage::new(size.x, size.y);
+        let mut image = RgbImage::new(self.size.x, self.size.y);
         while let Some(item) = film.iter() {
             for (u, v) in item {
                 let mut color = DVec3::ZERO;
@@ -164,7 +168,7 @@ impl PathIntegrator {
             }
         }
         let path =
-            Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
+            Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", self.size.x, self.size.y));
         format!("渲染完成，图像输出:{}", path.display());
         bar.finish_print("渲染完成，图像输出");
         image

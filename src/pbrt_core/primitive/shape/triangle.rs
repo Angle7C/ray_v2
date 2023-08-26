@@ -3,9 +3,9 @@ use std::sync::Arc;
 use glam::{f64::{DMat4, DVec2, DVec3},u32::UVec3};
 
 use crate::pbrt_core::{
-    material::Material,
+    material::{Material, matte::Matte},
     primitive::{mesh::Mesh, Primitive},
-    tool::{Bound, RayDiff, Shading, SurfaceInteraction}, bxdf::TransportMode,
+    tool::{Bound, RayDiff, Shading, SurfaceInteraction}, bxdf::TransportMode, texture::constant::ConstantTexture,
 };
 #[derive(Debug)]
 pub struct Triangle {
@@ -20,7 +20,7 @@ impl Triangle {
         Self {
             index: [index.x as usize, index.y as usize, index.z as usize],
             mesh,
-            materail: None,
+            materail:Some(Arc::new(Matte::new(Arc::new(ConstantTexture::new(DVec3::splat(0.75)))))),
             obj_to_world,
         }
     }
@@ -154,12 +154,12 @@ impl Primitive for Triangle {
             Some(surface)
         }
     }
-    fn compute_scattering(&self,isct:&mut SurfaceInteraction,mode:TransportMode) {
+    fn compute_scattering(&self,surface:&mut SurfaceInteraction,mode:TransportMode) {
         match &self.materail {
             Some(material) => {
-                material.compute_scattering_functions()
+                material.compute_scattering_functions(surface,mode)
             },
-            None => todo!(),
+            None => (),
         }
     }
 }

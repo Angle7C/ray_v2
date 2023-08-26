@@ -3,7 +3,7 @@ use std::fs::File;
 use glam::{UVec2, DVec3, DVec2, DMat4};
 use serde_json::Value;
 
-use crate::pbrt_core::{camera::{Camera, CameraMode}, load::GltfLoad, primitive::{shape::Shape, bvh::BVH}, light::{Light, point::PointLight}};
+use crate::pbrt_core::{camera::{Camera, CameraMode}, load::GltfLoad, primitive::{shape::{Shape, rectangle::Rectangle}, bvh::BVH}, light::{Light, point::PointLight, area::DiffuseAreaLight}, integrator::path::PathIntegrator};
 
 use super::sence::Sence;
 
@@ -76,16 +76,20 @@ impl Parse for Camera{
 }
 pub struct Build;
 impl Build{
-    pub fn build(path:&str)->Sence{
+    pub fn build(path:&str)->(Sence,PathIntegrator){
         let buf = File::open(path).unwrap();
         let json:Value = serde_json::from_reader(buf).unwrap();
         let setting = Setting::parse(&json["setting"]);
         let camera=Camera::parse(&json["camera"]);
         let shape=GltfLoad::load(&setting.path);
         let mut light=vec![];
-        light.push(Light::PointLight(Box::new(PointLight::new(DVec3::splat(100.0),DVec3::splat(5.0),DMat4::IDENTITY))));
-        Sence::new(shape, light, camera)
-
+        let rectangle=Rectangle::new(DMat4::from_translation(DVec3::new(0.0,0.0,5.0)),None);
+        light.push(
+            Light::AreaLight(Box::new(DiffuseAreaLight::new(DVec3::splat(0.75), Shape::Rect(rectangle))))
+        );
+        let sence = Sence::new(shape, light, camera);
+        let path = PathIntegrator::new(0.9, 5, Default::default(),setting.size);
+        (sence,path)
     }
 }
 impl Parse for Vec<Shape>{

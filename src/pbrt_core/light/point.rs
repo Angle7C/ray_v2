@@ -5,7 +5,7 @@ use glam::{DVec3, DMat4};
 use crate::pbrt_core::tool::Visibility;
 
 use super::LightAble;
-
+#[derive(Debug)]
 pub struct PointLight{
     i:DVec3,
     p:DVec3,
@@ -27,6 +27,7 @@ impl LightAble for PointLight{
         self.i/(self.p-surface.common.p).length_squared()
     }
 }
+#[derive(Debug)]
 pub struct SpotLight{
     p:DVec3,
     i:DVec3,
