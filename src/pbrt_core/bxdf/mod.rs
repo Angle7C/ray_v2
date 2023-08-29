@@ -1,6 +1,10 @@
+use std::f64::consts::FRAC_1_PI;
+
 use glam::f64::{DVec2, DVec3};
 
 use self::reflection::LambertianReflection;
+
+use super::sampler::cosine_sample_hemisphere;
 // 菲涅尔反射率
 pub mod frensnel;
 // 高光
@@ -13,7 +17,15 @@ pub trait BxDFAble {
     //计算，从wi射入，到wo射出时，光线被反射了多少回去[Vec3::ZERO,Vec3::ONE]
     fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3;
     //根据采样点sample_point计算，从wi射入，到wo射出时，的双向分布函数值。
-    fn sample_fi(&self, w_in: &mut DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3;
+    fn sample_f(&self, w_in: &mut DVec3, w_out: &DVec3, sample_point: DVec2,pdf:&mut f64) -> DVec3{
+        *w_in=cosine_sample_hemisphere(sample_point);
+        if w_out.z<0.0{w_in.z*=-1.0}
+        *pdf=Self::pdf(*w_out,*w_in);
+        return self.fi(w_in, &w_out)
+    }
+    fn pdf(w_out:DVec3,w_in:DVec3)->f64{
+        if w_out.z*w_in.z>0.0 { w_in.z *FRAC_1_PI} else{0.0}
+    }
     //根据采样点sample_point计算，从wi射入，到wo射出时的反射率
     fn rho(&self, w_in:DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3;
 }
@@ -33,6 +45,13 @@ impl BxDF{
             BxDF::LambertianReflection(lam) => lam.fi(w_in, w_out),
         }
     }
+    pub fn sample_f(&self,w_out:&DVec3,wi:&mut DVec3,u:DVec2,pdf:&mut f64)->DVec3{
+        match &self {
+            Self::LambertianReflection(lambert)=>{
+                lambert.sample_f(wi,w_out, u, pdf)
+            }
+        }
+    }
 }
 #[derive(Debug, Clone, Copy)]
 pub enum BxDFType {
@@ -44,6 +63,7 @@ pub enum BxDFType {
     Specular = 16,
     All = 31,
 }
+#[derive(Debug,Clone, Copy)]
 pub enum TransportMode {
     Radiance,
     Importance,

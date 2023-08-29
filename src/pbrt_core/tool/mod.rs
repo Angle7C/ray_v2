@@ -8,7 +8,7 @@ use glam::{
 
 use self::sence::Sence;
 
-use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode};
+use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode, light::Light};
 
 pub mod sence;
 pub mod setting;
@@ -262,13 +262,12 @@ impl Iterator for FilmIter {
 }
 
 /// 求交集合
-#[derive(Default)]
+#[derive(Default,Clone, Copy)]
 pub struct InteractionCommon {
     pub w0: DVec3,
     pub p: DVec3,
     pub normal: DVec3,
     pub time: f64,
-    pub is_light:bool
 }
 #[derive(Default)]
 pub struct SurfaceInteraction<'a> {
@@ -278,7 +277,8 @@ pub struct SurfaceInteraction<'a> {
     dpdv: DVec3,
     shape: Option<&'a dyn Primitive>,
     pub shading: Shading,
-    pub bsdf:Option<BSDF>
+    pub bsdf:Option<BSDF>,
+    pub light:Option<&'a Light>
 }
 // impl Default for SurfaceInteraction{
 //     fn default() -> Self {
@@ -304,8 +304,7 @@ impl<'a> SurfaceInteraction<'a> {
                 w0: w_out,
                 p: p,
                 normal: normal,
-                time: time,
-                is_light
+                time: time
             },
             uv,
             dpdu,
@@ -318,7 +317,8 @@ impl<'a> SurfaceInteraction<'a> {
                 dndu,
                 dndv,
             },
-            bsdf:None
+            bsdf:None,
+            light:None
         }
     }
     pub fn compute_scattering(&mut self,ray:RayDiff,mode:TransportMode){
@@ -326,6 +326,18 @@ impl<'a> SurfaceInteraction<'a> {
             let primitive = unsafe { &*shape };
             primitive.compute_scattering(self,TransportMode::Importance);
         }
+    }
+    pub fn spawn_ray(&self,wi:&DVec3)->RayDiff{
+        let ray=Ray::new(self.common.p, *wi);
+        RayDiff::new(ray)
+    }
+    pub fn le(&self,w_in:DVec3)->DVec3{
+        if let Some(light)=self.light{
+            light.le(&w_in)
+        }else{  
+            DVec3::ZERO
+        }
+
     }
 }
 #[derive(Default)]
@@ -349,13 +361,24 @@ impl Shading {
 }
 #[derive(Default)]
 pub struct Visibility{
-    pub p1:DVec3,
-    pub p2:DVec3
+    pub a:InteractionCommon,
+    pub b:InteractionCommon,
 }
 impl Visibility{
-    pub fn hit(&self,sence:&Sence)->f64{
-        let dir=(self.p2-self.p1);
-        let raydiff = RayDiff::new(Ray::from_with_t(self.p2, dir,0.001,dir.length()-0.001));
-        if sence.interacect(raydiff).is_none(){0.0}else{1.0}
+    //是否可视
+    fn is_vis(&self,sence:&Sence)->f64{
+        let dir=self.a.p-self.b.p;
+        let ray_diff=RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01,dir.length()-0.001));
+        if sence.interacect(ray_diff).is_none(){
+            1.0
+        }else{
+            0.0
+        }
+    }
+    fn g(&self,sence:&Sence)->f64{
+        let vis=self.is_vis(sence);
+        let dir=(self.a.p-self.b.p);
+        vis*self.a.normal.dot(dir.normalize()).clamp(0.0, 1.0)
+            *self.b.normal.dot(-dir.normalize()).clamp(0.0, 1.0)/dir.length_squared()
     }
 }

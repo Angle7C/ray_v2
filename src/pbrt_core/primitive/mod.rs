@@ -12,7 +12,7 @@ use super::{
 pub mod bvh;
 pub mod mesh;
 pub mod shape {
-    use glam::DVec2;
+    use glam::{DVec2, DVec3};
     use crate::pbrt_core::tool::InteractionCommon;
     use self::rectangle::Rectangle;
     use super::Primitive;
@@ -41,15 +41,21 @@ pub mod shape {
         }
     }
     impl Shape {
-        pub fn age_area(&self) -> f64 {
+        // 获得面积
+        pub fn agt_area(&self) -> f64 {
             match self {
                 Shape::Rect(rect) => rect.get_area(),
             }
         }
+        // 形状采样
         pub fn sample(&self,smaple_point:DVec2)->InteractionCommon{
             match self {
                 Self::Rect(rect)=>rect.sample_interaction(smaple_point),
             }
+        }
+        //对于在不同点采样的时，会存在不同pdf值
+        pub fn pdf(&self,common:&InteractionCommon,wi:&DVec3)->f64{
+            1.0/self.agt_area()
         }
     }
 }
@@ -83,7 +89,7 @@ impl PartialEq for ObjectType {
 #[derive(Debug)]
 pub struct GeometricePrimitive<'a> {
     shape: &'a dyn Primitive,
-    light: Option<&'a Light>,
+    pub light: Option<&'a Light>,
     node_index: usize,
 }
 unsafe impl<'a> Sync for GeometricePrimitive<'a> {}
@@ -118,7 +124,7 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
     fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
         let mut iter = self.shape.interacect(ray);
         if let Some(ref mut i) = &mut iter {
-            i.common.is_light = self.light.is_some();
+            i.light=self.light;
         };
         iter
     }

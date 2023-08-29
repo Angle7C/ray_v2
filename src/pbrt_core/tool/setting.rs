@@ -3,16 +3,16 @@ use std::fs::File;
 use glam::{UVec2, DVec3, DVec2, DMat4};
 use serde_json::Value;
 
-use crate::pbrt_core::{camera::{Camera, CameraMode}, load::GltfLoad, primitive::{shape::{Shape, rectangle::Rectangle}, bvh::BVH}, light::{Light, point::PointLight, area::DiffuseAreaLight}, integrator::path::PathIntegrator};
+use crate::pbrt_core::{camera::{Camera, CameraMode}, load::GltfLoad, primitive::{shape::{Shape, rectangle::Rectangle}, bvh::BVH}, light::{Light, area::DiffuseAreaLight}, integrator::{path::PathIntegrator, Integrator}};
 
 use super::sence::Sence;
 
 pub struct Setting{
-    core_num: u64,
-    name: String,
-    size:UVec2,
-    sample_num:u64,
-    path:String
+    pub core_num: u64,
+    pub name: String,
+    pub size:UVec2,
+    pub sample_num:u64,
+    pub path:String
 }
 pub trait Parse {
     fn parse(value:&Value)->Self;
@@ -76,20 +76,20 @@ impl Parse for Camera{
 }
 pub struct Build;
 impl Build{
-    pub fn build(path:&str)->(Sence,PathIntegrator){
+    pub fn build(path:&str)->(Sence,Integrator,Setting){
         let buf = File::open(path).unwrap();
         let json:Value = serde_json::from_reader(buf).unwrap();
         let setting = Setting::parse(&json["setting"]);
         let camera=Camera::parse(&json["camera"]);
         let shape=GltfLoad::load(&setting.path);
         let mut light=vec![];
-        let rectangle=Rectangle::new(DMat4::from_translation(DVec3::new(0.0,0.0,5.0)),None);
+        let rectangle=Rectangle::new(DMat4::from_translation(DVec3::new(4.0,4.0,4.0)),None);
         light.push(
-            Light::AreaLight(Box::new(DiffuseAreaLight::new(DVec3::splat(0.75), Shape::Rect(rectangle))))
+            Light::AreaLight(Box::new(DiffuseAreaLight::new(DVec3::splat(1000.0), Shape::Rect(rectangle))))
         );
         let sence = Sence::new(shape, light, camera);
-        let path = PathIntegrator::new(0.9, 5, Default::default(),setting.size);
-        (sence,path)
+        let path = PathIntegrator::new(0.8, 6, Default::default(),setting.size);
+        (sence,Integrator::Path(Box::new(path)),setting)
     }
 }
 impl Parse for Vec<Shape>{

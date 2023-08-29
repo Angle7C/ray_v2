@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, cell::RefCell};
 
 use glam::{f64::{DMat4, DVec2, DVec3},u32::UVec3};
 
@@ -10,13 +10,13 @@ use crate::pbrt_core::{
 #[derive(Debug)]
 pub struct Triangle {
     index: [usize; 3],
-    mesh: Arc<Mesh>,
+    mesh: Arc<RefCell<Mesh>>,
     obj_to_world: DMat4,
     materail: Option<Arc<dyn Material>>,
 }
 #[allow(unused)]
 impl Triangle {
-    pub fn new(index: UVec3, mesh: Arc<Mesh>, obj_to_world: DMat4) -> Self {
+    pub fn new(index: UVec3, mesh: Arc<RefCell<Mesh>>, obj_to_world: DMat4) -> Self {
         Self {
             index: [index.x as usize, index.y as usize, index.z as usize],
             mesh,
@@ -41,9 +41,12 @@ impl Triangle {
         let duv_12 = uv1 - uv2;
         let dp_02 = p0 - p2;
         let dp_12 = p1 - p2;
+
+
         let deter = duv_02[0] * duv_12[1] - duv_02[1] * duv_12[0];
         let v = (p2 - p0).cross(p1 - p0).normalize();
-        let (dpdu, dpdv, dndu, dndv) = if deter == 0.0 {
+        let (dpdu, dpdv, dndu, dndv) =
+        if deter.abs() < f64::EPSILON{
             let dpdu = if v.x.abs() > v.y.abs() {
                 DVec3::new(-v.z, 0.0, v.x) / (v.x * v.x + v.z * v.z).sqrt()
             } else {
@@ -63,25 +66,25 @@ impl Triangle {
                 (-dp_12[0] * dn1 + duv_02[0] * dn2) * inv_det,
             )
         };
-        Shading::new(n, dpdu, dpdv, dndu, dndv)
+        Shading::new(dp_02.cross(dp_12), dpdu, dpdv, DVec3::ZERO, DVec3::ZERO)
     }
     pub fn point(&self, i: u32) -> DVec3 {
         self.obj_to_world
-            .transform_point3(self.mesh.point[self.index[i as usize]])
+            .transform_point3(self.mesh.borrow().point[self.index[i as usize]])
         // let mat:DDMat4=Into::<DMat4>::from(self.obj_to_world.m);
     }
     pub fn normal(&self, i: u32) -> DVec3 {
-        if self.mesh.normal.is_empty() {
+        if self.mesh.borrow().normal.is_empty() {
             DVec3::ZERO
         } else {
             self.obj_to_world
                 .inverse()
                 .transpose()
-                .transform_vector3(self.mesh.normal[self.index[i as usize]])
+                .transform_vector3(self.mesh.borrow().normal[self.index[i as usize]])
         }
     }
     pub fn tangent(&self, i: u32) -> DVec3 {
-        if self.mesh.normal.is_empty() {
+        if self.mesh.borrow().normal.is_empty() {
             DVec3::ZERO
         } else {
             // self.mesh.tangent[self.index[i as usize]]
@@ -89,10 +92,10 @@ impl Triangle {
         }
     }
     pub fn uv(&self, i: u32) -> DVec2 {
-        if self.mesh.normal.is_empty() {
+        if self.mesh.borrow().normal.is_empty() {
             DVec2::ZERO
         } else {
-            self.mesh.uv[self.index[i as usize]]
+            self.mesh.borrow().uv[self.index[i as usize]]
         }
     }
 }
@@ -103,6 +106,7 @@ impl Primitive for Triangle {
         let p2 = self.point(2);
         let min = p0.min(p1).min(p2);
         let max = p0.max(p1).max(p2);
+        
         Bound::<3>::new(min, max)
     }
     fn interacect(&self, ray: RayDiff) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
@@ -124,10 +128,12 @@ impl Primitive for Triangle {
         let s1 = ray.o.dir.cross(e2);
         let s2 = s.cross(e1);
         let s1_e1 = s1.dot(e1);
+
         let t = s2.dot(e2) / s1_e1;
         let a = s1.dot(s) / s1_e1;
         let b = s2.dot(ray.o.dir) / s1_e1;
         let c = 1.0 - a - b;
+        
         if t < 0.0 || b < 0.0 || b > 1.0 || a < 0.0 || a > 1.0 || c < 0.0 || c > 1.0 {
             None
         } else {
@@ -137,6 +143,8 @@ impl Primitive for Triangle {
             let normal = n0 * a + n1 * b + n2 * c;
             let uv = uv0 * a + uv1 * b + uv2 * c;
             let shading = self.compute_dnuv(normal.normalize());
+            
+            
             let  surface = (SurfaceInteraction::new(
                             p,
                             uv,

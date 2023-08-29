@@ -1,21 +1,19 @@
 {
   "setting": {
-    "core_num": 7,
+    "core_num": 6,
     "size": {
-      "x": 256,
-      "y": 256
+      "x": 512,
+      "y": 512
     },
-    "sampler_mode": "Stratifie",
     "sample_num":1,
-    "integrator_mode": "Path",
-    "name": "c",
+    "name": "test",
     "path":"./object/shperes.glb"
   },
   "camera": {
     "eye": {
-      "x": 5.0,
-      "y": 5.0,
-      "z": 5.0
+      "x": 0.0,
+      "y": 0.0,
+      "z": 10.0
     },
     "center": {
       "x": 0,
@@ -37,8 +35,8 @@
     "left":-1.0,
     "right":1.0,
     "size": {
-      "x": 256,
-      "y": 256
+      "x": 512,
+      "y": 512
     }
   },
   "lights": [

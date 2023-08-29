@@ -28,7 +28,6 @@ impl Rectangle {
     pub fn sample_interaction(&self,sampler_point:DVec2)->InteractionCommon{
         let p = self.obj_to_world.transform_point3(sampler_point.extend(0.0));
         let mut  commom = InteractionCommon{..Default::default()};
-        commom.is_light=false;
         commom.p=p;
         commom.normal=self.obj_to_world.transform_vector3(DVec3::Z);
         commom
@@ -62,7 +61,7 @@ impl Primitive for Rectangle {
         let n = self.obj_to_world.transform_vector3(DVec3::Z);
         let dpdu = self.obj_to_world.transform_point3(DVec3::X);
         let dpdv = self.obj_to_world.transform_point3(DVec3::Y);
-        let SurfaceInteraction = SurfaceInteraction::new(
+        let surface = SurfaceInteraction::new(
             p,
             p.truncate(),
             n,
@@ -75,11 +74,11 @@ impl Primitive for Rectangle {
             Some(self),
             false,
         );
-        Some(SurfaceInteraction)
+        Some(surface)
     }
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-        let min = self.obj_to_world.transform_point3(DVec3::ZERO);
-        let max = self.obj_to_world.transform_point3(DVec3::ONE);
+        let min = self.obj_to_world.transform_point3(DVec3::ZERO)-DVec3::splat(0.003);
+        let max = self.obj_to_world.transform_point3(DVec3::ONE)+DVec3::splat(0.003);
         Bound::<3>::new(min, max)
     }
 }

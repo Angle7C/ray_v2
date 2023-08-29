@@ -1,45 +1,51 @@
 use std::f64::consts::PI;
 
-use glam::{DVec3, DVec2, Vec3};
+use glam::{DVec3, DVec2, Vec3, DMat4};
 
-use crate::pbrt_core::{primitive::shape::Shape, tool::{SurfaceInteraction, InteractionCommon, func::vec3_coordinate_system}, sampler::cosine_sample_hemisphere};
+use crate::pbrt_core::{primitive::shape::Shape, tool::{SurfaceInteraction, InteractionCommon, func::vec3_coordinate_system, Visibility}, sampler::cosine_sample_hemisphere};
 
 use super::LightAble;
 
 pub trait AreaLight: LightAble {
-    fn l(&self, surface: &SurfaceInteraction, w: &DVec3) -> DVec3 {
+    fn l(&self, surface: &InteractionCommon, w: &DVec3) -> DVec3 {
         todo!()
     }
-    fn le(&self, w: DVec3) -> DVec3 {
-        todo!()
+    fn le(&self, w: &DVec3) -> DVec3 {
+        DVec3::ZERO
     }
     fn get_shape(&self)->&Shape;
+  
+
 }
 #[derive(Debug)]
 pub struct DiffuseAreaLight {
     lemit: DVec3,
     shape: Shape,
     area: f64,
+    obj_to_world:DMat4,
 }
 impl DiffuseAreaLight {
     pub fn new(lemit: DVec3, shape: Shape) -> Self {
         Self {
             lemit,
-            area: shape.age_area(),
+            area: shape.agt_area(),
             shape,
+            obj_to_world:Default::default()
         }
     }
 }
 impl AreaLight for DiffuseAreaLight {
-    fn l(&self, surface: &SurfaceInteraction, w: &DVec3) -> DVec3 {
-        if surface.common.normal.dot(*w) > 0.0 {
+    fn l(&self, surface: &InteractionCommon, w: &DVec3) -> DVec3 {
+        if surface.normal.dot(*w) > 0.0 {
             self.lemit
         } else {
             DVec3::ZERO
         }
     }
-    fn le(&self, w: DVec3) -> DVec3 {
-        w
+    fn le(&self, w: &DVec3) -> DVec3 {
+        let w = self.obj_to_world.inverse().transform_vector3(*w);
+        let cos = w.dot(DVec3::Z).abs();
+        self.lemit*cos
     }
     fn get_shape(&self)->&Shape {
         &self.shape
@@ -49,27 +55,33 @@ impl LightAble for DiffuseAreaLight {
     fn power(&self) -> DVec3 {
         return self.area * PI * self.lemit;
     }
-    fn sample_f(
+    fn sample_li(
         &self,
         surface: &SurfaceInteraction,
+        //光源采样参数
         u: glam::DVec2,
         w_in: &mut DVec3,
+        //光源pdf
         pdf: &mut f64,
+        //可见性测试
         vis: &mut crate::pbrt_core::tool::Visibility,
     ) -> DVec3 {
-        // self.
+        // 从shape采样到点
         let common=self.shape.sample(u);
-        let light_n=common.normal;
-        let mut w=cosine_sample_hemisphere(u);
-        *pdf=w.z;
-        let mut s = SurfaceInteraction::default();
-       
-        let mut v1=Default::default();
-        let mut v2=Default::default();
-        vec3_coordinate_system(common.normal, &mut v1,&mut v2);
-        w=v1*w.x+v2*w.y+common.normal*w.z;
-        s.common=common;
-        self.l(&s, &w)
+        
+        *w_in=(surface.common.p-common.p).normalize();
+        
+        *pdf=self.shape.pdf(&common, &w_in);
+        *vis=Visibility{a:surface.common,b:common};
+        self.l(&common,&-*w_in)
     }
+    fn sample_le(&self)->DVec3 {
+        unimplemented!()
+    }
+
+    fn pdf_li(&self,surface:&InteractionCommon,w_in:&DVec3)->f64 {
+        self.shape.pdf(surface, w_in)
+    }
+
    
 }

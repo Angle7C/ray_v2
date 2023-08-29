@@ -5,17 +5,19 @@ use crate::pbrt_core::tool::{setting::Build, Bound, SurfaceInteraction};
 
 use super::{GeometricePrimitive, Primitive, Aggregate};
 
-pub struct BVH<'a>{
-    geo: Vec<GeometricePrimitive<'a>>,
+pub struct BVH<'b>
+{
+    geo: Vec<GeometricePrimitive<'b>>,
     accel: bvh::bvh::BVH
 }
-impl<'a> BVH<'a>{
-    pub fn new(mut shape: Vec<GeometricePrimitive<'a>>)->Self{
+impl<'b> BVH<'b>{
+    pub fn new(mut shape: Vec<GeometricePrimitive<'b>>)->Self
+    {
        let flat_bvh = bvh::bvh::BVH::build(&mut shape);
        Self { geo: shape, accel: flat_bvh }
     }
 }
-impl<'a> Aggregate for BVH<'a>{
+impl<'b> Aggregate for BVH<'b>{
     fn interacect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let o_ray=ray.clone();
         let mut ray=Ray::new(o_ray.o.origin.as_vec3(), o_ray.o.dir.as_vec3());

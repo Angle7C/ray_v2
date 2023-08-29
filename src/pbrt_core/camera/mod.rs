@@ -56,7 +56,7 @@ impl Camera {
         let p = self.screen_to_camera.transform_point3(sample.film_point.extend(0.0));
         match self.mode{
             CameraMode::O=>{
-                let p=self.camera_to_world.project_point3(p);
+                let p=self.camera_to_world.transform_point3(p);
                 let dir=self.camera_to_world.transform_vector3(DVec3::Z);
                 RayDiff::new(Ray::new(p.into(), dir.into()))
             },

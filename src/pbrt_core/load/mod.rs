@@ -1,90 +1,94 @@
+use std::{sync::Arc, cell::RefCell};
 
+use glam::{
+    f64::{DMat4, DVec2, DVec3},
+    u32::UVec3,
+    Mat4, Vec2, Vec3, Quat,
+};
+use gltf::{import, Attribute};
 
-use std::sync::Arc;
+use crate::pbrt_core::primitive::{
+    mesh::Mesh,
+    shape::{triangle::Triangle, Shape},
+};
 
-use glam::{f64::{DVec2, DVec3, DMat4},u32::UVec3};
-use gltf::import;
-
-use crate::pbrt_core::primitive::{shape::triangle::Triangle, mesh::Mesh};
-
-use super::primitive::{Primitive, shape};
+use super::primitive::{shape, Primitive};
 
 pub struct GltfLoad;
 impl GltfLoad {
     pub fn load(path: &str) -> Vec<Box<dyn Primitive>> {
+        let mut meshs = Arc::new(RefCell::new(Mesh::default()));
         if let Ok((gltf, buffer, _images)) = import(path) {
-            let mut point = vec![];
-            let mut normal = vec![];
-            let mut uv = vec![];
-            let mut index: Vec<UVec3> = vec![];
             let mut shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
-            for item in gltf.meshes() {
-                for ele in item.primitives() {
-                    match ele.mode() {
-                        gltf::mesh::Mode::Triangles => {
-                            let reader = ele
-                                .reader(|buff| Some(&buffer[buff.index()]));
-                            index.append(
-                                &mut reader
-                                    .read_indices()
-                                    .unwrap()
-                                    .into_u32()
-                                    .collect::<Vec<u32>>()
-                                    .chunks(3)
-                                    .map(|x| UVec3::from_slice(x))
-                                    .collect(),
-                            );
-                            for (semantic, _) in ele.attributes() {
-                                match semantic {
-                                    gltf::Semantic::Positions => {
-                                        point.append(
-                                            &mut reader
-                                                .read_positions()
-                                                .unwrap()
-                                                .map(|x| [x[0] as f64, x[1] as f64, x[2] as f64])
-                                                .map(|x| DVec3::from_array(x))
-                                                .collect::<Vec<_>>(),
-                                        );
-                                    }
-                                    gltf::Semantic::Normals => {
-                                        normal.append(
-                                            &mut reader
-                                                .read_normals()
-                                                .unwrap()
-                                                .map(|x| [x[0] as f64, x[1] as f64, x[2] as f64])
-                                                .map(|x| DVec3::from_array(x))
-                                                .collect::<Vec<_>>(),
-                                        );
-                                    }
-                                    gltf::Semantic::Tangents => {}
-                                    gltf::Semantic::Colors(_) => todo!(),
-                                    gltf::Semantic::TexCoords(v) => {
-                                        uv.append(
-                                            &mut reader
-                                                .read_tex_coords(v)
-                                                .unwrap()
-                                                .into_f32()
-                                                .map(|x| [x[0] as f64, x[1] as f64])
-                                                .map(|x| DVec2::from_array(x))
-                                                .collect(),
-                                        );
-                                    }
-                                    gltf::Semantic::Joints(_) => todo!(),
-                                    gltf::Semantic::Weights(_) => todo!(),
+            for item in gltf.nodes() {
+                let transform = match item.transform() {
+                    gltf::scene::Transform::Matrix { matrix } => {
+                        Mat4::from_cols_array_2d(&matrix).as_dmat4()
+                    }
+                    gltf::scene::Transform::Decomposed {
+                        translation,
+                        rotation,
+                        scale,
+                    } => Mat4::from_scale_rotation_translation(Vec3::from_array(scale), Quat::from_array(rotation),Vec3::from(translation))
+                        .as_dmat4(),
+                };
+                let mut point = vec![];
+                let mut normal = vec![];
+                let mut uv = vec![];
+                let mut index: Vec<UVec3> = vec![];
+                if let Some(mesh)=item.mesh() {
+                    for primitive in mesh.primitives() {
+                        let attribute = primitive.attributes();
+                        let reader = primitive.reader(|x| Some(&buffer[x.index()].0));
+                        index = reader
+                            .read_indices()
+                            .unwrap()
+                            .into_u32()
+                            .collect::<Vec<_>>()
+                            .chunks(3)
+                            .map(|x| UVec3::from_slice(x))
+                            .collect();
+                        for (s, _) in primitive.attributes() {
+                            match s {
+                                gltf::Semantic::Positions => {
+                                    point = reader
+                                        .read_positions()
+                                        .unwrap()
+                                        .map(|x| Vec3::from_array(x).as_dvec3())
+                                        .collect::<Vec<_>>();
                                 }
+                                gltf::Semantic::Normals => {
+                                    normal = reader
+                                        .read_normals()
+                                        .unwrap()
+                                        .map(|x| Vec3::from_array(x).as_dvec3())
+                                        .collect::<Vec<_>>();
+                                }
+                                gltf::Semantic::Tangents => todo!(),
+                                gltf::Semantic::Colors(color) => {
+                                    todo!()
+                                }
+                                gltf::Semantic::TexCoords(coords) => {
+                                    uv = reader
+                                        .read_tex_coords(coords)
+                                        .unwrap()
+                                        .into_f32()
+                                        .map(|x| Vec2::from_array(x).as_dvec2())
+                                        .collect::<Vec<_>>();
+                                }
+                                gltf::Semantic::Joints(j) => todo!(),
+                                gltf::Semantic::Weights(w) => todo!(),
                             }
                         }
-                        _ => (),
                     }
-
+                };
+                meshs.borrow_mut().add_message(&mut point,&mut normal,&mut uv);
+                for item in index {
+                    shape.push(Box::new(Triangle::new(item, meshs.clone(), transform)))
                 }
             }
-            let mesh=Arc::new(Mesh::new(point, normal, uv));
-            for item in index{
-                shape.push(Box::new(Triangle::new(item, mesh.clone(), DMat4::IDENTITY)))
-            }
             shape
-        }else{
+        }else {
             vec![]
         }
     }
