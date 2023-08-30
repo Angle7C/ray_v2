@@ -20,15 +20,25 @@ pub enum Light {
     AreaLight(Box<dyn AreaLight>),
 }
 impl Primitive for Light{
-  
-    fn world_bound(&self) -> super::tool::Bound<3> {
-        todo!()
+    fn get_light(&self)->Option<&dyn LightAble>{
+       match &self {
+        Light::AreaLight(ref area) => area.get_light(),
     }
-}
-impl AsRef<Light> for Light{
-    
-    fn as_ref(&self) -> &Light {
-        &self
+    }
+    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: super::bxdf::TransportMode) {
+        match &self {
+            Light::AreaLight(area) =>area.compute_scattering(isct, mode)
+        }   
+    }
+    fn interacect(&self, ray: super::tool::RayDiff) -> Option<SurfaceInteraction> {
+        match &self {
+            Light::AreaLight(area) =>area.interacect(ray)
+        }   
+    }
+    fn world_bound(&self) -> super::tool::Bound<3> {
+        match &self {
+            Light::AreaLight(area)=>area.world_bound()
+        }
     }
 }
 impl Light {
@@ -42,7 +52,7 @@ impl Light {
     }
     pub fn le(&self, wi: &DVec3) -> DVec3 {
         match &self {
-            Self::AreaLight(area) => area.le(wi),
+            Self::AreaLight(area) => area.le(*wi),
         }
     }
 }
@@ -110,4 +120,5 @@ pub trait LightAble: Debug {
     fn power(&self) -> DVec3;
     //pdf采样
     fn pdf_li(&self, surface: &InteractionCommon, w_in: &DVec3) -> f64;
+    fn le(&self,wi:DVec3)->DVec3;
 }

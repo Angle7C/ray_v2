@@ -100,12 +100,12 @@ pub struct Build<'a>{
 }
 impl<'a> Build<'a>{
     pub fn render(self){
-        let path = Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::default(), self.setting.size)));
-        path.render_process(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size)
+        let path = Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::new(self.setting.sample_num as usize), self.setting.size)));
+        path.render_process(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size,Sampler::new(self.setting.sample_num as usize))
     }
     pub fn render_debug(self){
         let path = Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::default(), self.setting.size)));
-        path.render_process_debug(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size,Default::default());
+        path.render_process_debug(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size,Sampler::default());
     }
     pub fn build(path:&str)->Self{
         let buf = File::open(path).unwrap();

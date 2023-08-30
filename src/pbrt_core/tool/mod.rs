@@ -8,7 +8,7 @@ use glam::{
 
 use self::sence::Sence;
 
-use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode, light::Light};
+use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode, light::{Light, LightAble}};
 
 pub mod sence;
 pub mod setting;
@@ -287,7 +287,7 @@ pub struct SurfaceInteraction<'a> {
     // BSDF采样值。表示表面的对光的作用。
     pub bsdf:Option<BSDF>,
     //该交点是不是光源。
-    pub light:Option<&'a Light>
+    pub light:Option<&'a dyn LightAble>
 }
 impl<'a> SurfaceInteraction<'a> {
     pub fn new(
@@ -301,7 +301,7 @@ impl<'a> SurfaceInteraction<'a> {
         dndv: DVec3,
         time: f64,
         shape: Option<&'a dyn Primitive>,
-        light:Option<&'a Light>,
+        light:Option<&'a dyn LightAble>,
     ) -> Self {
         Self {
             common: InteractionCommon {
@@ -337,7 +337,7 @@ impl<'a> SurfaceInteraction<'a> {
     }
     pub fn le(&self,w_in:DVec3)->DVec3{
         if let Some(light)=self.light{
-            light.le(&w_in)
+            light.le(w_in)
         }else{  
             DVec3::ZERO
         }
@@ -382,7 +382,7 @@ impl Visibility{
     fn g(&self,sence:&Sence)->f64{
         let vis=self.is_vis(sence);
         let dir=(self.a.p-self.b.p);
-        vis*self.a.normal.dot(dir.normalize()).clamp(0.0, 1.0)
-            *self.b.normal.dot(-dir.normalize()).clamp(0.0, 1.0)/dir.length_squared()
+        vis*self.a.normal.dot(dir.normalize()).abs()
+            *self.b.normal.dot(dir.normalize()).abs()/dir.length_squared()
     }
 }

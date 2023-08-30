@@ -1,6 +1,6 @@
 use glam::{f64::DVec3, u32::UVec2};
 use image::{Rgb, RgbImage};
-use pbr::ProgressBar;
+
 use std::{
     path::Path,
     sync::mpsc::{self, Receiver, Sender},
@@ -59,6 +59,8 @@ impl IntegratorAble for PathIntegrator {
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 //自发光
+                // return DVec3::Z;
+                // return item.common.normal;
                 ans += beta * item.le(-ray.o.dir);
 
                 item.compute_scattering(ray, mode);

@@ -1,19 +1,19 @@
 {
   "setting": {
-    "core_num": 6,
+    "core_num": 7,
     "size": {
       "x": 512,
       "y": 512
     },
-    "sample_num": 1,
+    "sample_num": 2,
     "name": "test",
     "inter_mode":"path",
-    "path": "./object/cube.glb"
+    "path": "./object/plan.glb"
   },
   "camera": {
     "eye": {
-      "x": 0.0,
-      "y": -5.0,
+      "x": 5.0,
+      "y": 5.0,
       "z": 5.0
     },
     "center": {
@@ -42,9 +42,9 @@
       "shape": {
         "mode": "rect",
         "T": {
-          "x": 6.0,
-          "y": 6.0,
-          "z": 6.0
+          "x": -10.0,
+          "y": 10.0,
+          "z": 10.0
         },
         "S":{
           "x": 1.0,
@@ -59,9 +59,9 @@
         }
       },
       "lemit": {
-        "x": 10.0,
-        "y": 10.0,
-        "z": 10.0
+        "x": 1000.0,
+        "y": 1000.0,
+        "z": 1000.0
       }
     }
   ]

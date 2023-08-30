@@ -5,7 +5,7 @@ use glam::f32::Vec3;
 
 use super::{
     bxdf::TransportMode,
-    light::Light,
+    light::{Light, LightAble},
     tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction},
 };
 
@@ -75,7 +75,7 @@ pub trait Primitive: Debug {
 
     }
     //获取光源
-    fn get_light<'a>(&self)->Option<&'a Light>{
+    fn get_light(&self)->Option<&dyn LightAble>{
         None
     }
 }
@@ -142,7 +142,7 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
     fn world_bound(&self) -> Bound<3> {
         self.primitive.world_bound()
     }
-    fn get_light<'b>(&self)->Option<&'b Light>
+    fn get_light(&self)->Option<&dyn LightAble>
     {
         self.primitive.get_light()
     }
