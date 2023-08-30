@@ -50,7 +50,10 @@ impl Camera {
             camera_to_world:world_to_camera.inverse(),
             mode
         }
-
+    }
+    pub fn reset_size(&mut self,size:Vec2){
+        let screen_to_camera=Self::computer_viewport(size.as_dvec2());
+        self.screen_to_camera=screen_to_camera;
     }
     pub fn generate_ray(&self,sample:CameraSample)->RayDiff{
         let p = self.screen_to_camera.transform_point3(sample.film_point.extend(0.0));

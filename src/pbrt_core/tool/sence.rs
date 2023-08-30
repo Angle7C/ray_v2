@@ -39,11 +39,11 @@ impl<'a> Sence<'a> {
         //场景集合
         let mut geoemtry = primitive
             .iter()
-            .map(|ele| GeometricePrimitive::new(ele.as_ref(), None))
+            .map(|ele| GeometricePrimitive::new(ele.as_ref()))
             .collect::<Vec<_>>();
         let mut geoemtry_light = light
             .iter()
-            .map(|item| GeometricePrimitive::new(item.get_shape(), Some(item)))
+            .map(|item| GeometricePrimitive::new(item.get_shape()))
             .collect::<Vec<_>>();
         geoemtry.append(&mut geoemtry_light);
         let accel: BVH<'_> = BVH::new(geoemtry);

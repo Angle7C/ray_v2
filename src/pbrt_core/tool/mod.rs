@@ -269,22 +269,26 @@ pub struct InteractionCommon {
     pub normal: DVec3,
     pub time: f64,
 }
+impl InteractionCommon{
+    pub fn new(w0:DVec3,p:DVec3,normal:DVec3,time:f64)->Self{
+        Self { w0, p, normal, time }
+    }
+}
 #[derive(Default)]
 pub struct SurfaceInteraction<'a> {
     pub common: InteractionCommon,
     uv: DVec2,
     dpdu: DVec3,
     dpdv: DVec3,
+    //求交的图元信息
     shape: Option<&'a dyn Primitive>,
+    // 渲染信息与几何信息
     pub shading: Shading,
+    // BSDF采样值。表示表面的对光的作用。
     pub bsdf:Option<BSDF>,
+    //该交点是不是光源。
     pub light:Option<&'a Light>
 }
-// impl Default for SurfaceInteraction{
-//     fn default() -> Self {
-
-//     }
-// }
 impl<'a> SurfaceInteraction<'a> {
     pub fn new(
         p: DVec3,
@@ -297,7 +301,7 @@ impl<'a> SurfaceInteraction<'a> {
         dndv: DVec3,
         time: f64,
         shape: Option<&'a dyn Primitive>,
-        is_light:bool,
+        light:Option<&'a Light>,
     ) -> Self {
         Self {
             common: InteractionCommon {
@@ -318,7 +322,7 @@ impl<'a> SurfaceInteraction<'a> {
                 dndv,
             },
             bsdf:None,
-            light:None
+            light:light,
         }
     }
     pub fn compute_scattering(&mut self,ray:RayDiff,mode:TransportMode){

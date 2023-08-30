@@ -9,7 +9,7 @@ use gltf::json::extras::Void;
 use self::area::AreaLight;
 
 use super::{
-    primitive::shape::{self, Shape},
+    primitive::{shape::{self, Shape}, Primitive},
     sampler::Sampler,
     tool::{sence::Sence, InteractionCommon, SurfaceInteraction, Visibility},
 };
@@ -18,6 +18,18 @@ pub mod area;
 #[derive(Debug)]
 pub enum Light {
     AreaLight(Box<dyn AreaLight>),
+}
+impl Primitive for Light{
+  
+    fn world_bound(&self) -> super::tool::Bound<3> {
+        todo!()
+    }
+}
+impl AsRef<Light> for Light{
+    
+    fn as_ref(&self) -> &Light {
+        &self
+    }
 }
 impl Light {
     pub fn get_shape(&self) -> &Shape {

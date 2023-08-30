@@ -156,7 +156,7 @@ impl Primitive for Triangle {
                             shading.dndv,
                             t,
                             Some(self),
-                            false,
+                            None,
                         ));
            
             Some(surface)

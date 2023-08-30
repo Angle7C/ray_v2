@@ -60,14 +60,24 @@ pub mod shape {
     }
 }
 pub trait Primitive: Debug {
+    //世界包围盒
     fn world_bound(&self) -> Bound<3>;
+    //求交
     fn interacect(&self, _ray: RayDiff) -> Option<SurfaceInteraction> {
         None
     }
+    //包围盒求交
     fn interacect_bound(&self, ray: &RayDiff) -> bool {
         self.world_bound().intesect(ray)
     }
-    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: TransportMode) {}
+    //材质计算
+    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: TransportMode) {
+
+    }
+    //获取光源
+    fn get_light<'a>(&self)->Option<&'a Light>{
+        None
+    }
 }
 pub trait Aggregate: Sync {
     fn interacect(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
@@ -88,24 +98,22 @@ impl PartialEq for ObjectType {
 }
 #[derive(Debug)]
 pub struct GeometricePrimitive<'a> {
-    shape: &'a dyn Primitive,
-    pub light: Option<&'a Light>,
+    primitive: &'a dyn Primitive,
     node_index: usize,
 }
 unsafe impl<'a> Sync for GeometricePrimitive<'a> {}
 unsafe impl<'a> Send for GeometricePrimitive<'a> {}
 impl<'a> GeometricePrimitive<'a> {
-    pub fn new(shape: &'a dyn Primitive, light: Option<&'a Light>) -> Self {
+    pub fn new(primitive: &'a dyn Primitive) -> Self {
         Self {
-            shape,
+            primitive,
             node_index: 0,
-            light,
         }
     }
 }
 impl<'a> Bounded for GeometricePrimitive<'a> {
     fn aabb(&self) -> ::bvh::aabb::AABB {
-        let bound = self.shape.world_bound();
+        let bound = self.primitive.world_bound();
         bound.into()
     }
 }
@@ -119,19 +127,23 @@ impl<'a> BHShape for GeometricePrimitive<'a> {
 }
 impl<'a> Primitive for GeometricePrimitive<'a> {
     fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: TransportMode) {
-        self.shape.compute_scattering(isct, mode)
+        self.primitive.compute_scattering(isct, mode)
     }
     fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
-        let mut iter = self.shape.interacect(ray);
+        let mut iter = self.primitive.interacect(ray);
         if let Some(ref mut i) = &mut iter {
-            i.light=self.light;
+            i.light=self.get_light()
         };
         iter
     }
     fn interacect_bound(&self, ray: &RayDiff) -> bool {
-        self.shape.interacect_bound(ray)
+        self.primitive.interacect_bound(ray)
     }
     fn world_bound(&self) -> Bound<3> {
-        self.shape.world_bound()
+        self.primitive.world_bound()
+    }
+    fn get_light<'b>(&self)->Option<&'b Light>
+    {
+        self.primitive.get_light()
     }
 }

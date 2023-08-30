@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use glam::{DMat2, DMat4, DVec3, Vec4Swizzles, DVec2};
+use glam::{DMat2, DMat4, DVec3, Vec4Swizzles, DVec2, Quat, DQuat, DVec4};
 
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{Bound, SurfaceInteraction, InteractionCommon},
+    tool::{Bound, SurfaceInteraction, InteractionCommon, setting::Parse},
 };
 #[derive(Debug)]
 pub struct Rectangle {
@@ -72,7 +72,7 @@ impl Primitive for Rectangle {
             DVec3::ZERO,
             t,
             Some(self),
-            false,
+            None,
         );
         Some(surface)
     }
@@ -80,5 +80,14 @@ impl Primitive for Rectangle {
         let min = self.obj_to_world.transform_point3(DVec3::ZERO)-DVec3::splat(0.003);
         let max = self.obj_to_world.transform_point3(DVec3::ONE)+DVec3::splat(0.003);
         Bound::<3>::new(min, max)
+    }
+}
+impl Parse for Rectangle{
+    fn parse(value:&serde_json::Value)->Self {
+        let t=DVec3::parse(&value["T"]);
+        let s= DVec3::parse(&value["S"]);
+        let r=DQuat::parse(&value["R"]);
+        let obj_to_world = DMat4::from_scale_rotation_translation(s, r, t);
+        Self { obj_to_world, material:None }
     }
 }

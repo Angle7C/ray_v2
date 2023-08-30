@@ -2,11 +2,11 @@ use std::f64::consts::PI;
 
 use glam::{DVec3, DVec2, Vec3, DMat4};
 
-use crate::pbrt_core::{primitive::shape::Shape, tool::{SurfaceInteraction, InteractionCommon, func::vec3_coordinate_system, Visibility}, sampler::cosine_sample_hemisphere};
+use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, func::vec3_coordinate_system, Visibility, Bound}, sampler::cosine_sample_hemisphere};
 
 use super::LightAble;
 
-pub trait AreaLight: LightAble {
+pub trait AreaLight: LightAble+Primitive {
     fn l(&self, surface: &InteractionCommon, w: &DVec3) -> DVec3 {
         todo!()
     }
@@ -14,8 +14,6 @@ pub trait AreaLight: LightAble {
         DVec3::ZERO
     }
     fn get_shape(&self)->&Shape;
-  
-
 }
 #[derive(Debug)]
 pub struct DiffuseAreaLight {
@@ -82,6 +80,15 @@ impl LightAble for DiffuseAreaLight {
     fn pdf_li(&self,surface:&InteractionCommon,w_in:&DVec3)->f64 {
         self.shape.pdf(surface, w_in)
     }
-
-   
+}
+impl Primitive for DiffuseAreaLight{
+    fn world_bound(&self) -> Bound<3> {
+        self.shape.world_bound()
+    }
+    fn interacect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
+       unimplemented!()
+    }
+    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: crate::pbrt_core::bxdf::TransportMode) {
+        self.shape.compute_scattering(isct, mode)
+    }
 }

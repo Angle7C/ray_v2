@@ -5,15 +5,16 @@
       "x": 512,
       "y": 512
     },
-    "sample_num":1,
+    "sample_num": 1,
     "name": "test",
-    "path":"./object/shperes.glb"
+    "inter_mode":"path",
+    "path": "./object/cube.glb"
   },
   "camera": {
     "eye": {
       "x": 0.0,
-      "y": 0.0,
-      "z": 10.0
+      "y": -5.0,
+      "z": 5.0
     },
     "center": {
       "x": 0,
@@ -29,25 +30,35 @@
     "near": 0.01,
     "far": 100.0,
     "fov": 60.0,
-    "aspect":1.0,
-    "button":-1.0,
-    "top":1.0,
-    "left":-1.0,
-    "right":1.0,
-    "size": {
-      "x": 512,
-      "y": 512
-    }
+    "aspect": 1.0,
+    "button": -1.0,
+    "top": 1.0,
+    "left": -1.0,
+    "right": 1.0
   },
   "lights": [
     {
-      "mode": "point",
-      "pos": {
-        "x": -5.0,
-        "y": -5.0,
-        "z": -5.0
+      "mode": "diffuse",
+      "shape": {
+        "mode": "rect",
+        "T": {
+          "x": 6.0,
+          "y": 6.0,
+          "z": 6.0
+        },
+        "S":{
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "R":{
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
       },
-      "i": {
+      "lemit": {
         "x": 10.0,
         "y": 10.0,
         "z": 10.0

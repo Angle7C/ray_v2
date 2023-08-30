@@ -20,7 +20,7 @@ impl GltfLoad {
         let mut meshs = Arc::new(RefCell::new(Mesh::default()));
         if let Ok((gltf, buffer, _images)) = import(path) {
             let mut shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
-        
+            // gltf.
             for item in gltf.nodes() {
                 let transform = match item.transform() {
                     gltf::scene::Transform::Matrix { matrix } => {

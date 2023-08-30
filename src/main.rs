@@ -6,20 +6,9 @@ pub mod pbrt_core;
 mod test;
 
 pub fn main() {
-    let (sence, path, setting) = Build::build("./sence/sence.json");
+    let build= Build::build("./sence/sence.json");
     #[cfg(not(debug_assertions))]
-    path.render_process(
-        &setting.name,
-        setting.sample_num,
-        &sence,
-        setting.size,
-    );
+        build.render();
     #[cfg(debug_assertions)]
-    path.render_process_debug(
-        &setting.name,
-        setting.sample_num,
-        &sence,
-        setting.size,
-        Default::default(),
-    );
+        build.render_debug()
 }
