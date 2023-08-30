@@ -20,6 +20,7 @@ impl GltfLoad {
         let mut meshs = Arc::new(RefCell::new(Mesh::default()));
         if let Ok((gltf, buffer, _images)) = import(path) {
             let mut shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
+        
             for item in gltf.nodes() {
                 let transform = match item.transform() {
                     gltf::scene::Transform::Matrix { matrix } => {
@@ -36,6 +37,7 @@ impl GltfLoad {
                 let mut normal = vec![];
                 let mut uv = vec![];
                 let mut index: Vec<UVec3> = vec![];
+                
                 if let Some(mesh)=item.mesh() {
                     for primitive in mesh.primitives() {
                         let attribute = primitive.attributes();
@@ -83,8 +85,8 @@ impl GltfLoad {
                     }
                 };
                 meshs.borrow_mut().add_message(&mut point,&mut normal,&mut uv);
-                for item in index {
-                    shape.push(Box::new(Triangle::new(item, meshs.clone(), transform)))
+                for i in index {
+                    shape.push(Box::new(Triangle::new(i, meshs.clone(), transform)))
                 }
             }
             shape
