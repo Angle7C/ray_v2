@@ -10,9 +10,6 @@ pub trait AreaLight: LightAble+Primitive {
     fn l(&self, surface: &InteractionCommon, w: &DVec3) -> DVec3 {
         todo!()
     }
-    fn le(&self, w: &DVec3) -> DVec3 {
-        DVec3::ZERO
-    }
     fn get_shape(&self)->&Shape;
 }
 #[derive(Debug)]
@@ -39,11 +36,6 @@ impl AreaLight for DiffuseAreaLight {
         } else {
             DVec3::ZERO
         }
-    }
-    fn le(&self, w: &DVec3) -> DVec3 {
-        let w = self.obj_to_world.inverse().transform_vector3(*w);
-        let cos = w.dot(DVec3::Z).abs();
-        self.lemit*cos
     }
     fn get_shape(&self)->&Shape {
         &self.shape
@@ -76,7 +68,11 @@ impl LightAble for DiffuseAreaLight {
     fn sample_le(&self)->DVec3 {
         unimplemented!()
     }
-
+    fn le(&self,wi:DVec3)->DVec3 {
+        let w = self.obj_to_world.inverse().transform_vector3(wi);
+        let cos = w.dot(DVec3::Z).abs();
+        self.lemit*cos
+    }
     fn pdf_li(&self,surface:&InteractionCommon,w_in:&DVec3)->f64 {
         self.shape.pdf(surface, w_in)
     }
@@ -86,9 +82,16 @@ impl Primitive for DiffuseAreaLight{
         self.shape.world_bound()
     }
     fn interacect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
-       unimplemented!()
+        let mut inter = self.shape.interacect(ray);
+        if let Some( ref mut suface)=inter{
+            suface.light=self.get_light();
+        }
+        inter
     }
     fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: crate::pbrt_core::bxdf::TransportMode) {
         self.shape.compute_scattering(isct, mode)
+    }
+    fn get_light(&self)->Option<&dyn LightAble> {
+        Some(self)
     }
 }

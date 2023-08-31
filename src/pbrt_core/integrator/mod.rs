@@ -2,7 +2,7 @@ use std::{sync::mpsc::{self, Sender, Receiver}, thread,  path::Path};
 
 use glam::{f64::DVec3, UVec2};
 use image::{Rgb, RgbImage};
-use pbr::ProgressBar;
+use indicatif::ProgressBar;
 
 use self::path::PathIntegrator;
 
@@ -31,17 +31,16 @@ impl IntegratorAble for Integrator{
     }
 }
 impl Integrator{
-    pub fn render_process(self, name: &str, num: u64, sence: &Sence,size:UVec2) {
+    pub fn render_process(self, name: &str, num: u64, sence: &Sence,size:UVec2,sampler:Sampler) {
         let (sender, receiver) = mpsc::channel::<(u64, u64, DVec3)>();
         let film = Film::new(size);
         let camera = sence.camera;
-        let sampler: Sampler=Sampler::new(num.try_into().unwrap());
         thread::scope(|f| {
             for _ in 0..num {
                 f.spawn(self.render_core(&film, &camera, sender.clone(), sence,sampler.clone()));
             }
             drop(sender);
-            f.spawn(move || Self::output(receiver, size, name, num));
+            f.spawn(move || Self::output(receiver, size, name, sampler.num as u64));
         });
     }
     fn render_core<'a, 'b>(
@@ -76,12 +75,12 @@ impl Integrator{
         let mut image = RgbImage::new(size.x, size.y);
         for (u, v, color) in rece.iter() {
             image.put_pixel(u as u32, v as u32, to_color(color, num as f64));
-            bar.add(1);
+            bar.inc(1);
         }
         let path =
             Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
         format!("渲染完成，图像输出:{}", path.display());
-        bar.finish_print("渲染完成，图像输出");
+        bar.finish_with_message("渲染完成，图像输出");
         image
             .save_with_format(path, image::ImageFormat::Jpeg)
             .expect("图片保存失败");
@@ -105,13 +104,13 @@ impl Integrator{
                     color += self.fi(ray, sence,&mut sampler);
                 }
                 image.put_pixel(u as u32, v as u32, to_color(color, num as f64));
-                bar.inc();
+                bar.inc(1);
             }
         }
         let path =
             Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
         format!("渲染完成，图像输出:{}", path.display());
-        bar.finish_print("渲染完成，图像输出");
+        bar.finish_with_message("渲染完成，图像输出");
         image
             .save_with_format(path, image::ImageFormat::Jpeg)
             .expect("图片保存失败");
