@@ -12,10 +12,10 @@ use super::{
 pub mod bvh;
 pub mod mesh;
 pub mod shape {
-    use glam::{DVec2, DVec3};
-    use crate::pbrt_core::tool::InteractionCommon;
     use self::rectangle::Rectangle;
     use super::Primitive;
+    use crate::pbrt_core::tool::InteractionCommon;
+    use glam::{DVec2, DVec3};
     pub mod rectangle;
     pub mod shpere;
     pub mod triangle;
@@ -24,19 +24,26 @@ pub mod shape {
         Rect(Rectangle),
     }
     impl Primitive for Shape {
-        fn compute_scattering(&self, isct: &mut crate::pbrt_core::tool::SurfaceInteraction, mode: crate::pbrt_core::bxdf::TransportMode) {
-            match &self{
-                Shape::Rect(rect) => rect.compute_scattering(isct, mode)
+        fn compute_scattering(
+            &self,
+            isct: &mut crate::pbrt_core::tool::SurfaceInteraction,
+            mode: crate::pbrt_core::bxdf::TransportMode,
+        ) {
+            match &self {
+                Shape::Rect(rect) => rect.compute_scattering(isct, mode),
             }
         }
-        fn interacect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
-            match &self{
+        fn interacect(
+            &self,
+            ray: crate::pbrt_core::tool::RayDiff,
+        ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
+            match &self {
                 Shape::Rect(rect) => rect.interacect(ray),
             }
         }
         fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-            match &self{
-                Shape::Rect(rect) => rect.world_bound()
+            match &self {
+                Shape::Rect(rect) => rect.world_bound(),
             }
         }
     }
@@ -48,14 +55,14 @@ pub mod shape {
             }
         }
         // 形状采样
-        pub fn sample(&self,smaple_point:DVec2)->InteractionCommon{
+        pub fn sample(&self, smaple_point: DVec2) -> InteractionCommon {
             match self {
-                Self::Rect(rect)=>rect.sample_interaction(smaple_point),
+                Self::Rect(rect) => rect.sample_interaction(smaple_point),
             }
         }
         //对于在不同点采样的时，会存在不同pdf值
-        pub fn pdf(&self,common:&InteractionCommon,wi:&DVec3)->f64{
-            1.0/self.agt_area()
+        pub fn pdf(&self, common: &InteractionCommon, wi: &DVec3) -> f64 {
+            1.0 / self.agt_area()
         }
     }
 }
@@ -71,11 +78,9 @@ pub trait Primitive: Debug {
         self.world_bound().intesect(ray)
     }
     //材质计算
-    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: TransportMode) {
-
-    }
+    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: TransportMode) {}
     //获取光源
-    fn get_light(&self)->Option<&dyn LightAble>{
+    fn get_light(&self) -> Option<&dyn LightAble> {
         None
     }
 }
@@ -130,11 +135,7 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
         self.primitive.compute_scattering(isct, mode)
     }
     fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
-        let mut iter = self.primitive.interacect(ray);
-        if let Some(ref mut i) = &mut iter {
-            i.light=self.get_light()
-        };
-        iter
+        self.primitive.interacect(ray)
     }
     fn interacect_bound(&self, ray: &RayDiff) -> bool {
         self.primitive.interacect_bound(ray)
@@ -142,8 +143,7 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
     fn world_bound(&self) -> Bound<3> {
         self.primitive.world_bound()
     }
-    fn get_light(&self)->Option<&dyn LightAble>
-    {
+    fn get_light(&self) -> Option<&dyn LightAble> {
         self.primitive.get_light()
     }
 }

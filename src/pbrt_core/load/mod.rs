@@ -6,7 +6,6 @@ use glam::{
     Mat4, Vec2, Vec3, Quat,
 };
 use gltf::{import, Attribute};
-use log::info;
 
 use crate::pbrt_core::primitive::{
     mesh::Mesh,
@@ -72,7 +71,7 @@ impl GltfLoad {
                                 }
                                 gltf::Semantic::Tangents => todo!(),
                                 gltf::Semantic::Colors(color) => {
-                                    todo!()
+                                   
                                 }
                                 gltf::Semantic::TexCoords(coords) => {
                                     uv = reader
@@ -82,35 +81,17 @@ impl GltfLoad {
                                         .map(|x| Vec2::from_array(x).as_dvec2())
                                         .collect::<Vec<_>>();
                                 }
-                                gltf::Semantic::Joints(j) => todo!(),
-                                gltf::Semantic::Weights(w) => todo!(),
+                                gltf::Semantic::Joints(j) => {},
+                                gltf::Semantic::Weights(w) => {},
                             }
                         }
                     }
                 };
                
                 meshs.borrow_mut().add_message(&mut point,&mut normal,&mut uv,&mut vec![]);
-                info!("--------读取index");
                 for i in index {
                     let i=i+det;
-                    #[cfg(debug_assertions)]
-                    {
-                        now_set.insert(i.x);
-                        now_set.insert(i.y);
-                        now_set.insert(i.z);
-                    }
                     shape.push(Box::new(Triangle::new(i, meshs.clone(), transform)))
-                }
-                #[cfg(debug_assertions)]
-                {
-                    info!("当前index:\n {:?}",now_set);
-                    for i in &now_set{
-                        if last_set.contains(i){
-                            info!("{}这是上一个模型的顶点",i)
-                        }
-                    }
-                    last_set=last_set.union(&now_set).map(|x|*x).collect();
-                    now_set.clear();
                 }
                 size=meshs.borrow().point.len() as u32 ;
                 det=UVec3::splat(size);

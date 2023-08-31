@@ -57,10 +57,10 @@ impl Primitive for Rectangle {
         if p.y < 0.0 || p.y > 1.0 {
             return None;
         }
-        let p = self.obj_to_world.transform_point3(p);
-        let n = self.obj_to_world.transform_vector3(DVec3::Z);
-        let dpdu = self.obj_to_world.transform_point3(DVec3::X);
-        let dpdv = self.obj_to_world.transform_point3(DVec3::Y);
+        let p = self.obj_to_world.transform_point3(p).normalize();
+        let n = self.obj_to_world.transform_vector3(DVec3::Z).normalize();
+        let dpdu = self.obj_to_world.transform_point3(DVec3::X).normalize();
+        let dpdv = self.obj_to_world.transform_point3(DVec3::Y).normalize();
         let surface = SurfaceInteraction::new(
             p,
             p.truncate(),

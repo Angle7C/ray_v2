@@ -39,7 +39,7 @@ impl<'a> Sence<'a> {
             .collect::<Vec<_>>();
         let mut geoemtry_light = light
             .iter()
-            .map(|item| GeometricePrimitive::new(item.get_shape()))
+            .map(|item| GeometricePrimitive::new(item))
             .collect::<Vec<_>>();
         geoemtry.append(&mut geoemtry_light);
         let bound = geoemtry

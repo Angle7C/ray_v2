@@ -95,7 +95,9 @@ impl Triangle {
         if self.mesh.borrow().normal.is_empty() {
             DVec2::ZERO
         } else {
-            self.mesh.borrow().uv[self.index[i as usize]]
+            // self.mesh.borrow().uv[self.index[i as usize]]
+            DVec2::ZERO
+        
         }
     }
 }
