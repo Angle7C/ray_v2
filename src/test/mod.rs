@@ -1,9 +1,10 @@
-
+#[cfg(test)]
 pub mod test{
-    #[cfg(test)]
     use crate::pbrt_core::load::GltfLoad;
+    use crate::pbrt_core::tool::log::log_init;
     #[test]
     fn test_load(){
-        GltfLoad::load("./object/cube/cube.gltf");
+        log_init();
+        GltfLoad::load("./object/cube/box.gltf");
     }
 }

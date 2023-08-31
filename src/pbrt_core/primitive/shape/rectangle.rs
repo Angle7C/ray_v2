@@ -86,7 +86,8 @@ impl Parse for Rectangle{
     fn parse(value:&serde_json::Value)->Self {
         let t=DVec3::parse(&value["T"]);
         let s= DVec3::parse(&value["S"]);
-        let r=DQuat::parse(&value["R"]);
+        let r=DVec4::parse(&value["R"]);
+        let r=DQuat::from_axis_angle(r.truncate(), r.w.to_radians());
         let obj_to_world = DMat4::from_scale_rotation_translation(s, r, t);
         Self { obj_to_world, material:None }
     }

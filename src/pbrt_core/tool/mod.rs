@@ -13,6 +13,7 @@ use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode, light::{L
 pub mod sence;
 pub mod setting;
 pub mod func;
+pub mod log;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {

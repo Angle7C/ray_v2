@@ -1,5 +1,6 @@
 use glam::{f64::DVec3, u32::UVec2};
 use image::{Rgb, RgbImage};
+use log::info;
 
 use std::{
     path::Path,
@@ -58,11 +59,8 @@ impl IntegratorAble for PathIntegrator {
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
-                //自发光
-                // return DVec3::Z;
-                // return item.common.normal;
+                // return item.common.normal.abs();
                 ans += beta * item.le(-ray.o.dir);
-
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
@@ -78,6 +76,7 @@ impl IntegratorAble for PathIntegrator {
                     ray = item.spawn_ray(&w_in);
                 }
                 beta / p;
+                // return ans;
             } else {
                 return ans;
             }

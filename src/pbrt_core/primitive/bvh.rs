@@ -28,19 +28,17 @@ impl<'b> Aggregate for BVH<'b>{
         let mut t=f64::INFINITY;
         for shape in iter{
             match (shape.primitive.interacect(o_ray),&ans){
-                (None,_)=>continue,
-                (Some(v),None)=>{
-                    if v.common.time>=t_min&&v.common.time<=t_max&&v.common.time<=t{
+                
+                (Some(v),None) if v.common.time>=t_min&&v.common.time<=t_max&&v.common.time<=t =>{{
                         t=v.common.time;
                         ans=Some(v);
                     }
                 },
-                (Some(v),Some(item))=>{
-                    if v.common.time>=t_min&&v.common.time<=t_max&&v.common.time<=t{
+                (Some(v),Some(item)) if v.common.time>=t_min&&v.common.time<=t_max&&v.common.time<=t =>{
                         t=v.common.time;
                         ans=Some(v)
-                    }
-                }
+                },
+                _ => continue
             }
         };
         ans

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "lldb",
+            "type": "cppdbg",
             "request": "launch",
             "name": "Debug executable 'ray_v2'",
             "cargo": {
@@ -20,26 +20,8 @@
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceRoot}/target/debug/ray_v2.exe"
         },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'ray_v2'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=ray_v2",
-                    "--package=ray_v2"
-                ],
-                "filter": {
-                    "name": "ray_v2",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        }
     ]
 }

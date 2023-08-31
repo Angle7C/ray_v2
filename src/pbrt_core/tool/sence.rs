@@ -29,13 +29,9 @@ unsafe impl<'a> Sync for Sence<'a> {}
 
 impl<'a> Sence<'a> {
     pub fn new(primitive: Vec<Box<dyn Primitive>>, light: Vec<Light>, camera: Camera) -> Self {
-        let bound = primitive
-            .iter()
-            .map(|ele| ele.world_bound())
-            .fold(Bound::<3>::default(), |a, b| a.merage(b));
-
-        let primitive = primitive.leak();
+        
         let light = light.leak();
+        let primitive = primitive.leak();
         //场景集合
         let mut geoemtry = primitive
             .iter()
@@ -46,6 +42,12 @@ impl<'a> Sence<'a> {
             .map(|item| GeometricePrimitive::new(item.get_shape()))
             .collect::<Vec<_>>();
         geoemtry.append(&mut geoemtry_light);
+        let bound = geoemtry
+            .iter()
+            .map(|ele| ele.world_bound())
+            .fold(Bound::<3>::default(), |a, b| a.merage(b));
+
+        
         let accel: BVH<'_> = BVH::new(geoemtry);
         let mut sence = Self {
             primitive: primitive,

@@ -139,17 +139,15 @@ impl Primitive for Triangle {
         } else {
             let (a, b, c) = (c, a, b);
             let p = p0 * a + p1 * b + p2 * c;
-
-            let normal = n0 * a + n1 * b + n2 * c;
+            let normal = (n0 * a + n1 * b + n2 * c).normalize();
             let uv = uv0 * a + uv1 * b + uv2 * c;
             let shading = self.compute_dnuv(normal.normalize());
-            
-            
+
             let  surface = (SurfaceInteraction::new(
                             p,
                             uv,
-                            ray.o.dir,
                             normal,
+                            -ray.o.dir,
                             shading.dpdu,
                             shading.dpdv,
                             shading.dndu,
