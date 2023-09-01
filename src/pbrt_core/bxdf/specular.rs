@@ -2,7 +2,6 @@ use glam::f64::DVec3;
 
 use super::{
     frensnel::Fresnel,
-    func::{face_forward, refract},
     BxDFAble, BxDFType, TransportMode,
 };
 //镜面反射

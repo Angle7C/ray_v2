@@ -9,7 +9,7 @@ use crate::pbrt_core::{
 };
 #[derive(Debug)]
 pub struct Rectangle {
-    obj_to_world: DMat4,
+   pub obj_to_world: DMat4,
     material: Option<Arc<dyn Material>>,
 }
 impl Rectangle {

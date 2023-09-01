@@ -5,7 +5,7 @@ use glam::{
     u32::UVec3,
     Mat4, Vec2, Vec3, Quat,
 };
-use gltf::{import, Attribute};
+use gltf::{import, Attribute, Buffer};
 
 use crate::pbrt_core::primitive::{
     mesh::Mesh,
@@ -18,13 +18,17 @@ pub struct GltfLoad;
 impl GltfLoad {
     pub fn load(path: &str) -> Vec<Box<dyn Primitive>> {
         let mut meshs = Arc::new(RefCell::new(Mesh::default()));
-        if let Ok((gltf, buffer, _images)) = import(path) {
+        if let Ok((gltf, buffer, images)) = import(path) {
             let mut shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
+            let get_buffer=|x:Buffer| Some(&*buffer[x.index()].0);
+            let get_image=|x:Buffer| Some(&images[x.index()]);
             let mut last_set: BTreeSet<u32>=BTreeSet::<u32>::new();
             let mut now_set=BTreeSet::<u32>::new();
             let mut size=0;
             let mut det=UVec3::ZERO;
+            
             for item in gltf.nodes() {
+                
                 let transform = match item.transform() {
                     gltf::scene::Transform::Matrix { matrix } => {
                         Mat4::from_cols_array_2d(&matrix).as_dmat4()
@@ -42,9 +46,11 @@ impl GltfLoad {
                 let mut index: Vec<UVec3> = vec![];
                 
                 if let Some(mesh)=item.mesh() {
+                
                     for primitive in mesh.primitives() {
+                        
                         let attribute = primitive.attributes();
-                        let reader = primitive.reader(|x| Some(&buffer[x.index()].0));
+                        let reader = primitive.reader(get_buffer);
                         index = reader
                             .read_indices()
                             .unwrap()

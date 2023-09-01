@@ -75,7 +75,7 @@ impl IntegratorAble for PathIntegrator {
                     beta *= f * w_in.dot(item.shading.n).abs();
                     ray = item.spawn_ray(&w_in);
                 }
-                beta / p;
+                beta=beta / p;
                 // return ans;
             } else {
                 return ans;

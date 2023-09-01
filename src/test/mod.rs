@@ -5,6 +5,7 @@ pub mod test{
     #[test]
     fn test_load(){
         log_init();
-        GltfLoad::load("./object/cube/box.gltf");
+        GltfLoad::load("./object/cube/yuans.gltf");
+        // khr_lights_punctual
     }
 }
