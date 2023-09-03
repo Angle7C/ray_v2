@@ -10,10 +10,13 @@ use self::sence::Sence;
 
 use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode, light::{Light, LightAble}};
 
+pub mod color;
 pub mod sence;
 pub mod setting;
 pub mod func;
 pub mod log;
+pub mod tile;
+pub mod film;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
@@ -165,102 +168,7 @@ impl Add<Bound<3>> for Bound<3> {
     }
 }
 
-/// 图片抽象
-///
-pub struct Film {
-    x_index: u32,
-    y_index: u32,
-    size: (u32, u32),
-    atom_count: AtomicU32,
-}
-unsafe impl Sync for Film {}
-unsafe impl Send for Film {}
-impl Film {
-    const BLOCK_SIZE: (u32, u32) = (32, 32);
-    pub fn new(size: UVec2) -> Self {
-        let (x_size, y_size) = (size.x, size.y);
-        let x_index = x_size / Self::BLOCK_SIZE.0
-            + if x_size % Self::BLOCK_SIZE.0 != 0 {
-                1
-            } else {
-                0
-            };
-        let y_index = y_size / Self::BLOCK_SIZE.1
-            + if y_size % Self::BLOCK_SIZE.1 != 0 {
-                1
-            } else {
-                0
-            };
 
-        Self {
-            x_index,
-            y_index,
-            size: (x_size, y_size),
-            atom_count: AtomicU32::new(0),
-        }
-    }
-    pub fn iter(&self) -> Option<FilmIter> {
-        let index = self
-            .atom_count
-            .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        if index >= self.x_index * self.y_index {
-            return None;
-        }
-        let x = index / self.x_index;
-        let y = index % self.y_index;
-
-        let mut left_up = (Self::BLOCK_SIZE.0 * x, Self::BLOCK_SIZE.1 * y);
-        let mut right_down = (Self::BLOCK_SIZE.0 * (x + 1), Self::BLOCK_SIZE.1 * (y + 1));
-        if right_down.1 > self.size.1 {
-            left_up.1 = self.size.1
-        }
-        if right_down.0 > self.size.0 {
-            right_down.0 = self.size.0
-        }
-        Some(FilmIter::new(
-            left_up,
-            right_down,
-            (right_down.0 - left_up.0, right_down.1 - right_down.1),
-        ))
-    }
-}
-pub struct FilmIter {
-    pub block_size: (u32, u32),
-    pub left_up: (u32, u32),
-    pub right_down: (u32, u32),
-    pub now: (u32, u32),
-}
-
-impl FilmIter {
-    pub fn new(left_up: (u32, u32), right_down: (u32, u32), block_size: (u32, u32)) -> Self {
-        Self {
-            left_up,
-            right_down,
-            block_size,
-            now: left_up,
-        }
-    }
-    pub fn size(&self) -> u64 {
-        let (a, b) = self.block_size;
-        (a * b) as u64
-    }
-}
-impl Iterator for FilmIter {
-    type Item = (f64, f64);
-    fn next(&mut self) -> Option<Self::Item> {
-        let (mut x, mut y) = self.now;
-        if y >= self.right_down.1 {
-            y = self.left_up.1;
-            x += 1;
-        };
-        if x >= self.right_down.0 {
-            None
-        } else {
-            self.now = (x, y + 1);
-            Some((x as f64, y as f64))
-        }
-    }
-}
 
 /// 求交集合
 #[derive(Default,Clone, Copy)]
