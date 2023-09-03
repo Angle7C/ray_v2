@@ -17,7 +17,6 @@ pub struct DiffuseAreaLight {
     lemit: DVec3,
     shape: Shape,
     area: f64,
-    obj_to_world:DMat4,
 }
 impl DiffuseAreaLight {
     pub fn new(lemit: DVec3, shape: Shape) -> Self {
@@ -25,7 +24,6 @@ impl DiffuseAreaLight {
             lemit,
             area: shape.agt_area(),
             shape,
-            obj_to_world:Default::default()
         }
     }
 }
@@ -69,9 +67,10 @@ impl LightAble for DiffuseAreaLight {
         unimplemented!()
     }
     fn le(&self,wi:DVec3)->DVec3 {
-        let w = self.obj_to_world.inverse().transform_vector3(wi);
-        let cos = w.dot(DVec3::Z).abs();
+        let w = self.shape.get_mat().inverse().transform_vector3(wi);
+        let cos = w.dot(DVec3::Z).clamp(0.0, 1.0);
         self.lemit*cos
+
     }
     fn pdf_li(&self,surface:&InteractionCommon,w_in:&DVec3)->f64 {
         self.shape.pdf(surface, w_in)

@@ -23,6 +23,7 @@ pub mod shape {
     pub enum Shape {
         Rect(Rectangle),
     }
+    
     impl Primitive for Shape {
         fn compute_scattering(
             &self,
@@ -63,6 +64,11 @@ pub mod shape {
         //对于在不同点采样的时，会存在不同pdf值
         pub fn pdf(&self, common: &InteractionCommon, wi: &DVec3) -> f64 {
             1.0 / self.agt_area()
+        }
+        pub fn get_mat(&self)->glam::DMat4{
+            match self {
+                Self::Rect(rect) => rect.obj_to_world
+            }
         }
     }
 }
