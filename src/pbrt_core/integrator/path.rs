@@ -57,7 +57,11 @@ impl IntegratorAble for PathIntegrator {
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 // return item.common.normal.abs();
-                ans += beta * item.le(ray.o.dir);
+                if item.light.is_some() {
+                    ans += beta * item.le(ray.o.dir);
+                    return ans;                    
+                }
+                
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样

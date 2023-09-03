@@ -105,7 +105,7 @@ impl<'a> Build<'a>{
     }
     pub fn render_debug(self){
         let path = Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::default(), self.setting.size)));
-        path.render_process_debug(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size,Sampler::default());
+        path.render_process_debug(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size);
     }
     pub fn build(path:&str)->Self{
         let buf = File::open(path).unwrap();
