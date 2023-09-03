@@ -11,45 +11,75 @@ pub mod frensnel;
 pub mod specular;
 //反射
 pub mod reflection;
+//溦表面模型
+pub mod microfacet;
+
+pub mod microfacet_distribution;
+//基本模型
 pub trait BxDFAble {
     //匹配BxDF类型
     fn match_type(&self, flag: u32) -> bool;
     //计算，从wi射入，到wo射出时，光线被反射了多少回去[Vec3::ZERO,Vec3::ONE]
     fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3;
     //根据采样点sample_point计算，从wi射入，到wo射出时，的双向分布函数值。
-    fn sample_f(&self, w_in: &mut DVec3, w_out: &DVec3, sample_point: DVec2,pdf:&mut f64) -> DVec3{
-        *w_in=cosine_sample_hemisphere(sample_point);
-        if w_out.z<0.0{w_in.z*=-1.0}
-        *pdf=Self::pdf(*w_out,*w_in);
-        return self.fi(w_in, &w_out)
+    fn sample_f(
+        &self,
+        w_in: &mut DVec3,
+        w_out: &DVec3,
+        sample_point: DVec2,
+        pdf: &mut f64,
+    ) -> DVec3 {
+        *w_in = cosine_sample_hemisphere(sample_point);
+        if w_out.z < 0.0 {
+            w_in.z *= -1.0
+        }
+        *pdf = Self::pdf(*w_out, *w_in);
+        return self.fi(w_in, &w_out);
     }
-    fn pdf(w_out:DVec3,w_in:DVec3)->f64{
-        if w_out.z*w_in.z>0.0 { w_in.z *FRAC_1_PI} else{0.0}
-    }
-    //根据采样点sample_point计算，从wi射入，到wo射出时的反射率
-    fn rho(&self, w_in:DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3;
-}
-pub enum BxDF {
-    LambertianReflection(LambertianReflection)
-}
-impl BxDF{
-    pub fn match_type(&self,flag:u32)->bool{
-        match &self {
-            Self::LambertianReflection(lambert)=>{
-                lambert.match_type(flag)
-            }
+    fn pdf(w_out: DVec3, w_in: DVec3) -> f64 {
+        if w_out.z * w_in.z > 0.0 {
+            w_in.z * FRAC_1_PI
+        } else {
+            0.0
         }
     }
-    pub fn f(&self,w_out:&DVec3,w_in:&mut DVec3)->DVec3{
-        match &self{
+    //根据采样点sample_point计算，从wi射入，到wo射出时的反射率
+    fn rho(&self, w_in: DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3;
+}
+
+
+// 溦表面模型
+pub trait MicrofacetDistribution:BxDFAble {
+    //返回指定法向量的微面的微分面积
+    fn d(&self,wh:&DVec3)->f64;
+    fn lamdba(&self,w:&DVec3)->f64;
+    fn g1(&self,w:&DVec3)->f64{
+        1.0/(1.0+self.lamdba(w))
+    }
+    fn g(&self,w_out:&DVec3,w_in:&DVec3)->f64{
+        1.0/(1.0+self.lamdba(w_out)+self.lamdba(w_in))
+    }
+    fn sample_wh(&self,w_out:&DVec3,w_in:&DVec3)->DVec3;
+    fn pdf(&self,w_out:&DVec3,wh:&DVec3)->f64;
+
+}
+pub enum BxDF {
+    LambertianReflection(LambertianReflection),
+}
+impl BxDF {
+    pub fn match_type(&self, flag: u32) -> bool {
+        match &self {
+            Self::LambertianReflection(lambert) => lambert.match_type(flag),
+        }
+    }
+    pub fn f(&self, w_out: &DVec3, w_in: &mut DVec3) -> DVec3 {
+        match &self {
             BxDF::LambertianReflection(lam) => lam.fi(w_in, w_out),
         }
     }
-    pub fn sample_f(&self,w_out:&DVec3,wi:&mut DVec3,u:DVec2,pdf:&mut f64)->DVec3{
+    pub fn sample_f(&self, w_out: &DVec3, wi: &mut DVec3, u: DVec2, pdf: &mut f64) -> DVec3 {
         match &self {
-            Self::LambertianReflection(lambert)=>{
-                lambert.sample_f(wi,w_out, u, pdf)
-            }
+            Self::LambertianReflection(lambert) => lambert.sample_f(wi, w_out, u, pdf),
         }
     }
 }
@@ -63,17 +93,17 @@ pub enum BxDFType {
     Specular = 16,
     All = 31,
 }
-#[derive(Debug,Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum TransportMode {
     Radiance,
     Importance,
 }
-impl PartialEq<TransportMode> for TransportMode{
+impl PartialEq<TransportMode> for TransportMode {
     fn eq(&self, other: &TransportMode) -> bool {
-        match (self,other){
+        match (self, other) {
             (TransportMode::Radiance, TransportMode::Radiance) => true,
             (TransportMode::Importance, TransportMode::Importance) => true,
-            _=>false
+            _ => false,
         }
     }
 }
@@ -95,8 +125,6 @@ impl From<BxDFType> for u32 {
     }
 }
 
-
-
 mod func {
     use glam::DVec3;
     //计算菲涅尔反射率，介电材料
@@ -104,6 +132,7 @@ mod func {
     //eta_t 出射折射率
     //cos_theta_i: 入射角
     #[allow(unused)]
+    #[inline]
     pub fn fr_dielectric(cos_theta_i: f64, eta_i: f64, eta_t: f64) -> f64 {
         let mut cos_theta_i = cos_theta_i.clamp(-1.0, 1.0);
         let entering = cos_theta_i > 0.0;
@@ -131,6 +160,7 @@ mod func {
     //cos_theta_i: 入射角
     //k: 吸收系数
     #[allow(unused)]
+    #[inline]
     pub fn fr_conductor(cos_theta_i: f64, eta_i: DVec3, eta_t: DVec3, k: DVec3) -> DVec3 {
         let not_clamped = cos_theta_i;
         let cos_theta_i = not_clamped.clamp(-1.0, 1.0);
@@ -156,13 +186,13 @@ mod func {
         (v * v) * (v * v) * v
     }
     #[allow(unused)]
-
+    #[inline]
     pub fn schlick_weight(cos_theta: f64) -> f64 {
         let m = (1.0 - cos_theta).clamp(0.0, 1.0);
         pow5(m)
     }
     #[allow(unused)]
-
+    #[inline]
     pub fn fr_schlick(r0: f64, cos_theta: f64) -> f64 {
         schlick_weight(cos_theta)
     }
@@ -184,11 +214,32 @@ mod func {
         *wt = (-(*wi) * eta) + *n * (eta * cos_theta_i - cos_theta_t);
         true
     }
-    pub fn face_forward(normal:DVec3,wo:DVec3)->DVec3{
-        if normal.dot(wo)>0.0{
+    #[inline]
+    pub fn face_forward(normal: DVec3, wo: DVec3) -> DVec3 {
+        if normal.dot(wo) > 0.0 {
             normal
-        }else {
+        } else {
             wo
         }
+    }
+    #[inline]
+    pub fn sin_theta(wi: &DVec3) -> f64 {
+        sin2_theta(wi).sqrt()
+    }
+    #[inline]
+    pub fn sin2_theta(wi: &DVec3) -> f64 {
+        (1.0 - wi.z).max(0.0)
+    }
+    #[inline]
+    pub fn cos_theta(wi: &DVec3) -> f64 {
+        let sin_theta = sin_theta(wi);
+        if sin_theta == 0.0 {
+            1.0
+        } else {
+            (wi.x / sin_theta).clamp(-1.0, 1.0)
+        }
+    }
+    pub fn cos2_theta(wi: &DVec3)->f64{
+        cos_theta(wi)*cos_theta(wi)
     }
 }

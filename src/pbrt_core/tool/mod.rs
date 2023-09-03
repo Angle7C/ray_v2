@@ -10,10 +10,12 @@ use self::sence::Sence;
 
 use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode, light::{Light, LightAble}};
 
+pub mod color;
 pub mod sence;
 pub mod setting;
 pub mod func;
 pub mod log;
+pub mod tile;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
