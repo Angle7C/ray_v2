@@ -5,7 +5,7 @@ use rand::Rng;
 
 use super::{bxdf::{BxDF, TransportMode, BxDFType}, tool::{SurfaceInteraction, func}, sampler::cosine_sample_hemisphere, texture::Texture};
 pub mod matte;
-
+pub mod mirror;
 pub mod disney;
 pub trait Material:Debug {
     fn compute_scattering_functions(&self,suface:&mut SurfaceInteraction,mode:TransportMode);

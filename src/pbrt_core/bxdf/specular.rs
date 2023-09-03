@@ -10,6 +10,7 @@ pub struct SpecularReflection {
     r: DVec3,
     frensnel: Fresnel,
 }
+
 impl BxDFAble for SpecularReflection {
     //对于任意一对（w_in,w_out）都是0
     fn fi(&self, _w_in: &glam::DVec3, _w_out: &glam::DVec3) -> glam::DVec3 {

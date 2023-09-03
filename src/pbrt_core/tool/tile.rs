@@ -1,6 +1,8 @@
-use glam::DVec3;
+use std::{fmt::Debug, path::Path};
+
+use glam::{DVec3, UVec2};
 use gltf::json::extensions::texture::Info;
-use image::{ImageBuffer, RgbImage, ImageFormat};
+use image::{codecs::hdr::Rgbe8Pixel, ImageBuffer, ImageFormat, Pixel, Rgb, RgbImage};
 use log::info;
 
 use super::color::Color;
@@ -10,25 +12,40 @@ use super::color::Color;
 /// 用于存储渲染数据
 pub struct Tile {
     buffer: Vec<Color>,
-    size: (usize, usize),
     index: usize,
 }
+unsafe impl Send for Tile {}
 pub struct Buffer {
     buffer: Vec<Color>,
     width: u32,
     height: u32,
 }
 impl Buffer {
-    pub fn new(size: (usize, usize)) -> Self {
+    pub fn new(size: UVec2) -> Self {
         Self {
             buffer: vec![],
-            width: size.0 as u32,
-            height: size.1 as u32,
+            width: size.x as u32,
+            height: size.y as u32,
         }
     }
-    pub fn write(&self,format:ImageFormat)->RgbImage{
-        let rbg_buffer = RgbImage::new(self.width, self.height);
-        
+    pub fn write(self, format: ImageFormat, ssp: f64, name:  impl AsRef<Path>) {
+        let mut rbg_buffer = RgbImage::new(self.width, self.height);
+        for (index, color) in self.buffer.into_iter().enumerate() {
+            let x = index as u32 / self.width;
+            let y = index as u32 % self.width;
+            rbg_buffer.put_pixel(x, y, Self::to_color(color, ssp))
+        }
+        rbg_buffer.save_with_format(name, ImageFormat::Jpeg);
+    }
+    pub fn to_color(color: Color, ssp: f64) -> Rgb<u8> {
+        let vec = (color / ssp).powf(0.5);
+        let rgb = vec * 255.0;
+        let color= Rgb([
+            rgb.x.clamp(0.0, 255.0) as u8,
+            rgb.y.clamp(0.0, 255.0) as u8,
+            rgb.z.clamp(0.0, 255.0) as u8,
+        ]);
+        color
     }
 }
 impl PartialEq for Tile {
@@ -48,18 +65,21 @@ impl Ord for Tile {
     }
 }
 impl Tile {
-    pub fn new(index: usize, size: (usize, usize)) -> Self {
+    pub fn new(index: usize) -> Self {
         Self {
             buffer: vec![],
             index,
-            size,
         }
     }
     pub fn push(&mut self, color: Color) {
         self.buffer.push(color);
     }
 }
-pub fn merage_tile(mut list: Vec<Tile>, size: (usize, usize)) -> Buffer {
+pub fn merage_tile(list: Vec<Vec<Tile>>, size: UVec2) -> Buffer {
+    let mut list = list
+        .into_iter()
+        .flat_map(|item| item.into_iter())
+        .collect::<Vec<_>>();
     list.sort();
     let mut buffer = Buffer::new(size);
     for (index, tile) in list.iter_mut().enumerate() {

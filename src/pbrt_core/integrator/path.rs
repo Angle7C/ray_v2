@@ -10,12 +10,9 @@ use std::{
 
 use crate::pbrt_core::{
     bxdf::BxDFType,
-    camera::{Camera, CameraSample},
-    integrator::to_color,
-    material::BSDF,
     primitive::Primitive,
     sampler::Sampler,
-    tool::{sence::Sence, Film, Ray, RayDiff},
+    tool::{sence::Sence, film, RayDiff},
 };
 
 use super::IntegratorAble;
@@ -60,7 +57,7 @@ impl IntegratorAble for PathIntegrator {
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 // return item.common.normal.abs();
-                ans += beta * item.le(-ray.o.dir);
+                ans += beta * item.le(ray.o.dir);
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
