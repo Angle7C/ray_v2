@@ -20,11 +20,11 @@ pub mod shape {
     pub mod shpere;
     pub mod triangle;
     #[derive(Debug)]
-    pub enum Shape {
-        Rect(Rectangle),
+    pub enum Shape<'a> {
+        Rect(Rectangle<'a>),
     }
     
-    impl Primitive for Shape {
+    impl<'a> Primitive for Shape<'a> {
         fn compute_scattering(
             &self,
             isct: &mut crate::pbrt_core::tool::SurfaceInteraction,
@@ -48,7 +48,7 @@ pub mod shape {
             }
         }
     }
-    impl Shape {
+    impl<'a> Shape<'a> {
         // 获得面积
         pub fn agt_area(&self) -> f64 {
             match self {

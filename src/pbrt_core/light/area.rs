@@ -13,13 +13,13 @@ pub trait AreaLight: LightAble+Primitive {
     fn get_shape(&self)->&Shape;
 }
 #[derive(Debug)]
-pub struct DiffuseAreaLight {
+pub struct DiffuseAreaLight<'a> {
     lemit: DVec3,
-    shape: Shape,
+    shape: Shape<'a>,
     area: f64,
 }
-impl DiffuseAreaLight {
-    pub fn new(lemit: DVec3, shape: Shape) -> Self {
+impl<'a> DiffuseAreaLight<'a> {
+    pub fn new(lemit: DVec3, shape: Shape<'a>) -> Self {
         Self {
             lemit,
             area: shape.agt_area(),
@@ -27,7 +27,7 @@ impl DiffuseAreaLight {
         }
     }
 }
-impl AreaLight for DiffuseAreaLight {
+impl<'a> AreaLight for DiffuseAreaLight<'a> {
     fn l(&self, surface: &InteractionCommon, w: &DVec3) -> DVec3 {
         if surface.normal.dot(*w) > 0.0 {
             self.lemit
@@ -39,7 +39,7 @@ impl AreaLight for DiffuseAreaLight {
         &self.shape
     }
 }
-impl LightAble for DiffuseAreaLight {
+impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn power(&self) -> DVec3 {
         return self.area * PI * self.lemit;
     }
@@ -76,7 +76,7 @@ impl LightAble for DiffuseAreaLight {
         self.shape.pdf(surface, w_in)
     }
 }
-impl Primitive for DiffuseAreaLight{
+impl<'a> Primitive for DiffuseAreaLight<'a>{
     fn world_bound(&self) -> Bound<3> {
         self.shape.world_bound()
     }

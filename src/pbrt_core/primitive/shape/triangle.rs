@@ -8,19 +8,19 @@ use crate::pbrt_core::{
     tool::{Bound, RayDiff, Shading, SurfaceInteraction}, bxdf::TransportMode, texture::constant::ConstantTexture,
 };
 #[derive(Debug)]
-pub struct Triangle {
+pub struct Triangle<'a> {
     index: [usize; 3],
     mesh: Arc<Mesh>,
     obj_to_world: DMat4,
-    materail: Option<Arc<dyn Material>>,
+    materail: Option<&'a dyn Material>,
 }
 #[allow(unused)]
-impl Triangle {
+impl<'a> Triangle<'a> {
     pub fn new(index: UVec3, mesh: Arc<Mesh>, obj_to_world: DMat4) -> Self {
         Self {
             index: [index.x as usize, index.y as usize, index.z as usize],
             mesh,
-            materail:Some(Arc::new(Matte::new(Arc::new(ConstantTexture::new(DVec3::splat(0.75)))))),
+            materail:None,
             obj_to_world,
         }
     }
@@ -99,7 +99,7 @@ impl Triangle {
         }
     }
 }
-impl Primitive for Triangle {
+impl<'a> Primitive for Triangle<'a> {
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let p0 = self.point(0);
         let p1 = self.point(1);

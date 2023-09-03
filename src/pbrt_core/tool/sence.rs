@@ -8,7 +8,7 @@ use crate::pbrt_core::{
     camera::Camera,
     light::{Light, LightAble},
     primitive::{self, bvh::BVH, Aggregate, GeometricePrimitive, ObjectType, Primitive},
-    sampler::Sampler,
+    sampler::Sampler, material::Material,
 };
 
 use super::{Bound, InteractionCommon, SurfaceInteraction, Visibility, Ray, RayDiff};
@@ -18,6 +18,7 @@ pub struct Sence<'a> {
     accel: Option<Box<dyn Aggregate>>,
     bound: Bound<3>,
     light: &'a [Light],
+    material:Vec<Box<dyn Material>>,
     pub camera: Camera,
 }
 impl<'a> Debug for Sence<'a> {
@@ -53,7 +54,8 @@ impl<'a> Sence<'a> {
             primitive: primitive,
             accel: Some(Box::new(accel)),
             bound,
-            light: light,
+            light,
+            material:vec![],
             camera,
         };
         sence

@@ -151,7 +151,7 @@ impl Parse for Light{
     }
 }
 
-impl Parse for Shape{
+impl<'a> Parse for Shape<'a>{
     fn parse(value:&Value)->Self {
         let mode = value["mode"].as_str().unwrap_or_else(||"");
         let shape=if mode.contains("rect"){

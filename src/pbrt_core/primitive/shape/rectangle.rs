@@ -8,15 +8,15 @@ use crate::pbrt_core::{
     tool::{Bound, SurfaceInteraction, InteractionCommon, setting::Parse},
 };
 #[derive(Debug)]
-pub struct Rectangle {
+pub struct Rectangle<'a> {
    pub obj_to_world: DMat4,
-    material: Option<Arc<dyn Material>>,
+    material: Option<&'a dyn Material>,
 }
-impl Rectangle {
-    pub fn new(obj_to_world: DMat4, material: Option<Arc<dyn Material>>) -> Self {
+impl<'a> Rectangle<'a> {
+    pub fn new(obj_to_world: DMat4, material: Option<&'a dyn Material>) -> Self {
         Self {
             obj_to_world,
-            material,
+            material
         }
     }
     pub fn get_area(&self) -> f64 {
@@ -33,7 +33,7 @@ impl Rectangle {
         commom
     }
 }
-impl Primitive for Rectangle {
+impl<'a> Primitive for Rectangle<'a> {
     fn compute_scattering(
         &self,
         isct: &mut crate::pbrt_core::tool::SurfaceInteraction,
@@ -82,7 +82,7 @@ impl Primitive for Rectangle {
         Bound::<3>::new(min, max)
     }
 }
-impl Parse for Rectangle{
+impl<'a> Parse for Rectangle<'a>{
     fn parse(value:&serde_json::Value)->Self {
         let t=DVec3::parse(&value["T"]);
         let s= DVec3::parse(&value["S"]);

@@ -17542,3 +17542,1055 @@
 
 [File] 2023-09-03 21:31:21 - INFO - ray_v2 - -------------------------------
 
+[File] 2023-09-03 22:02:16 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:03:24 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:04:08 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:2 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:1 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:4 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:0 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:5 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:3 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:6 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:8 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:7 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:10 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:11 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:9 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:12 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:13 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:14 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:15 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:16 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:18 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:17 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:19 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:20 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:22 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:21 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:23 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:25 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:24 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:26 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:27 渲染完成
+
+[File] 2023-09-03 22:04:52 - INFO - ray_v2::pbrt_core::integrator - index:28 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:29 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:30 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:32 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:31 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:33 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:34 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:35 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:36 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:37 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:38 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:40 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:39 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:41 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:43 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:42 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:46 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:45 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:44 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:47 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:48 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:50 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:49 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:52 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:51 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:53 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:54 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:55 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:57 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:56 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:58 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:60 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:59 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:61 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:63 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:62 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:66 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:64 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:65 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:67 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:68 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:69 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:70 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:72 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:71 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:74 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:73 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:75 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:77 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:76 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:78 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:79 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:80 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:82 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:81 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:84 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:83 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:85 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:86 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:87 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:88 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:89 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:90 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:91 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:92 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:93 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:95 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:94 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:96 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:98 渲染完成
+
+[File] 2023-09-03 22:04:53 - INFO - ray_v2::pbrt_core::integrator - index:99 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:97 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:100 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:101 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:104 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:106 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:103 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:102 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:105 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:107 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:108 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:109 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:110 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:112 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:111 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:113 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:116 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:114 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:115 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:117 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:118 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:119 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:120 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:121 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:124 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:122 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:123 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:126 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:125 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:127 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:131 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:130 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:128 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:129 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:133 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:132 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:134 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:136 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:135 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:137 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:138 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:140 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:139 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:141 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:143 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:145 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:142 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:144 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:146 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:147 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:148 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:150 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:149 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:152 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:151 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:153 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:155 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:154 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:156 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:158 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:159 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:160 渲染完成
+
+[File] 2023-09-03 22:04:54 - INFO - ray_v2::pbrt_core::integrator - index:157 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:161 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:162 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:163 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:164 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:165 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:166 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:167 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:168 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:169 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:170 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:171 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:172 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:174 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:173 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:175 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:176 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:177 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:178 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:179 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:180 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:181 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:182 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:183 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:185 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:184 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:186 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:187 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:188 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:189 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:190 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:192 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:191 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:193 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:194 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:196 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:195 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:197 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:201 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:199 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:202 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:198 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:200 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:203 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:205 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:206 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:207 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:204 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:208 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:209 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:210 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:211 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:212 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:213 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:214 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:215 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:218 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:216 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:219 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:217 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:220 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:222 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:221 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:223 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:225 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:226 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:227 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:224 渲染完成
+
+[File] 2023-09-03 22:04:55 - INFO - ray_v2::pbrt_core::integrator - index:228 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:230 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:231 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:229 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:232 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:234 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:233 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:235 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:236 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:237 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:238 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:239 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:240 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:242 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:241 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:244 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:243 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:246 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:245 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:249 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:248 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:247 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:250 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:251 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:252 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:253 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:254 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:256 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:255 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:257 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:258 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:259 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:260 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:261 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:263 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:262 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:264 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:265 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:266 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:268 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:267 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:269 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:271 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:270 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:272 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:273 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:274 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:275 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:277 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:276 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:279 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:278 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:280 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:281 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:282 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:283 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:284 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:285 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:286 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:288 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:287 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:289 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:290 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:291 渲染完成
+
+[File] 2023-09-03 22:04:56 - INFO - ray_v2::pbrt_core::integrator - index:292 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:293 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:295 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:294 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:296 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:297 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:298 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:299 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:300 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:302 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:301 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:303 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:304 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:305 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:306 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:308 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:307 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:309 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:310 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:312 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:311 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:313 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:315 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:314 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:316 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:317 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:318 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:319 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:320 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:321 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:322 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:323 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:325 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:324 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:327 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:326 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:328 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:329 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:330 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:331 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:332 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:333 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:334 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:335 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:336 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:337 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:339 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:341 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:338 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:340 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:343 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:344 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:342 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:347 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:345 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:346 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:348 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:350 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:349 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:351 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:352 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:353 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:354 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:355 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:357 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:358 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:356 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:359 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:360 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:361 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:362 渲染完成
+
+[File] 2023-09-03 22:04:57 - INFO - ray_v2::pbrt_core::integrator - index:363 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:364 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:365 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:366 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:368 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:369 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:367 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:370 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:371 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:374 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:372 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:373 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:376 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:375 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:377 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:379 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:380 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:378 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:381 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:382 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:383 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:384 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:388 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:385 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:387 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:386 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:390 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:389 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:391 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:394 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:393 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:392 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:395 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:397 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:396 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:398 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:400 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:399 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:401 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:402 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:404 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:403 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:406 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:405 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:407 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:408 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:410 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:409 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:411 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:413 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:414 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:412 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:415 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:417 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:416 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:418 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:419 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:421 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:420 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:422 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:423 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:424 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:425 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:426 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:427 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:428 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:430 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:429 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:431 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:432 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:433 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:434 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:435 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:437 渲染完成
+
+[File] 2023-09-03 22:04:58 - INFO - ray_v2::pbrt_core::integrator - index:438 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:436 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:440 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:441 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:443 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:439 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:442 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:444 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:446 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:445 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:447 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:449 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:448 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:451 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:450 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:453 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:452 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:454 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:455 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:456 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:457 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:458 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:461 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:459 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:460 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:462 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:463 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:464 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:465 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:468 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:466 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:467 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:470 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:469 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:471 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:472 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:473 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:474 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:475 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:476 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:477 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:478 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:479 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:481 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:480 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:482 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:483 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:485 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:484 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:486 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:488 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:487 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:489 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:490 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:491 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:492 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:493 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:494 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:495 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:496 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:497 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:498 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:499 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:500 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:502 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:501 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:503 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:504 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:505 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:506 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:507 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:508 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:509 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - index:510 渲染完成
+
+[File] 2023-09-03 22:04:59 - INFO - ray_v2::pbrt_core::integrator - 渲染耗时:7.461498 s
+
+[File] 2023-09-03 22:05:36 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:30:05 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:31:56 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:33:04 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:33:29 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:37:24 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:37:55 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:38:27 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:39:28 - INFO - ray_v2 - ******************************
+
+[File] 2023-09-03 22:39:53 - INFO - ray_v2 - ******************************
+

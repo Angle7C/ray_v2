@@ -16,28 +16,32 @@ use crate::pbrt_core::primitive::{
     shape::{shpere, triangle::Triangle, Shape},
 };
 
-use super::primitive::{shape, Primitive};
+use super::{
+    material::Material,
+    primitive::{shape, Primitive},
+    texture::mipmap::{MipMap, ImageData},
+};
 
 pub struct GltfLoad;
 impl GltfLoad {
     pub fn load(path: &str) -> Vec<Box<dyn Primitive>> {
-        let mut meshs = Arc::new(Mesh::default());
+        let mut mip_map = HashMap::<usize, MipMap>::new();
         if let Ok((gltf, buffer, images)) = import(path) {
+            //mesh几何
             let mut shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
+            //获取指定buffer
             let get_buffer = |x: Buffer| Some(&*buffer[x.index()].0);
+            //获取指定image
             let get_image = |x: Buffer| Some(&images[x.index()]);
-            let mut last_set: BTreeSet<u32> = BTreeSet::<u32>::new();
-            let mut now_set = BTreeSet::<u32>::new();
-            let mut size = 0;
-            let mut det = UVec3::ZERO;
             let mut transform_map = HashMap::<usize, DMat4>::new();
             let mut index_map = HashMap::<usize, Vec<UVec3>>::new();
             let mut point_map = HashMap::<usize, Vec<DVec3>>::new();
             let mut normal_map = HashMap::<usize, Vec<DVec3>>::new();
             let mut uv_map = HashMap::<usize, Vec<DVec2>>::new();
             let mut nodes: usize = 0;
-
-
+            for i in gltf.images(){
+                mip_map.insert(i.index(), MipMap::new(ImageData::new(&images[i.index()])));
+            };
             for (i, item) in gltf.nodes().enumerate() {
                 let transform = match item.transform() {
                     gltf::scene::Transform::Matrix { matrix } => {
@@ -54,6 +58,7 @@ impl GltfLoad {
                     )
                     .as_dmat4(),
                 };
+
                 transform_map.insert(i, transform);
                 let mut point = vec![];
                 let mut normal = vec![];
@@ -62,6 +67,8 @@ impl GltfLoad {
 
                 if let Some(mesh) = item.mesh() {
                     for primitive in mesh.primitives() {
+                        let material = primitive.material();
+                        let metallic_rouhness = material.pbr_metallic_roughness();
                         let attribute = primitive.attributes();
                         let reader = primitive.reader(get_buffer);
                         index = reader
@@ -88,7 +95,7 @@ impl GltfLoad {
                                         .map(|x| Vec3::from_array(x).as_dvec3())
                                         .collect::<Vec<_>>();
                                 }
-                                gltf::Semantic::Tangents => todo!(),
+                                gltf::Semantic::Tangents => {},
                                 gltf::Semantic::Colors(color) => {}
                                 gltf::Semantic::TexCoords(coords) => {
                                     uv = reader
@@ -110,26 +117,30 @@ impl GltfLoad {
                 point_map.insert(i, point);
                 nodes += 1;
             }
-            let mut all_point=vec![];
-            let mut all_normal=vec![];
-            let mut all_uv=vec![];
-            let mut det_point=vec![UVec3::ZERO];
+            let mut all_point = vec![];
+            let mut all_normal = vec![];
+            let mut all_uv = vec![];
+            let mut det_point = vec![UVec3::ZERO];
             for i in 0..nodes {
                 let point = point_map.get_mut(&i).unwrap();
-                let normal=normal_map.get_mut(&i).unwrap();
-                let uv=uv_map.get_mut(&i).unwrap();
-                det_point.push(det_point[i]+UVec3::splat(point.len() as u32));
+                let normal = normal_map.get_mut(&i).unwrap();
+                let uv = uv_map.get_mut(&i).unwrap();
+                det_point.push(det_point[i] + UVec3::splat(point.len() as u32));
                 all_point.append(point);
                 all_normal.append(normal);
                 all_uv.append(uv);
             }
-            let mesh=Arc::new(Mesh::new(all_point,all_normal,all_uv,vec![]));
+            let mesh = Arc::new(Mesh::new(all_point, all_normal, all_uv, vec![]));
             for i in 0..nodes {
                 let index = index_map.get(&i).unwrap();
-                let det_index=det_point[i];
-                let transform=transform_map.get(&i).unwrap();
+                let det_index = det_point[i];
+                let transform = transform_map.get(&i).unwrap();
                 for i in index {
-                    shape.push(Box::new(Triangle::new(*i+det_index,mesh.clone(),*transform)));
+                    shape.push(Box::new(Triangle::new(
+                        *i + det_index,
+                        mesh.clone(),
+                        *transform,
+                    )));
                 }
             }
 

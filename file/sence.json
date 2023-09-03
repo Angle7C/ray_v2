@@ -8,7 +8,7 @@
     "sample_num": 16,
     "name": "test",
     "inter_mode":"path",
-    "path": "./object/box.glb"
+    "path": "./object/cube/cube.gltf"
   },
   "camera": {
     "eye": {
