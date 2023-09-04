@@ -21,10 +21,4 @@ impl Mesh{
     {
         self.material.push(material)
     }
-    pub fn add_message(&mut self,point:&mut Vec<DVec3>,normal:&mut Vec<DVec3>,uv:&mut Vec<DVec2>,tangents:&mut Vec<DVec4>){
-        self.uv.append(uv);
-        self.point.append(point);
-        self.normal.append(normal);
-        self.tangents.append(tangents)
-    }
 }

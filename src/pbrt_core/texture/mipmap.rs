@@ -5,7 +5,7 @@ use std::{
 
 use glam::{u32::UVec2, DVec2, DVec3, DVec4};
 use gltf::image::Data;
-use image::ImageBuffer;
+use image::{ImageBuffer, DynamicImage};
 use log::error;
 #[derive(Default)]
 pub struct MipMap {
@@ -19,6 +19,24 @@ pub struct ImageData {
     height: usize,
     pixels: Vec<Pixel>,
 }
+impl ImageData{
+    pub fn new(data:&Data)->Self{
+        match data.format {
+            gltf::image::Format::R8 => todo!(),
+            gltf::image::Format::R8G8 => todo!(),
+            gltf::image::Format::R8G8B8 => todo!(),
+            gltf::image::Format::R8G8B8A8 => todo!(),
+            gltf::image::Format::R16 => todo!(),
+            gltf::image::Format::R16G16 => todo!(),
+            gltf::image::Format::R16G16B16 => todo!(),
+            gltf::image::Format::R16G16B16A16 => todo!(),
+            gltf::image::Format::R32G32B32FLOAT => todo!(),
+            gltf::image::Format::R32G32B32A32FLOAT => todo!(),
+        }
+    }
+}
+
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Level {
     x: usize,

@@ -2,7 +2,7 @@ use std::{sync::mpsc::{self, Sender, Receiver}, thread::{self, Scope},  path::Pa
 
 use glam::{f64::DVec3, UVec2};
 use image::{Rgb, RgbImage};
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, MultiProgress, ProgressStyle};
 use log::info;
 
 
@@ -40,15 +40,22 @@ impl Integrator{
         let film = Film::new(size);
         let camera = sence.camera;
         let t1=Instant::now();
+        let (m,style) = pbr();
+        let len=size.x/(core_num*2) as u32;
+
         thread::scope(|scope| {
             for _ in 0..core_num {
-                scope.spawn(self.render_core(&film, &camera, sender.clone(), sence, sampler.clone()));
+                let pb=m.add(ProgressBar::new(len as u64));
+                pb.set_style(style.clone());
+                scope.spawn(self.render_core(&film, &camera, sender.clone(), sence, sampler.clone(),pb));
             }
             drop(sender);
         });
         let t2=Instant::now();
+
         info!("渲染耗时:{} s",t2.sub(t1).as_secs_f32());
-        Self::output(receiver, size, name, sampler.num)
+        Self::output(receiver, size, name, sampler.num);
+        m.clear().unwrap();
     }
     fn render_core<'a, 'b>(
         &'b self,
@@ -57,11 +64,12 @@ impl Integrator{
         send: Sender<Vec<Tile>>,
         sence: &'a Sence,
         mut sampler:Sampler,
+        pb:ProgressBar,
     ) -> impl FnOnce() + 'a where 'b: 'a,
     {
         move || {
             let n = sampler.num;
-            let mut sampler = sampler.clone();
+            // let mut sampler = sampler.clone();
             let mut tiles:Vec<Tile>=vec![];
             while let Some(item) = film.iter() {
                 let index=item.index;
@@ -75,9 +83,11 @@ impl Integrator{
                     }
                     tile.push(color);
                 }
+                pb.inc(1);
                 info!("index:{} 渲染完成",index);
                 tiles.push(tile);
             }
+            pb.finish();
             send.send(tiles).expect("send 失败");
         }
     }
@@ -96,12 +106,12 @@ impl Integrator{
         buffer.write(image::ImageFormat::Jpeg, num as f64, path);
     }
 
-    pub fn render_process_debug(self, name: &str, num: u64, sence: &Sence,size:UVec2,sampler:Sampler) {
+    pub fn render_process_debug(self, name: &str, num: u64, sence: &Sence,size:UVec2) {
         let (sender, receiver) = mpsc::channel::<(u64, u64, DVec3)>();
         let film = Film::new(size);
         let bar_size =size.x * size.y;
-        let n = sampler.num;
-        let mut sampler = sampler.clone();
+        let n = 1;
+        let mut sampler = Sampler::default();
         let camera = sence.camera;
         let mut bar = ProgressBar::new(bar_size as u64);
         let mut image = RgbImage::new(size.x, size.y);
@@ -136,4 +146,13 @@ pub fn to_color(color:DVec3,ssp:f64)->Rgb<u8>{
             rgb.z.clamp(0.0, 255.0) as u8,
         ]);
         color
+}
+
+pub fn pbr()->(MultiProgress,ProgressStyle){
+    let m=MultiProgress::new();
+    let sty=ProgressStyle::with_template(
+        "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}"
+    ).unwrap().progress_chars("##-");
+    (m,sty)
+    
 }

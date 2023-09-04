@@ -8,22 +8,18 @@ use log4rs::{
 
 pub fn log_init() {
     let logfile = FileAppender::builder()
-        
         .encoder(Box::new(PatternEncoder::new(
             "[File] {d(%Y-%m-%d %H:%M:%S)} - {l} - {t} - {m}{n}\n",
         )))
-        
         .build("log/output.log")
         .unwrap();
-    let stdout = ConsoleAppender::builder()
-        .encoder(Box::new(PatternEncoder::new(
-            "[Console] {d} - {l} -{t} - {m}{n}\n",
-        )))
-        .build();
     let config = Config::builder()
-        .appender(Appender::builder().build("stdout", Box::new(stdout)))
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(Root::builder().appender("logfile").build(LevelFilter::Info))
+        .build(
+            Root::builder()
+                .appender("logfile")
+                .build(LevelFilter::Info),
+        )
         .unwrap();
 
     log4rs::init_config(config).unwrap();

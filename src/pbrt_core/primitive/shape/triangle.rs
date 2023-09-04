@@ -3,24 +3,24 @@ use std::{sync::Arc, cell::RefCell};
 use glam::{f64::{DMat4, DVec2, DVec3},u32::UVec3};
 
 use crate::pbrt_core::{
-    material::{Material, matte::Matte},
+    material::{Material, matte::Matte, mirror::Mirror},
     primitive::{mesh::Mesh, Primitive},
     tool::{Bound, RayDiff, Shading, SurfaceInteraction}, bxdf::TransportMode, texture::constant::ConstantTexture,
 };
 #[derive(Debug)]
-pub struct Triangle {
+pub struct Triangle<'a> {
     index: [usize; 3],
-    mesh: Arc<RefCell<Mesh>>,
+    mesh: Arc<Mesh>,
     obj_to_world: DMat4,
-    materail: Option<Arc<dyn Material>>,
+    materail: Option<&'a dyn Material>,
 }
 #[allow(unused)]
-impl Triangle {
-    pub fn new(index: UVec3, mesh: Arc<RefCell<Mesh>>, obj_to_world: DMat4) -> Self {
+impl<'a> Triangle<'a> {
+    pub fn new(index: UVec3, mesh: Arc<Mesh>, obj_to_world: DMat4) -> Self {
         Self {
             index: [index.x as usize, index.y as usize, index.z as usize],
             mesh,
-            materail:Some(Arc::new(Matte::new(Arc::new(ConstantTexture::new(DVec3::splat(0.75)))))),
+            materail:None,
             obj_to_world,
         }
     }
@@ -70,21 +70,20 @@ impl Triangle {
     }
     pub fn point(&self, i: u32) -> DVec3 {
         self.obj_to_world
-            .transform_point3(self.mesh.borrow().point[self.index[i as usize]])
-        // let mat:DDMat4=Into::<DMat4>::from(self.obj_to_world.m);
+            .transform_point3(self.mesh.point[self.index[i as usize]])
     }
     pub fn normal(&self, i: u32) -> DVec3 {
-        if self.mesh.borrow().normal.is_empty() {
+        if self.mesh.normal.is_empty() {
             DVec3::ZERO
         } else {
             self.obj_to_world
                 .inverse()
                 .transpose()
-                .transform_vector3(self.mesh.borrow().normal[self.index[i as usize]])
+                .transform_vector3(self.mesh.normal[self.index[i as usize]])
         }
     }
     pub fn tangent(&self, i: u32) -> DVec3 {
-        if self.mesh.borrow().normal.is_empty() {
+        if self.mesh.normal.is_empty() {
             DVec3::ZERO
         } else {
             // self.mesh.tangent[self.index[i as usize]]
@@ -92,16 +91,15 @@ impl Triangle {
         }
     }
     pub fn uv(&self, i: u32) -> DVec2 {
-        if self.mesh.borrow().normal.is_empty() {
+        if self.mesh.normal.is_empty() {
             DVec2::ZERO
         } else {
-            // self.mesh.borrow().uv[self.index[i as usize]]
-            DVec2::ZERO
+            self.mesh.uv[self.index[i as usize]]
         
         }
     }
 }
-impl Primitive for Triangle {
+impl<'a> Primitive for Triangle<'a> {
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let p0 = self.point(0);
         let p1 = self.point(1);

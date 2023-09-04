@@ -1,8 +1,10 @@
+use std::ops::Mul;
+
 use glam::f64::DVec3;
 
 use super::{
     frensnel::Fresnel,
-    BxDFAble, BxDFType, TransportMode,
+    BxDFAble, BxDFType, TransportMode, func::cos_theta,
 };
 //镜面反射
 pub struct SpecularReflection {
@@ -10,7 +12,11 @@ pub struct SpecularReflection {
     r: DVec3,
     frensnel: Fresnel,
 }
-
+impl SpecularReflection{
+    pub fn new(r:DVec3,frensnel:Fresnel)->Self{
+        Self { r, frensnel }
+    }
+}
 impl BxDFAble for SpecularReflection {
     //对于任意一对（w_in,w_out）都是0
     fn fi(&self, _w_in: &glam::DVec3, _w_out: &glam::DVec3) -> glam::DVec3 {
@@ -29,15 +35,19 @@ impl BxDFAble for SpecularReflection {
     ) -> glam::DVec3 {
         DVec3::ZERO
     }
-    // fn sample_fi(
-    //     &self,
-    //     w_in: &mut DVec3,
-    //     _w_out: glam::DVec3,
-    //     _sample_point: glam::DVec2,
-    // ) -> glam::DVec3 {
-    //     let cos_theta_i = w_in.z;
-    //     self.frensnel.evaluate(cos_theta_i) / w_in.z.abs()
-    // }
+    fn sample_f(
+            &self,
+            w_in: &mut DVec3,
+            w_out: &DVec3,
+            sample_point: glam::DVec2,
+            pdf: &mut f64,
+        ) -> DVec3 {
+        *w_in=w_out.mul(DVec3::new(-1.0, -1.0, 1.0));
+        *pdf=1.0;
+        let cos_i=cos_theta(&w_in);
+        self.frensnel.evaluate(cos_i)*self.r/cos_theta(&w_in).abs()
+
+    }
 }
 //镜面透射
 pub struct SpecularTransmission {
