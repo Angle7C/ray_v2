@@ -8,6 +8,7 @@ pub mod scale;
 pub mod mix;
 pub mod bilinear;
 pub mod mipmap;
+pub mod image;
 pub trait Texture<T:Copy>:Debug {
     fn  evaluate(&self,inter:&InteractionCommon)->T;
 }

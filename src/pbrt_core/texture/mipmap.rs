@@ -1,41 +1,54 @@
 use std::{
     collections::{BTreeMap, HashMap},
-    ops::{Add, Deref, DerefMut, Div},
+    ops::{Add, Deref, DerefMut, Div}, fmt::Debug,
 };
 
 use glam::{u32::UVec2, DVec2, DVec3, DVec4};
 use gltf::image::Data;
-use image::{ImageBuffer, DynamicImage};
+use image::{DynamicImage, ImageBuffer};
 use log::error;
-#[derive(Default)]
+#[derive(Default,Clone)]
 pub struct MipMap {
     //图像大小
     resolution: UVec2,
 
     mapping: HashMap<Level, Vec<Pixel>>,
 }
+impl Debug for MipMap{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        unimplemented!()
+    }
+}
 pub struct ImageData {
-    width: usize,
-    height: usize,
+    width: u32,
+    height: u32,
     pixels: Vec<Pixel>,
 }
-impl ImageData{
-    pub fn new(data:&Data)->Self{
+impl ImageData {
+    pub fn new(data: &Data) -> Self {
+        let mut vec = vec![];
         match data.format {
-            gltf::image::Format::R8 => todo!(),
-            gltf::image::Format::R8G8 => todo!(),
-            gltf::image::Format::R8G8B8 => todo!(),
-            gltf::image::Format::R8G8B8A8 => todo!(),
-            gltf::image::Format::R16 => todo!(),
-            gltf::image::Format::R16G16 => todo!(),
-            gltf::image::Format::R16G16B16 => todo!(),
-            gltf::image::Format::R16G16B16A16 => todo!(),
-            gltf::image::Format::R32G32B32FLOAT => todo!(),
-            gltf::image::Format::R32G32B32A32FLOAT => todo!(),
+            gltf::image::Format::R8G8B8A8 => {
+                for item in data.pixels.chunks(4) {
+                    let pixel = Pixel::from_sclie(item);
+                    vec.push(pixel);
+                }
+            },
+            gltf::image::Format::R8G8B8=>{
+                for item in data.pixels.chunks(3) {
+                    let pixel = Pixel::from_sclie(item);
+                    vec.push(pixel);
+                }
+            }
+           _=>unimplemented!("尚未实现该ImageFormat格式"),
+        };
+        Self {
+            width: data.width,
+            height: data.height,
+            pixels: vec,
         }
     }
 }
-
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Level {
@@ -49,7 +62,16 @@ struct Pixel {
     z: f64,
     w: f64,
 }
-impl Pixel {}
+impl Pixel {
+    pub fn from_sclie(array: &[u8]) -> Self {
+        Self {
+            x: array[0] as f64,
+            y: array[1] as f64,
+            z: array[2] as f64,
+            w: 255.0,
+        }
+    }
+}
 impl Add for Pixel {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
@@ -121,7 +143,7 @@ impl MipMap {
             let last=Level { x: i, y: i };
             for j in i+1..h_level {
                 //层数
-                let level = Level { x: i, y: j };
+                let level = Level { x: i, y: i };
                 data.insert(
                     level,
                     //依据上一层生成下一层和左右两边不规则层数。
@@ -135,7 +157,7 @@ impl MipMap {
                     //依据上一层生成下一层和左右两边不规则层数。
                     Self::build_floor(data.get(&last).unwrap(), w >> i, h >> k),
                 );
-            }
+            // }
         }
         mipmap.mapping = data;
         mipmap
@@ -161,15 +183,15 @@ impl MipMap {
             value.truncate()
         }
     }
-    fn build_floor(data: &Vec<Pixel>, w: usize, h: usize) -> Vec<Pixel> {
-        let len = w / 2 * h / 2;
+    fn build_floor(data: &Vec<Pixel>, w: u32, h: u32) -> Vec<Pixel> {
+        let len = (w  * h ) as usize;
         let mut pixel: Vec<Pixel> = Vec::with_capacity(len);
         unsafe { pixel.set_len(len) }
         for i in 0..len {
             let left_up = i * 2;
             let right_up = i * 2 + 1;
-            let left_bottom = i * 2 + w;
-            let right_bottom = i * 2 + w + 1;
+            let left_bottom = i * 2 + w as usize;
+            let right_bottom =left_bottom+1;
             let (a, b, c, d) = (
                 data.get(left_up),
                 data.get(right_up),
@@ -181,7 +203,8 @@ impl MipMap {
                     let target = (*a + *b + *c + *d) / 4.0;
                     pixel.insert(i, target);
                 }
-                _ => unimplemented!("无法获取到指定像素"),
+                (None,None,None,None) => continue,
+                _=>unimplemented!("无法获取到指定像素"),
             }
         }
         pixel
