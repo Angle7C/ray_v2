@@ -116,15 +116,24 @@ impl MipMap {
         let h = image_data.height;
         data.insert(Level { x: 0, y: 0 }, image_data.pixels);
         //生成多级纹理
-        for i in 1..w_level {
-            let last = Level { x: i - 1, y: i - 1 };
-            for j in 1..h_level {
+        /// (0,0)->(0,1)->(1,0)->(1,1)
+        for i in 0..w_level {
+            let last=Level { x: i, y: i };
+            for j in i+1..h_level {
                 //层数
                 let level = Level { x: i, y: j };
                 data.insert(
                     level,
                     //依据上一层生成下一层和左右两边不规则层数。
-                    Self::build_floor(data.get(&last).unwrap(), w << i, h << j),
+                    Self::build_floor(data.get(&last).unwrap(), w >> i, h >> j),
+                );
+            }
+            for k in i+1..w_level{
+                let level=Level{x:k,y:i};
+                data.insert(
+                    level,
+                    //依据上一层生成下一层和左右两边不规则层数。
+                    Self::build_floor(data.get(&last).unwrap(), w >> i, h >> k),
                 );
             }
         }
