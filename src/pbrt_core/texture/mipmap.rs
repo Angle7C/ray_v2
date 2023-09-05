@@ -1,20 +1,21 @@
 use std::{
     collections::{BTreeMap, HashMap},
-    ops::{Add, Deref, DerefMut, Div}, fmt::Debug,
+    fmt::Debug,
+    ops::{Add, Deref, DerefMut, Div},
 };
 
 use glam::{u32::UVec2, DVec2, DVec3, DVec4};
 use gltf::image::Data;
 use image::{DynamicImage, ImageBuffer};
-use log::error;
-#[derive(Default,Clone)]
+use log::{error, info};
+#[derive(Default, Clone)]
 pub struct MipMap {
     //图像大小
     resolution: UVec2,
 
     mapping: HashMap<Level, Vec<Pixel>>,
 }
-impl Debug for MipMap{
+impl Debug for MipMap {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
@@ -33,14 +34,14 @@ impl ImageData {
                     let pixel = Pixel::from_sclie(item);
                     vec.push(pixel);
                 }
-            },
-            gltf::image::Format::R8G8B8=>{
+            }
+            gltf::image::Format::R8G8B8 => {
                 for item in data.pixels.chunks(3) {
                     let pixel = Pixel::from_sclie(item);
                     vec.push(pixel);
                 }
             }
-           _=>unimplemented!("尚未实现该ImageFormat格式"),
+            _ => unimplemented!("尚未实现该ImageFormat格式"),
         };
         Self {
             width: data.width,
@@ -140,24 +141,24 @@ impl MipMap {
         //生成多级纹理
         /// (0,0)->(0,1)->(1,0)->(1,1)
         for i in 0..w_level {
-            let last=Level { x: i, y: i };
-            for j in i+1..h_level {
+            let last = Level { x: i, y: i };
+            for j in i + 1..h_level {
                 //层数
-                let level = Level { x: i, y: i };
+                let level = Level { x: i, y: j };
                 data.insert(
                     level,
                     //依据上一层生成下一层和左右两边不规则层数。
                     Self::build_floor(data.get(&last).unwrap(), w >> i, h >> j),
                 );
             }
-            for k in i+1..w_level{
-                let level=Level{x:k,y:i};
+            for k in i + 1..w_level {
+                let level = Level { x: k, y: i };
                 data.insert(
                     level,
                     //依据上一层生成下一层和左右两边不规则层数。
                     Self::build_floor(data.get(&last).unwrap(), w >> i, h >> k),
                 );
-            // }
+            }
         }
         mipmap.mapping = data;
         mipmap
@@ -183,30 +184,34 @@ impl MipMap {
             value.truncate()
         }
     }
+
     fn build_floor(data: &Vec<Pixel>, w: u32, h: u32) -> Vec<Pixel> {
-        let len = (w  * h ) as usize;
-        let mut pixel: Vec<Pixel> = Vec::with_capacity(len);
-        unsafe { pixel.set_len(len) }
-        for i in 0..len {
-            let left_up = i * 2;
-            let right_up = i * 2 + 1;
-            let left_bottom = i * 2 + w as usize;
-            let right_bottom =left_bottom+1;
-            let (a, b, c, d) = (
-                data.get(left_up),
-                data.get(right_up),
-                data.get(left_bottom),
-                data.get(right_up),
-            );
-            match (a, b, c, d) {
-                (Some(a), Some(b), Some(c), Some(d)) => {
-                    let target = (*a + *b + *c + *d) / 4.0;
-                    pixel.insert(i, target);
+        let len = (w * h) as usize;
+        let mut pixel: Vec<Pixel> = Vec::with_capacity(10000);
+        // unsafe { pixel.set_len(len) }
+        for i in 0..w as usize {
+            for j in 0..h as usize {
+                let left_up = (i*2)+(j*2)*h as usize;
+                let right_up = left_up  + 1;
+                let left_bottom = (i*2)+(j*2+1)*h as usize;
+                let right_bottom = left_bottom +1;
+                let (a, b, c, d) = (
+                    data.get(left_up),
+                    data.get(right_up),
+                    data.get(left_bottom),
+                    data.get(right_up),
+                );
+                match (a, b, c, d) {
+                    (Some(a), Some(b), Some(c), Some(d)) => {
+                        let target = (*a + *b + *c + *d) / 4.0;
+                        pixel.insert(i, target);
+                    }
+                    (None, None, None, None) => continue,
+                    _ => unimplemented!("无法获取到指定像素 w:{},h{} {} {} {} {}",w,h,left_up,right_up,left_bottom,right_bottom),
                 }
-                (None,None,None,None) => continue,
-                _=>unimplemented!("无法获取到指定像素"),
             }
         }
+        // info!("w:{}h:{}")
         pixel
     }
 }
