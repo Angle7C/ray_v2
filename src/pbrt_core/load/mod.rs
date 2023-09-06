@@ -8,7 +8,7 @@ use std::{
 use glam::{
     f64::{DMat4, DVec2, DVec3},
     u32::UVec3,
-    DVec4, Mat4, Quat, Vec2, Vec3, Vec4,
+    DVec4, Mat4, Quat, Vec2, Vec3, Vec4, UVec4,
 };
 use gltf::{import, Attribute, Buffer};
 
@@ -37,7 +37,7 @@ impl GltfLoad {
                 mip_map.insert(i.index(), MipMap::new(ImageData::new(&images[i.index()])));
             }
             //材质映射
-            let mut material_map = HashMap::<usize, Box<dyn Material>>::new();
+            let mut material_map = HashMap::<usize, Arc<dyn Material>>::new();
             //mesh几何
             let mut shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
             //获取指定buffer
@@ -45,7 +45,7 @@ impl GltfLoad {
             //获取指定image
             let get_image = |x: Buffer| Some(&images[x.index()]);
             let mut transform_map = HashMap::<usize, DMat4>::new();
-            let mut index_map = HashMap::<usize, Vec<UVec3>>::new();
+            let mut index_map = HashMap::<usize, Vec<UVec4>>::new();
             let mut point_map = HashMap::<usize, Vec<DVec3>>::new();
             let mut normal_map = HashMap::<usize, Vec<DVec3>>::new();
             let mut uv_map = HashMap::<usize, Vec<DVec2>>::new();
@@ -72,7 +72,8 @@ impl GltfLoad {
                 let mut point = vec![];
                 let mut normal = vec![];
                 let mut uv = vec![];
-                let mut index: Vec<UVec3> = vec![];
+                let mut index = vec![];
+                let mut material_vec:Vec<&Box<dyn Material>>=vec![];
                 if let Some(mesh) = item.mesh() {
                     for primitive in mesh.primitives() {
                         let material = primitive.material();
@@ -86,22 +87,24 @@ impl GltfLoad {
                                 if let Some(base_color) = pbr_metallic.base_color_texture() {
                                     let base_color =
                                         mip_map.get(&base_color.texture().index()).unwrap();
-                                    let material = Box::new(Disney::new(Some(Box::new(
+                                    let material = Arc::new(Disney::new(Some(Box::new(
                                         ImageTexture::new(base_color.to_owned()),
                                     ))));
                                     material_map.insert(i, material);
                                 } else {
                                     let base_color = pbr_metallic.base_color_factor();
                                     let constant_texture = ConstantTexture::new(
-                                        Vec4::from_array(base_color).as_dvec4(),
+                                        Vec3::from_slice(&base_color).as_dvec3(),
                                     );
                                     let material =
-                                        Box::new(Disney::new(Some(Box::new(constant_texture))));
+                                        Arc::new(Disney::new(Some(Box::new(constant_texture))));
                                     material_map.insert(i, material);
                                 };
                                 material_map.get(&i).unwrap()
                             }
                         };
+                        // material.index();
+                        // material_vec.push(m);
                         let attribute = primitive.attributes();
                         let reader = primitive.reader(get_buffer);
                         index = reader
@@ -111,8 +114,11 @@ impl GltfLoad {
                             .collect::<Vec<_>>()
                             .chunks(3)
                             .map(|x| UVec3::from_slice(x))
+                            .map(|x|x.extend(material.index().unwrap() as u32))
                             .collect();
+
                         for (s, _) in primitive.attributes() {
+                            
                             match s {
                                 gltf::Semantic::Positions => {
                                     point = reader
@@ -143,6 +149,7 @@ impl GltfLoad {
                             }
                         }
                     }
+                    
                 };
                 index_map.insert(i, index);
                 normal_map.insert(i, normal);
@@ -163,19 +170,28 @@ impl GltfLoad {
                 all_normal.append(normal);
                 all_uv.append(uv);
             }
-            let mesh = Arc::new(Mesh::new(all_point, all_normal, all_uv, vec![]));
-            for i in 0..nodes {
-                let index = index_map.get(&i).unwrap();
-                let det_index = det_point[i];
-                let transform = transform_map.get(&i).unwrap();
-                for i in index {
-                    shape.push(Box::new(Triangle::new(
-                        *i + det_index,
-                        mesh.clone(),
-                        *transform,
-                    )));
+            // let material_slice=&material_map.iter().map(|(x,y)|y).collect::<Vec<_>>();
+            let material_vec= material_map.into_iter().map(|(x,y)|y).collect::<Vec<_>>();
+            let mesh = Arc::new(Mesh::new(all_point, all_normal, all_uv, vec![],material_vec.clone()));
+            {
+                let mesh_slice=mesh.clone();
+                for i in 0..nodes {
+                    let index = index_map.get(&i).unwrap();
+                    let det_index = det_point[i];
+                    let transform = transform_map.get(&i).unwrap();
+                    for i in index {
+                        let w=i.w as usize;
+                        let material= unsafe { material_vec.get_unchecked(w)};
+                        shape.push(Box::new(Triangle::new(
+                            i.truncate() + det_index,
+                            mesh.clone(),
+                            *transform,
+                            Some(material.clone()),
+                        )));
+                    }
                 }
             }
+           
             shape
         } else {
             vec![]

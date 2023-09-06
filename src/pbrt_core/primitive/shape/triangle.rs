@@ -8,19 +8,19 @@ use crate::pbrt_core::{
     tool::{Bound, RayDiff, Shading, SurfaceInteraction}, bxdf::TransportMode, texture::constant::ConstantTexture,
 };
 #[derive(Debug)]
-pub struct Triangle<'a> {
+pub struct Triangle {
     index: [usize; 3],
     mesh: Arc<Mesh>,
     obj_to_world: DMat4,
-    materail: Option<&'a dyn Material>,
+    materail: Option<Arc<dyn Material>>,
 }
 #[allow(unused)]
-impl<'a> Triangle<'a> {
-    pub fn new(index: UVec3, mesh: Arc<Mesh>, obj_to_world: DMat4) -> Self {
+impl Triangle {
+    pub fn new(index: UVec3, mesh: Arc<Mesh>, obj_to_world: DMat4,materail:Option<Arc<dyn Material>>) -> Self {
         Self {
             index: [index.x as usize, index.y as usize, index.z as usize],
             mesh,
-            materail:None,
+            materail:materail,
             obj_to_world,
         }
     }
@@ -91,15 +91,21 @@ impl<'a> Triangle<'a> {
         }
     }
     pub fn uv(&self, i: u32) -> DVec2 {
-        if self.mesh.normal.is_empty() {
+        if self.mesh.uv.is_empty() {
             DVec2::ZERO
         } else {
-            self.mesh.uv[self.index[i as usize]]
-        
+            let mut uv = self.mesh.uv[self.index[i as usize]];
+            if uv.x<0.0{
+                uv.x=uv.x.abs().floor();
+            };
+            if uv.y<0.0{
+                uv.y=uv.y.abs().floor();
+            };
+            uv
         }
     }
 }
-impl<'a> Primitive for Triangle<'a> {
+impl Primitive for Triangle {
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let p0 = self.point(0);
         let p1 = self.point(1);

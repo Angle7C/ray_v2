@@ -9,7 +9,7 @@ pub mod mix;
 pub mod bilinear;
 pub mod mipmap;
 pub mod image;
-pub trait Texture<T:Copy>:Debug {
+pub trait Texture<T>:Debug {
     fn  evaluate(&self,inter:&InteractionCommon)->T;
 }
 pub trait TextureMapping2D {
