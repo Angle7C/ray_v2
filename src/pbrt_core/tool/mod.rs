@@ -177,10 +177,11 @@ pub struct InteractionCommon {
     pub p: DVec3,
     pub normal: DVec3,
     pub time: f64,
+    pub uv:DVec2,
 }
 impl InteractionCommon{
-    pub fn new(w0:DVec3,p:DVec3,normal:DVec3,time:f64)->Self{
-        Self { w0, p, normal, time }
+    pub fn new(w0:DVec3,p:DVec3,normal:DVec3,time:f64,uv:DVec2)->Self{
+        Self { w0, p, normal, time,uv }
     }
 }
 #[derive(Default)]
@@ -217,7 +218,8 @@ impl<'a> SurfaceInteraction<'a> {
                 w0: w_out,
                 p: p,
                 normal: normal,
-                time: time
+                time: time,
+                uv,
             },
             uv,
             dpdu,

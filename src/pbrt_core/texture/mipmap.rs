@@ -140,74 +140,90 @@ impl MipMap {
         data.insert(Level { x: 0, y: 0 }, image_data.pixels);
         //生成多级纹理
         /// (0,0)->(0,1)->(1,0)->(1,1)
-        for i in 0..w_level {
-            let last = Level { x: i, y: i };
-            for j in i + 1..h_level {
-                //层数
-                let level = Level { x: i, y: j };
-                data.insert(
-                    level,
-                    //依据上一层生成下一层和左右两边不规则层数。
-                    Self::build_floor(data.get(&last).unwrap(), w >> i, h >> j),
-                );
-            }
-            for k in i + 1..w_level {
-                let level = Level { x: k, y: i };
-                data.insert(
-                    level,
-                    //依据上一层生成下一层和左右两边不规则层数。
-                    Self::build_floor(data.get(&last).unwrap(), w >> i, h >> k),
-                );
-            }
+        // for i in 0..w_level {
+        //     let last = Level { x: i, y: i };
+        //     for j in i + 1..h_level {
+        //         //层数
+        //         let level = Level { x: i, y: j };
+        //         data.insert(
+        //             level,
+        //             //依据上一层生成下一层和左右两边不规则层数。
+        //             Self::build_floor(data.get(&last).unwrap(), w >> i, h >> j),
+        //         );
+        //     }
+        //     for k in i + 1..w_level {
+        //         let level = Level { x: k, y: i };
+        //         data.insert(
+        //             level,
+        //             //依据上一层生成下一层和左右两边不规则层数。
+        //             Self::build_floor(data.get(&last).unwrap(), w >> i, h >> k),
+        //         );
+        //     }
+        for i in 1..w_level {
+            let last = Level { x: i - 1, y: i - 1 };
+            // for j in 1..h_level {
+            //层数
+            let level = Level { x: i, y: i };
+            data.insert(
+                level,
+                //依据上一层生成下一层和左右两边不规则层数。
+                Self::build_floor(data.get(&last).unwrap(), w >> i, h >> i),
+            );
+            // }
         }
         mipmap.mapping = data;
         mipmap
     }
-    fn lookup(&self, uv: DVec2, duvdx: DVec2, duvdy: DVec2) -> DVec3 {
-        let x_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
-        let y_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
+    pub fn lookup(&self, uv: DVec2, duvdx: DVec2, duvdy: DVec2) -> DVec3 {
+        // let x_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
+        // let y_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
         let level = Level {
-            x: x_level,
-            y: y_level,
+            x: 0,
+            y: 0,
         };
-        let default = vec![];
-        let pixel = self.mapping.get(&level).unwrap_or_else(|| {
-            error!("mipmap读取错误");
-            &default
-        });
-        if pixel.is_empty() {
-            DVec3::ZERO
-        } else {
-            let len = uv.x * (2 << x_level) as f64 * uv.y * (2 << y_level) as f64;
-            let pixel = pixel.get(len as usize).unwrap();
-            let value = DVec4::from(*pixel);
-            value.truncate()
-        }
+        let pixel = self.mapping.get(&level).unwrap();
+        let len = uv.x * self.resolution.x as f64 + uv.y * self.resolution.y as f64;
+        let pixel = pixel.get(len as usize).unwrap();
+        //  DVec4::from(*pixel).truncate()/255.0
+        return DVec3::X+DVec3::Y;
+        // let default = vec![];
+        // let pixel = self.mapping.get(&level).unwrap_or_else(|| {
+        //     error!("mipmap读取错误");
+        //     &default
+        // });
+        // if pixel.is_empty() {
+        //     DVec3::ZERO
+        // } else {
+        //     let len = uv.x * (2 << x_level) as f64 * uv.y * (2 << y_level) as f64;
+        //     let pixel = pixel.get(len as usize).unwrap();
+        //     let value = DVec4::from(*pixel);
+        //     value.truncate()
+        // }
+  
     }
 
     fn build_floor(data: &Vec<Pixel>, w: u32, h: u32) -> Vec<Pixel> {
         let len = (w * h) as usize;
-        let mut pixel: Vec<Pixel> = Vec::with_capacity(10000);
-        // unsafe { pixel.set_len(len) }
-        for i in 0..w as usize {
-            for j in 0..h as usize {
-                let left_up = (i*2)+(j*2)*h as usize;
-                let right_up = left_up  + 1;
-                let left_bottom = (i*2)+(j*2+1)*h as usize;
-                let right_bottom = left_bottom +1;
+        let mut pixel: Vec<Pixel> = Vec::with_capacity(len);
+        for i in 0..w {
+            for j in 0..h {
+                let left_up = (i*2)+(j*2)*h;
+                let right_up = left_up+1;
+                let left_bottom = ((i+1)*2)+(j*2)*h;
+                let right_bottom = left_bottom+1;
                 let (a, b, c, d) = (
-                    data.get(left_up),
-                    data.get(right_up),
-                    data.get(left_bottom),
-                    data.get(right_up),
+                    data.get(left_up as usize),
+                    data.get(right_up as usize),
+                    data.get(left_bottom as usize),
+                    data.get(right_up as usize),
                 );
                 match (a, b, c, d) {
                     (Some(a), Some(b), Some(c), Some(d)) => {
                         let target = (*a + *b + *c + *d) / 4.0;
-                        pixel.insert(i, target);
+                        pixel.push(target);
                     }
                     (None, None, None, None) => continue,
-                    _ => unimplemented!("无法获取到指定像素 w:{},h{} {} {} {} {}",w,h,left_up,right_up,left_bottom,right_bottom),
+                    _ => unimplemented!("无法获取到指定像素"),
                 }
             }
         }

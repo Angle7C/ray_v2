@@ -1,4 +1,5 @@
-use glam::DVec4;
+use glam::{DVec4, DVec2, DVec3};
+use log::info;
 
 use super::{mipmap::MipMap, Texture};
 #[derive(Default,Debug)]
@@ -11,8 +12,9 @@ impl ImageTexture{
     }
 }
 
-impl<T:Into<DVec4>+Copy> Texture<T> for ImageTexture{
-    fn  evaluate(&self,inter:&crate::pbrt_core::tool::InteractionCommon)->T {
-        todo!()
+impl Texture<DVec3> for ImageTexture{
+    fn evaluate(&self,inter:&crate::pbrt_core::tool::InteractionCommon)->DVec3 {
+       let value= self.mipmap.lookup(inter.uv, DVec2::ZERO, DVec2::ZERO);
+       value
     }
 }

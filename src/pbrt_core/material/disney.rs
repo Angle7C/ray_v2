@@ -2,13 +2,16 @@ use std::sync::Arc;
 
 use glam::{DVec3, DVec4};
 
-use crate::pbrt_core::texture::Texture;
+use crate::pbrt_core::{
+    bxdf::{reflection::LambertianReflection, BxDF},
+    texture::Texture,
+};
 
-use super::Material;
+use super::{Material, BSDF};
 
 #[derive(Debug)]
 pub struct Disney {
-    color: Option<Box<dyn Texture<DVec4>>>,
+    color: Option<Box<dyn Texture<DVec3>>>,
     metaillic: Option<Arc<dyn Texture<f64>>>,
     eta: Option<Arc<dyn Texture<f64>>>,
     roughness: Option<Arc<dyn Texture<f64>>>,
@@ -25,7 +28,7 @@ pub struct Disney {
     bump_map: Option<Arc<dyn Texture<f64>>>,
 }
 impl Disney {
-    pub fn new(color: Option<Box<dyn Texture<DVec4>>>) -> Self {
+    pub fn new(color: Option<Box<dyn Texture<DVec3>>>) -> Self {
         Self {
             color,
             metaillic: None,
@@ -51,6 +54,14 @@ impl Material for Disney {
         suface: &mut crate::pbrt_core::tool::SurfaceInteraction,
         mode: crate::pbrt_core::bxdf::TransportMode,
     ) {
+        if let Some(color) = &self.color {
+            let mut bsdf = BSDF::new(&suface, 1.0);
+            bsdf.bxdfs
+                .push(BxDF::LambertianReflection(LambertianReflection::new(
+                    color.evaluate(&suface.common),
+                )));
+            suface.bsdf = Some(bsdf)
+        }
     }
     fn bump(
         &self,

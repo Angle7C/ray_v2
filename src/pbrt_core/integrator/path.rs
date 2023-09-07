@@ -65,7 +65,7 @@ impl IntegratorAble for PathIntegrator {
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
-                    ans += beta * sence.uniform_sample_one_light(&item, sampler, false);
+                    ans +=  beta * sence.uniform_sample_one_light(&item, sampler, false);
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = DVec3::default();
@@ -73,7 +73,7 @@ impl IntegratorAble for PathIntegrator {
                     let mut flags: u32 = BxDFType::All as u32;
                     let f =
                         bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
-                    beta *= f * w_in.dot(item.shading.n).abs();
+                    beta *= f * w_in.dot(item.shading.n).abs()/pdf;
                     ray = item.spawn_ray(&w_in);
                 }
                 beta=beta / p;

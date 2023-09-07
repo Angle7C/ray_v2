@@ -14,11 +14,9 @@ pub struct Mesh{
 }
 
 impl Mesh{
-    pub fn new(point:Vec<DVec3>,normal:Vec<DVec3>,uv:Vec<DVec2>,tangents:Vec<DVec4>,)->Self{
-        Self { point, normal, uv, material: vec![],tangents }
+    pub fn new(point:Vec<DVec3>,normal:Vec<DVec3>,uv:Vec<DVec2>,tangents:Vec<DVec4>,material:Vec<Arc<dyn Material>>)->Self{
+        Self { point, normal, uv, material: material,tangents,}
     }
-    pub fn add_material(&mut self,material:Arc<dyn Material>)
-    {
-        self.material.push(material)
-    }
+    
+   
 }
