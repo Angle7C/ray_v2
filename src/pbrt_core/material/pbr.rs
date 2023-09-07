@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use glam::DVec3;
 
-use crate::pbrt_core::texture::Texture;
+use crate::pbrt_core::{texture::Texture, bxdf::{reflection::LambertianReflection, BxDF}, tool::SurfaceInteraction};
 
-use super::Material;
+use super::{Material, BSDF};
 #[derive(Debug)]
 pub struct PbrMaterial {
     //基本颜色
@@ -47,14 +47,28 @@ impl PbrMaterial {
 impl Material for PbrMaterial {
     fn bump(
         &self,
-        suface: &crate::pbrt_core::tool::SurfaceInteraction,
+        suface: & SurfaceInteraction,
         texture: &dyn Texture<f64>,
     ) {
+
     }
     fn compute_scattering_functions(
         &self,
         suface: &mut crate::pbrt_core::tool::SurfaceInteraction,
         mode: crate::pbrt_core::bxdf::TransportMode,
     ) {
+        let r = self
+        .base_color
+        .as_ref()
+        .unwrap()
+        .evaluate(&suface.common)
+        .clamp(DVec3::ZERO, DVec3::splat(f64::INFINITY));
+    suface.bsdf = Some(BSDF::new(&suface, 1.0));
+    if let Some(bsdf) = &mut suface.bsdf {
+        if r != DVec3::ZERO {
+            bsdf.bxdfs
+                .push(BxDF::LambertianReflection(LambertianReflection::new(r)))
+        }
+    }
     }
 }

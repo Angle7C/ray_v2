@@ -82,6 +82,7 @@ impl GltfLoad {
                         let m = {
                             let pbr_metallic = material.pbr_metallic_roughness();
                             let i = material.index().unwrap();
+                            Self::add_material(&material, &mip_map, &mut material_map);
                             if let Some(material) = material_map.get(&i) {
                                 material
                             } else {
@@ -204,17 +205,15 @@ impl GltfLoad {
     }
     pub fn add_material(
         material: &gltf::Material,
-        mip_map: HashMap<usize, MipMap>,
-        material_map: HashMap<usize, Box<dyn Material>>,
+        mip_map: &HashMap<usize, MipMap>,
+        material_map:&mut HashMap<usize, Arc<dyn Material>>,
     ) {
         if material_map.contains_key(&material.index().unwrap()){
             return;
         }
         //透明度，不做处理
         match material.alpha_mode() {
-            gltf::material::AlphaMode::Opaque => todo!(),
-            gltf::material::AlphaMode::Mask => todo!(),
-            gltf::material::AlphaMode::Blend => todo!(),
+            _=>(),
         }
         let _ = material.alpha_cutoff();
         //双面贴图
@@ -273,7 +272,7 @@ impl GltfLoad {
                     Vec3::splat(pbr.roughness_factor()).as_dvec3(),
                 ))
             };
-        let pbr_material = Box::new(PbrMaterial::new(Some(base_color), Some(metailc), Some(roughness), None, None, None));
+        let pbr_material = Arc::new(PbrMaterial::new(Some(base_color), Some(metailc), Some(roughness), None, None, None));
         material_map.insert(material.index().unwrap(), pbr_material);
     }
 }
