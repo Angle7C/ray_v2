@@ -66,10 +66,10 @@ struct Pixel {
 impl Pixel {
     pub fn from_sclie(array: &[u8]) -> Self {
         Self {
-            x: array[0] as f64,
-            y: array[1] as f64,
-            z: array[2] as f64,
-            w: 255.0,
+            x: array[0] as f64/255.0,
+            y: array[1] as f64/255.0,
+            z: array[2] as f64/255.0,
+            w: 255.0/255.0,
         }
     }
 }
@@ -184,8 +184,8 @@ impl MipMap {
         let pixel = self.mapping.get(&level).unwrap();
         let len = uv.x * self.resolution.x as f64 + uv.y * self.resolution.y as f64;
         let pixel = pixel.get(len as usize).unwrap();
-        //  DVec4::from(*pixel).truncate()/255.0
-        return DVec3::X+DVec3::Y;
+         DVec4::from(*pixel).truncate()
+        // return DVec3::X;
         // let default = vec![];
         // let pixel = self.mapping.get(&level).unwrap_or_else(|| {
         //     error!("mipmap读取错误");
@@ -227,7 +227,6 @@ impl MipMap {
                 }
             }
         }
-        // info!("w:{}h:{}")
         pixel
     }
 }

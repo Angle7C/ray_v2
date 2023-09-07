@@ -8,14 +8,15 @@ use log::info;
 
 use crate::pbrt_core::tool::tile::merage_tile;
 
-use self::path::PathIntegrator;
+use self::{path::PathIntegrator, direct::DirectIntegrator};
 
 use super::{tool::{sence::Sence, film::{self, Film}, RayDiff, tile::Tile, color::Color}, camera::{Camera, CameraSample}, sampler::Sampler};
 
 pub mod path;
 pub mod direct;
 pub enum Integrator{
-    Path(Box<PathIntegrator>)
+    Path(Box<PathIntegrator>),
+    Direct(Box<DirectIntegrator>)
 }
 pub trait IntegratorAble{
     fn is_next(&self, dept: &mut usize) -> Option<f64>;
@@ -24,13 +25,15 @@ pub trait IntegratorAble{
 impl IntegratorAble for Integrator{
     fn is_next(&self, dept: &mut usize) -> Option<f64> {
         match &self{
-            Integrator::Path(path) => path.is_next(dept)
+            Integrator::Path(path) => path.is_next(dept),
+            _=>None
         }
     }
 
     fn fi(&self,ray:RayDiff,sence:&Sence,sampler:&mut Sampler)->Color {
         match  &self {
             Integrator::Path(path) => path.fi(ray, sence, sampler),
+            Integrator::Direct(direct)=>direct.fi(ray, sence, sampler)
         }
     }
 }

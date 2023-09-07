@@ -7,6 +7,7 @@ use super::{bxdf::{BxDF, TransportMode, BxDFType}, tool::{SurfaceInteraction, fu
 pub mod matte;
 pub mod mirror;
 pub mod disney;
+pub mod pbr;
 pub trait Material:Debug {
     fn compute_scattering_functions(&self,suface:&mut SurfaceInteraction,mode:TransportMode);
     fn bump(&self,suface:&SurfaceInteraction, texture:& dyn Texture<f64>);
@@ -59,7 +60,7 @@ impl BSDF{
         }
     }
     pub fn pdf(&self,w_out:&DVec3,w_in:&mut DVec3,flag:u32)->f64{
-        unimplemented!()
+        1.0
     }
     pub fn f(&self,w_out:&DVec3,w_in:&DVec3,flag:u32)->DVec3{
           let w_in=&mut self.world_to_local(*w_in);

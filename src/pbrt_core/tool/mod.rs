@@ -296,4 +296,5 @@ impl Visibility{
         vis*self.a.normal.dot(dir.normalize()).abs()
             *self.b.normal.dot(dir.normalize()).abs()/dir.length_squared()
     }
+    // fn get_dir(&self,sence:&Sence)->f64{}
 }

@@ -12,7 +12,7 @@ use crate::pbrt_core::{
     bxdf::BxDFType,
     primitive::Primitive,
     sampler::Sampler,
-    tool::{sence::Sence, film, RayDiff},
+    tool::{film, sence::Sence, RayDiff},
 };
 
 use super::IntegratorAble;
@@ -36,13 +36,13 @@ impl Default for PathIntegrator {
 }
 impl IntegratorAble for PathIntegrator {
     fn is_next(&self, dept: &mut usize) -> Option<f64> {
-        *dept+=1;
+        *dept += 1;
         if *dept > self.max_path {
-            let p:f64 = rand::random();
+            let p: f64 = rand::random();
             if p > self.q {
                 None
             } else {
-                Some(1.0-self.q)
+                Some(1.0 - self.q)
             }
         } else {
             Some(1.0)
@@ -73,7 +73,7 @@ impl IntegratorAble for PathIntegrator {
                     let mut flags: u32 = BxDFType::All as u32;
                     let f =
                         bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
-                    beta *= f * w_in.dot(item.shading.n).abs()/pdf;
+                    beta *= f * w_in.dot(item.shading.n).clamp(0.0,1.0);
                     ray = item.spawn_ray(&w_in);
                 }
                 beta=beta / p;

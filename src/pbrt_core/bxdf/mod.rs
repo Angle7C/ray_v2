@@ -29,7 +29,7 @@ pub trait BxDFAble {
         sample_point: DVec2,
         pdf: &mut f64,
     ) -> DVec3 {
-        *w_in = cosine_sample_hemisphere(sample_point);
+        *w_in = cosine_sample_hemisphere(sample_point).normalize();
         if w_out.z < 0.0 {
             w_in.z *= -1.0
         }

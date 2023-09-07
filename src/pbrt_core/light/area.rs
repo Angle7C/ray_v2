@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 use glam::{DVec3, DVec2, Vec3, DMat4};
 
-use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, func::vec3_coordinate_system, Visibility, Bound}, sampler::cosine_sample_hemisphere};
+use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, func::vec3_coordinate_system, Visibility, Bound}, sampler::{cosine_sample_hemisphere, self}, bxdf::BxDFType};
 
 use super::LightAble;
 
@@ -61,6 +61,18 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         
         *pdf=self.shape.pdf(&common, &w_in);
         *vis=Visibility{a:surface.common,b:common};
+        let f=if let Some(bsdf) = &surface.bsdf {
+            //BRDF 采样生成光线
+            let w_out = *w_in;
+            let mut wi=Default::default();
+            let mut w_in = DVec3::default();
+            let mut pdf = 0.0;
+            let mut flags: u32 = BxDFType::All as u32;
+            
+                bsdf.sample_f(&w_out, &mut wi, u, &mut pdf, flags)
+        }else{
+            DVec3::ZERO
+        };
         self.l(&common,&-*w_in)
     }
     fn sample_le(&self)->DVec3 {

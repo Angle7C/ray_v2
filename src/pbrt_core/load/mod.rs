@@ -8,7 +8,7 @@ use std::{
 use glam::{
     f64::{DMat4, DVec2, DVec3},
     u32::UVec3,
-    DVec4, Mat4, Quat, Vec2, Vec3, Vec4, UVec4,
+    DVec4, Mat4, Quat, UVec4, Vec2, Vec3, Vec4,
 };
 use gltf::{import, Attribute, Buffer};
 
@@ -18,12 +18,13 @@ use crate::pbrt_core::primitive::{
 };
 
 use super::{
-    material::{self, disney::Disney, Material},
+    material::{self, disney::Disney, pbr::PbrMaterial, Material},
     primitive::{shape, Primitive},
     texture::{
         constant::ConstantTexture,
         image::ImageTexture,
         mipmap::{ImageData, MipMap},
+        Texture,
     },
 };
 
@@ -73,15 +74,15 @@ impl GltfLoad {
                 let mut normal = vec![];
                 let mut uv = vec![];
                 let mut index = vec![];
-                let mut material_vec:Vec<&Box<dyn Material>>=vec![];
+                let mut material_vec: Vec<&Box<dyn Material>> = vec![];
                 if let Some(mesh) = item.mesh() {
                     for primitive in mesh.primitives() {
                         let material = primitive.material();
                         //创建材质
-                        let m ={
+                        let m = {
                             let pbr_metallic = material.pbr_metallic_roughness();
                             let i = material.index().unwrap();
-                             if let Some(material) = material_map.get(&i) {
+                            if let Some(material) = material_map.get(&i) {
                                 material
                             } else {
                                 if let Some(base_color) = pbr_metallic.base_color_texture() {
@@ -114,11 +115,10 @@ impl GltfLoad {
                             .collect::<Vec<_>>()
                             .chunks(3)
                             .map(|x| UVec3::from_slice(x))
-                            .map(|x|x.extend(material.index().unwrap() as u32))
+                            .map(|x| x.extend(material.index().unwrap() as u32))
                             .collect();
 
                         for (s, _) in primitive.attributes() {
-                            
                             match s {
                                 gltf::Semantic::Positions => {
                                     point = reader
@@ -149,7 +149,6 @@ impl GltfLoad {
                             }
                         }
                     }
-                    
                 };
                 index_map.insert(i, index);
                 normal_map.insert(i, normal);
@@ -171,17 +170,23 @@ impl GltfLoad {
                 all_uv.append(uv);
             }
             // let material_slice=&material_map.iter().map(|(x,y)|y).collect::<Vec<_>>();
-            let material_vec= material_map.into_iter().map(|(x,y)|y).collect::<Vec<_>>();
-            let mesh = Arc::new(Mesh::new(all_point, all_normal, all_uv, vec![],material_vec.clone()));
+            let material_vec = material_map.into_iter().map(|(x, y)| y).collect::<Vec<_>>();
+            let mesh = Arc::new(Mesh::new(
+                all_point,
+                all_normal,
+                all_uv,
+                vec![],
+                material_vec.clone(),
+            ));
             {
-                let mesh_slice=mesh.clone();
+                let mesh_slice = mesh.clone();
                 for i in 0..nodes {
                     let index = index_map.get(&i).unwrap();
                     let det_index = det_point[i];
                     let transform = transform_map.get(&i).unwrap();
                     for i in index {
-                        let w=i.w as usize;
-                        let material= unsafe { material_vec.get_unchecked(w)};
+                        let w = i.w as usize;
+                        let material = unsafe { material_vec.get_unchecked(w) };
                         shape.push(Box::new(Triangle::new(
                             i.truncate() + det_index,
                             mesh.clone(),
@@ -191,10 +196,84 @@ impl GltfLoad {
                     }
                 }
             }
-           
+
             shape
         } else {
             vec![]
         }
+    }
+    pub fn add_material(
+        material: &gltf::Material,
+        mip_map: HashMap<usize, MipMap>,
+        material_map: HashMap<usize, Box<dyn Material>>,
+    ) {
+        if material_map.contains_key(&material.index().unwrap()){
+            return;
+        }
+        //透明度，不做处理
+        match material.alpha_mode() {
+            gltf::material::AlphaMode::Opaque => todo!(),
+            gltf::material::AlphaMode::Mask => todo!(),
+            gltf::material::AlphaMode::Blend => todo!(),
+        }
+        let _ = material.alpha_cutoff();
+        //双面贴图
+        let _ = material.double_sided();
+        //自发光
+        let emissive_texture = material.emissive_factor();
+        //自发光贴图
+        material.emissive_texture();
+        //法线贴图
+        material.normal_texture();
+        //遮挡贴图
+        material.occlusion_texture();
+        //pbr材质
+        let pbr = material.pbr_metallic_roughness();
+        //base_color
+        let base_color: Arc<dyn Texture<DVec3>> =
+            if let Some(base_color_texture) = pbr.base_color_texture() {
+                Arc::new(ImageTexture::new(
+                    mip_map
+                        .get(&base_color_texture.texture().index())
+                        .unwrap()
+                        .to_owned(),
+                ))
+            } else {
+                Arc::new(ConstantTexture::new(
+                    Vec4::from_array(pbr.base_color_factor())
+                        .truncate()
+                        .as_dvec3(),
+                ))
+            };
+        //金属度
+        let metailc: Arc<dyn Texture<DVec3>> =
+            if let Some(metallic_roughness_texture) = pbr.metallic_roughness_texture() {
+                Arc::new(ImageTexture::new(
+                    mip_map
+                        .get(&metallic_roughness_texture.texture().index())
+                        .unwrap()
+                        .to_owned(),
+                ))
+            } else {
+                Arc::new(ConstantTexture::new(
+                    Vec3::splat(pbr.metallic_factor()).as_dvec3(),
+                ))
+            };
+        //粗糙度
+        let roughness: Arc<dyn Texture<DVec3>> =
+            if let Some(metallic_roughness_texture) = pbr.metallic_roughness_texture() {
+                Arc::new(ImageTexture::new(
+                    mip_map
+                        .get(&metallic_roughness_texture.texture().index())
+                        .unwrap()
+                        .to_owned(),
+                ))
+            } else {
+                Arc::new(ConstantTexture::new(
+                    Vec3::splat(pbr.roughness_factor()).as_dvec3(),
+                ))
+            };
+        let pbr_material = Box::new(PbrMaterial::new(Some(base_color), Some(metailc), Some(roughness), None, None, None));
+        material_map.insert(material.index().unwrap(), pbr_material);
     }
 }

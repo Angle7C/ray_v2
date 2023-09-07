@@ -1,35 +1,55 @@
 use glam::DVec3;
 
-use crate::pbrt_core::{sampler::Sampler, tool::{sence::Sence, Ray, RayDiff}, primitive::Primitive, bxdf::TransportMode};
+use crate::pbrt_core::{
+    bxdf::{BxDFType, TransportMode},
+    primitive::Primitive,
+    sampler::Sampler,
+    tool::{sence::Sence, Ray, RayDiff},
+};
 
-pub struct DirectIntegrator{
-    max_depth:u32,
-    strategy:LightStartegy,
-    sample:Sampler
+pub struct DirectIntegrator {
+    max_depth: u32,
+    strategy: LightStartegy,
+    sample: Sampler,
 }
-pub enum LightStartegy{
+pub enum LightStartegy {
     UniformAll,
-    UniformOne
+    UniformOne,
 }
-impl DirectIntegrator{
-    pub fn li(&self,sence:&Sence,ray:RayDiff)->DVec3{
-        let mode=TransportMode::Radiance;
-        let mut l=DVec3::ZERO;
-        if let Some(mut surface)=sence.interacect(ray){
-            surface.compute_scattering(ray, mode);
-            if let Some(ref bsdf)=surface.bsdf{
-                let w_out=surface.common.w0;
-                return sence.uniform_sample_one_light(&surface, &mut self.sample.clone(), false);        
-                // match self.strategy{
-                //     LightStartegy::UniformAll=>{
-                //         l+=
-                //     },
-                //     LightStartegy::UniformOne=>{   
-                //     }
-                // };
-            }
-            
+impl DirectIntegrator {
+    pub fn new(max_depth: u32, strategy: LightStartegy, sample: Sampler) -> Self {
+        Self {
+            max_depth,
+            strategy,
+            sample,
         }
-        DVec3::ZERO
+    }
+    pub fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> DVec3 {
+        let mut ans = DVec3::ZERO;
+        let mut dept = 0;
+        let mut beta: DVec3 = DVec3::ONE;
+        let mut ray = ray.clone();
+        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
+        if let Some(mut item) = sence.interacect(ray) {
+            if item.light.is_some() {
+                ans += beta * item.le(ray.o.dir);
+                return ans;
+            }
+            item.compute_scattering(ray, mode);
+            if let Some(bsdf) = &item.bsdf {
+                //场景光源采样
+                ans += beta * sence.uniform_sample_one_light(&item, sampler, false);
+                //BRDF 采样生成光线
+                //     let w_out = -ray.o.dir;
+                //     let mut w_in = DVec3::default();
+                //     let mut pdf = 0.0;
+                //     let mut flags: u32 = BxDFType::All as u32;
+                //     let f = bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
+                //     beta *= f * w_in.dot(item.shading.n).abs();
+                //     ray = item.spawn_ray(&w_in);
+                // }
+            }
+        }
+        ans
     }
 }

@@ -4,7 +4,7 @@ use glam::{UVec2, DVec3, DVec2, DMat4, Vec2, DVec4, DQuat};
 use serde::de::value;
 use serde_json::Value;
 
-use crate::pbrt_core::{camera::{Camera, CameraMode, self}, load::GltfLoad, primitive::{shape::{Shape, rectangle::Rectangle}, bvh::BVH, Primitive}, light::{Light, area::DiffuseAreaLight, self}, integrator::{path::PathIntegrator, Integrator}, sampler::Sampler};
+use crate::pbrt_core::{camera::{Camera, CameraMode, self}, load::GltfLoad, primitive::{shape::{Shape, rectangle::Rectangle}, bvh::BVH, Primitive}, light::{Light, area::DiffuseAreaLight, self}, integrator::{path::PathIntegrator, Integrator, direct::{DirectIntegrator, LightStartegy}}, sampler::Sampler};
 
 use super::sence::Sence;
 
@@ -100,8 +100,13 @@ pub struct Build<'a>{
 }
 impl<'a> Build<'a>{
     pub fn render(self){
-        let path = Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::new(self.setting.sample_num as usize), self.setting.size)));
-        path.render_process(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size,Sampler::new(self.setting.sample_num as usize))
+        let integrator =if self.setting.inter_mode.contains("path"){
+            Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::new(self.setting.sample_num as usize), self.setting.size)))
+        }else{
+            Integrator::Direct(Box::new(DirectIntegrator::new(1,LightStartegy::UniformOne,Sampler::new(self.setting.sample_num as usize))))
+        };
+        
+        integrator.render_process(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size,Sampler::new(self.setting.sample_num as usize))
     }
     pub fn render_debug(self){
         let path = Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::default(), self.setting.size)));

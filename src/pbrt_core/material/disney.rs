@@ -54,13 +54,18 @@ impl Material for Disney {
         suface: &mut crate::pbrt_core::tool::SurfaceInteraction,
         mode: crate::pbrt_core::bxdf::TransportMode,
     ) {
-        if let Some(color) = &self.color {
-            let mut bsdf = BSDF::new(&suface, 1.0);
-            bsdf.bxdfs
-                .push(BxDF::LambertianReflection(LambertianReflection::new(
-                    color.evaluate(&suface.common),
-                )));
-            suface.bsdf = Some(bsdf)
+        let r = self
+            .color
+            .as_ref()
+            .unwrap()
+            .evaluate(&suface.common)
+            .clamp(DVec3::ZERO, DVec3::splat(f64::INFINITY));
+        suface.bsdf = Some(BSDF::new(&suface, 1.0));
+        if let Some(bsdf) = &mut suface.bsdf {
+            if r != DVec3::ZERO {
+                bsdf.bxdfs
+                    .push(BxDF::LambertianReflection(LambertianReflection::new(r)))
+            }
         }
     }
     fn bump(
