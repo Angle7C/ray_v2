@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use glam::DVec3;
 
-use crate::pbrt_core::{texture::Texture, bxdf::{reflection::LambertianReflection, BxDF}, tool::SurfaceInteraction};
+use crate::pbrt_core::{texture::Texture, bxdf::{reflection::{LambertianReflection, OrenNayar}, BxDF}, tool::SurfaceInteraction};
 
 use super::{Material, BSDF};
 #[derive(Debug)]
@@ -67,7 +67,7 @@ impl Material for PbrMaterial {
     if let Some(bsdf) = &mut suface.bsdf {
         if r != DVec3::ZERO {
             bsdf.bxdfs
-                .push(BxDF::LambertianReflection(LambertianReflection::new(r)))
+                .push(BxDF::OrenNayar(OrenNayar::new(r,0.0)))
         }
     }
     }

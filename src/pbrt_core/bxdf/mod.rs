@@ -2,7 +2,7 @@ use std::f64::consts::FRAC_1_PI;
 
 use glam::f64::{DVec2, DVec3};
 
-use self::{reflection::LambertianReflection, specular::SpecularReflection};
+use self::{reflection::{LambertianReflection, OrenNayar}, specular::SpecularReflection};
 
 use super::sampler::cosine_sample_hemisphere;
 // 菲涅尔反射率
@@ -66,25 +66,28 @@ pub trait MicrofacetDistribution:BxDFAble {
 pub enum BxDF {
     LambertianReflection(LambertianReflection),
     SpecularReflection(SpecularReflection),
+    OrenNayar(OrenNayar)
 }
 impl BxDF {
     pub fn match_type(&self, flag: u32) -> bool {
         match &self {
             Self::LambertianReflection(lambert) => lambert.match_type(flag),
-            Self::SpecularReflection(spec_ref)=>spec_ref.match_type(flag)
+            Self::SpecularReflection(spec_ref)=>spec_ref.match_type(flag),
+            Self::OrenNayar(oren)=>oren.match_type(flag)
         }
     }
     pub fn f(&self, w_out: &DVec3, w_in: &mut DVec3) -> DVec3 {
         match &self {
             BxDF::LambertianReflection(lam) => lam.fi(w_in, w_out),
-            BxDF::SpecularReflection(spec_ref)=>spec_ref.fi(w_in, w_out)
+            BxDF::SpecularReflection(spec_ref)=>spec_ref.fi(w_in, w_out),
+            Self::OrenNayar(oren)=>oren.fi(w_in, w_out),
         }
     }
     pub fn sample_f(&self, w_out: &DVec3, wi: &mut DVec3, u: DVec2, pdf: &mut f64) -> DVec3 {
         match &self {
             Self::LambertianReflection(lambert) => lambert.sample_f(wi, w_out, u, pdf),
-            BxDF::SpecularReflection(spec_ref)=>spec_ref.sample_f(wi, w_out, u, pdf)
-        
+            BxDF::SpecularReflection(spec_ref)=>spec_ref.sample_f(wi, w_out, u, pdf),
+            Self::OrenNayar(oren)=>oren.sample_f(wi, w_out, u, pdf)
         }
     }
 }
