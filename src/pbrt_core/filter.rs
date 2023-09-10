@@ -17,7 +17,7 @@ impl Filter{
         let y=if uv.y<0.0{
             uv.y.floor().abs()+uv.y
         }else if uv.y>=0.0{
-            uv.y.abs()-uv.x.floor()
+            uv.y.abs()-uv.y.floor()
         }else{
             uv.y
         };

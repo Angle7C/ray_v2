@@ -118,7 +118,9 @@ impl Integrator{
         let camera = sence.camera;
         let mut bar = ProgressBar::new(bar_size as u64);
         let mut image = RgbImage::new(size.x, size.y);
+        let mut sum=0;
         while let Some(item) = film.iter() {
+
             for (u, v) in item {
                 let mut color = DVec3::ZERO;
                 for _ in 0..n {
@@ -127,6 +129,7 @@ impl Integrator{
                     color += self.fi(ray, sence,&mut sampler);
                 }
                 image.put_pixel(u as u32, v as u32, to_color(color, num as f64));
+                sum+=1;
                 bar.inc(1);
             }
         }

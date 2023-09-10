@@ -2,7 +2,7 @@ use std::f64::consts::FRAC_1_PI;
 
 use glam::f64::{DVec2, DVec3};
 
-use self::{reflection::{LambertianReflection, OrenNayar}, specular::SpecularReflection};
+use self::{reflection::{LambertianReflection, OrenNayar}, specular::SpecularReflection, pbr::{PbrDiff, PbrReflection}};
 
 use super::sampler::cosine_sample_hemisphere;
 // 菲涅尔反射率
@@ -13,8 +13,12 @@ pub mod specular;
 pub mod reflection;
 //溦表面模型
 pub mod microfacet;
-
+//
 pub mod microfacet_distribution;
+
+pub mod pbr;
+
+pub mod disney;
 //基本模型
 pub trait BxDFAble {
     //匹配BxDF类型
@@ -33,10 +37,10 @@ pub trait BxDFAble {
         if w_out.z < 0.0 {
             w_in.z *= -1.0
         }
-        *pdf = Self::pdf(*w_out, *w_in);
+        *pdf = self.pdf(*w_out, *w_in);
         return self.fi(w_in, &w_out);
     }
-    fn pdf(w_out: DVec3, w_in: DVec3) -> f64 {
+    fn pdf(&self,w_out: DVec3, w_in: DVec3) -> f64 {
         if w_out.z * w_in.z > 0.0 {
             w_in.z * FRAC_1_PI
         } else {
@@ -44,36 +48,44 @@ pub trait BxDFAble {
         }
     }
     //根据采样点sample_point计算，从wi射入，到wo射出时的反射率
-    fn rho(&self, w_in: DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3;
+    fn rho(&self, w_in: DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3{
+        DVec3::ZERO
+    }
 }
 
 
 // 溦表面模型
-pub trait MicrofacetDistribution:BxDFAble {
-    //返回指定法向量的微面的微分面积
+pub trait MicrofacetDistribution {
+    //给定法向量，求得微分面积
     fn d(&self,wh:&DVec3)->f64;
+    //
     fn lamdba(&self,w:&DVec3)->f64;
+    //法线分布函数
     fn g1(&self,w:&DVec3)->f64{
         1.0/(1.0+self.lamdba(w))
     }
     fn g(&self,w_out:&DVec3,w_in:&DVec3)->f64{
         1.0/(1.0+self.lamdba(w_out)+self.lamdba(w_in))
     }
-    fn sample_wh(&self,w_out:&DVec3,w_in:&DVec3)->DVec3;
+    fn sample_wh(&self,w_out:&DVec3,u:DVec2)->DVec3;
     fn pdf(&self,w_out:&DVec3,wh:&DVec3)->f64;
 
 }
 pub enum BxDF {
     LambertianReflection(LambertianReflection),
     SpecularReflection(SpecularReflection),
-    OrenNayar(OrenNayar)
+    OrenNayar(OrenNayar),
+    PbrDiff(PbrDiff),
+    PbrReflection(PbrReflection)
 }
 impl BxDF {
     pub fn match_type(&self, flag: u32) -> bool {
         match &self {
             Self::LambertianReflection(lambert) => lambert.match_type(flag),
             Self::SpecularReflection(spec_ref)=>spec_ref.match_type(flag),
-            Self::OrenNayar(oren)=>oren.match_type(flag)
+            Self::OrenNayar(oren)=>oren.match_type(flag),
+            Self::PbrDiff(diff)=>diff.match_type(flag),
+            Self::PbrReflection(reflection)=>reflection.match_type(flag)
         }
     }
     pub fn f(&self, w_out: &DVec3, w_in: &mut DVec3) -> DVec3 {
@@ -81,13 +93,17 @@ impl BxDF {
             BxDF::LambertianReflection(lam) => lam.fi(w_in, w_out),
             BxDF::SpecularReflection(spec_ref)=>spec_ref.fi(w_in, w_out),
             Self::OrenNayar(oren)=>oren.fi(w_in, w_out),
+            Self::PbrDiff(diff)=>diff.fi(w_in, w_out),
+            Self::PbrReflection(reflection)=>reflection.fi(w_in, w_out)
         }
     }
     pub fn sample_f(&self, w_out: &DVec3, wi: &mut DVec3, u: DVec2, pdf: &mut f64) -> DVec3 {
         match &self {
             Self::LambertianReflection(lambert) => lambert.sample_f(wi, w_out, u, pdf),
             BxDF::SpecularReflection(spec_ref)=>spec_ref.sample_f(wi, w_out, u, pdf),
-            Self::OrenNayar(oren)=>oren.sample_f(wi, w_out, u, pdf)
+            Self::OrenNayar(oren)=>oren.sample_f(wi, w_out, u, pdf),
+            Self::PbrDiff(diff)=>diff.sample_f(wi, w_out, u, pdf),
+            Self::PbrReflection(reflection)=>reflection.sample_f(wi, w_out, u, pdf),
         }
     }
 }
@@ -133,7 +149,7 @@ impl From<BxDFType> for u32 {
     }
 }
 
-mod func {
+pub(crate) mod func {
     use glam::DVec3;
     //计算菲涅尔反射率，介电材料
     //eta_i 入射折射率
@@ -240,14 +256,37 @@ mod func {
     }
     #[inline]
     pub fn cos_theta(wi: &DVec3) -> f64 {
-        let sin_theta = sin_theta(wi);
-        if sin_theta == 0.0 {
-            1.0
-        } else {
-            (wi.x / sin_theta).clamp(-1.0, 1.0)
-        }
+      wi.z
     }
     pub fn cos2_theta(wi: &DVec3)->f64{
         cos_theta(wi)*cos_theta(wi)
+    }
+    pub fn cos_phi(w: &DVec3) -> f64 {
+        let sin_theta = sin_theta(w);
+        if sin_theta == 0.0  {
+            1.0
+        } else {
+            (w.x / sin_theta).clamp(-1.0, 1.0)
+        }
+    }
+    pub fn cos2_phi(w:&DVec3)->f64{
+        cos_phi(w)*cos_phi(w)
+    }
+    pub fn sin_phi(w: &DVec3) -> f64 {
+        let sin_theta = sin_theta(w);
+        if sin_theta == 0.0  {
+            1.0
+        } else {
+            (w.x / sin_theta).clamp(-1.0, 1.0)
+        }
+    }
+    pub fn sin2_phi(w: &DVec3) -> f64 {
+       sin_phi(w)*sin_phi(w)
+    }
+    pub fn vec3_same_hemisphere_vec3(w: &DVec3, wp: &DVec3) -> bool {
+        w.z * wp.z > 0.0 
+    }
+    pub fn reflect(wo: &DVec3, n: &DVec3) -> DVec3 {
+        -(*wo) + *n * 2.0 * wo.dot(*n)
     }
 }

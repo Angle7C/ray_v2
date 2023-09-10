@@ -109,17 +109,22 @@ impl<'a> Build<'a>{
         integrator.render_process(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size,Sampler::new(self.setting.sample_num as usize))
     }
     pub fn render_debug(self){
-        let path = Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::default(), self.setting.size)));
-        path.render_process_debug(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size);
+        let integrator =if self.setting.inter_mode.contains("path"){
+            Integrator::Path(Box::new(PathIntegrator::new(0.8, 5, Sampler::new(self.setting.sample_num as usize), self.setting.size)))
+        }else{
+            Integrator::Direct(Box::new(DirectIntegrator::new(1,LightStartegy::UniformOne,Sampler::new(self.setting.sample_num as usize))))
+        };
+        integrator.render_process_debug(&self.setting.name, self.setting.core_num, &self.sence, self.setting.size);
     }
     pub fn build(path:&str)->Self{
         let buf = File::open(path).unwrap();
         let json:Value = serde_json::from_reader(buf).unwrap();
         let setting = Setting::parse(&json["setting"]);
         let light=Self::get_light(&json["lights"]);
-        let primitive=Self::get_primitive(&setting.path);
+        let mut primitive=Vec::<Box<dyn Primitive>>::with_capacity(1000);
+        let material=GltfLoad::load(&setting.path,&mut primitive);
         let camera=Self::get_camera(&json["camera"], setting.size);
-        let sence = Sence::new(primitive, light, camera);
+        let sence=Sence::new(primitive, light, camera, material);
         Self { sence, setting }
     }
     fn get_light(value:&Value)->Vec<Light>{
@@ -135,9 +140,6 @@ impl<'a> Build<'a>{
         let mut camera=Camera::parse(value);
         camera.reset_size(size.as_vec2());
         camera
-    }
-    fn get_primitive(path:&str)->Vec<Box<dyn Primitive>>{
-        GltfLoad::load(path)
     }
 }
 impl Parse for Light{

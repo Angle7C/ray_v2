@@ -61,6 +61,7 @@ impl Material for Disney {
             .evaluate(&suface.common)
             .clamp(DVec3::ZERO, DVec3::splat(f64::INFINITY));
         suface.bsdf = Some(BSDF::new(&suface, 1.0));
+        
         if let Some(bsdf) = &mut suface.bsdf {
             if r != DVec3::ZERO {
                 bsdf.bxdfs

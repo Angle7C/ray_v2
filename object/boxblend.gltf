@@ -1,0 +1,428 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v3.3.27",
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "立方体",
+      "scale": [
+        1,
+        0.11195510625839233,
+        1
+      ]
+    },
+    {
+      "mesh": 1,
+      "name": "立方体.002",
+      "rotation": [
+        0,
+        0.44448480010032654,
+        0,
+        0.8957864046096802
+      ],
+      "scale": [
+        0.21366922557353973,
+        0.5391906499862671,
+        0.13321815431118011
+      ],
+      "translation": [
+        -0.5213373303413391,
+        0.6589889526367188,
+        -0.3757750988006592
+      ]
+    },
+    {
+      "mesh": 2,
+      "name": "立方体.001",
+      "rotation": [
+        0,
+        0.44448480010032654,
+        0,
+        0.8957864046096802
+      ],
+      "scale": [
+        0.21366922557353973,
+        0.5391906499862671,
+        0.13321815431118011
+      ],
+      "translation": [
+        0.44460827112197876,
+        0.6589889526367188,
+        0.35953134298324585
+      ]
+    },
+    {
+      "name": "融球",
+      "scale": [
+        0.15531998872756958,
+        0.15531998872756958,
+        0.15531998872756958
+      ],
+      "translation": [
+        -0.15071141719818115,
+        0.5210102200508118,
+        0.33281463384628296
+      ]
+    },
+    {
+      "mesh": 3,
+      "name": "球体",
+      "scale": [
+        0.14915533363819122,
+        0.14915533363819122,
+        0.14915533363819122
+      ],
+      "translation": [
+        0,
+        0.5963545441627502,
+        0
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "材质.001",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.03604254871606827,
+          0.8000000715255737,
+          0.051708824932575226,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.5
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "材质",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.038001298904418945,
+          0.06820257753133774,
+          0.8000000715255737,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.5
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "材质.002",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8000000715255737,
+          0.003042803844437003,
+          0,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.5
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "立方体",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3
+        }
+      ]
+    },
+    {
+      "name": "立方体.002",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "立方体.003",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 8,
+            "NORMAL": 9,
+            "TEXCOORD_0": 10
+          },
+          "indices": 7,
+          "material": 1
+        }
+      ]
+    },
+    {
+      "name": "球体",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 11,
+            "NORMAL": 12,
+            "TEXCOORD_0": 13
+          },
+          "indices": 14,
+          "material": 2
+        }
+      ]
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 143,
+      "max": [
+        1,
+        16.997285842895508,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 143,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 143,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 264,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 24,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 24,
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 9,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 10,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 11,
+      "componentType": 5126,
+      "count": 1984,
+      "max": [
+        0.9999997019767761,
+        1,
+        0.9999993443489075
+      ],
+      "min": [
+        -0.9999990463256836,
+        -1,
+        -1
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 12,
+      "componentType": 5126,
+      "count": 1984,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 13,
+      "componentType": 5126,
+      "count": 1984,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 14,
+      "componentType": 5123,
+      "count": 2880,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1716,
+      "byteOffset": 0,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1716,
+      "byteOffset": 1716,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1144,
+      "byteOffset": 3432,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 528,
+      "byteOffset": 4576,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 288,
+      "byteOffset": 5104,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 288,
+      "byteOffset": 5392,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 192,
+      "byteOffset": 5680,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 72,
+      "byteOffset": 5872,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 288,
+      "byteOffset": 5944,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 288,
+      "byteOffset": 6232,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 192,
+      "byteOffset": 6520,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 23808,
+      "byteOffset": 6712,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 23808,
+      "byteOffset": 30520,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 15872,
+      "byteOffset": 54328,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 5760,
+      "byteOffset": 70200,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "boxblend_data.bin",
+      "byteLength": 75960
+    }
+  ]
+}

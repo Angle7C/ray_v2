@@ -32,7 +32,7 @@
       "count": 21274,
       "max": [0.9972774, 0.9961879],
       "min": [0.002510557, 0.001571844],
-      "type": "DVec2"
+      "type": "VEC2"
     },
     {
       "bufferView": 3,
@@ -56,7 +56,7 @@
   "buffers": [
     {
       "byteLength": 1143300,
-      "uri": "Unity2Skfb.bin"
+      "uri": "b.bin"
     }
   ],
   "bufferViews": [

@@ -7,7 +7,7 @@ use crate::pbrt_core::{
     bxdf::BxDFType,
     camera::Camera,
     light::{Light, LightAble},
-    material::Material,
+    material::{Material, self},
     primitive::{self, bvh::BVH, Aggregate, GeometricePrimitive, ObjectType, Primitive},
     sampler::Sampler,
 };
@@ -19,7 +19,7 @@ pub struct Sence<'a> {
     accel: Option<Box<dyn Aggregate>>,
     bound: Bound<3>,
     light: &'a [Light],
-    material: Vec<Box<dyn Material>>,
+    material:  &'a [Box<dyn Material>],
     pub camera: Camera,
 }
 impl<'a> Debug for Sence<'a> {
@@ -30,7 +30,7 @@ impl<'a> Debug for Sence<'a> {
 unsafe impl<'a> Sync for Sence<'a> {}
 
 impl<'a> Sence<'a> {
-    pub fn new(primitive: Vec<Box<dyn Primitive>>, light: Vec<Light>, camera: Camera) -> Self {
+    pub fn new(primitive: Vec<Box<dyn Primitive>>, light: Vec<Light>, camera: Camera,material:&'static[Box<dyn Material>]) -> Self {
         let light = light.leak();
         let primitive = primitive.leak();
         //场景集合
@@ -54,7 +54,7 @@ impl<'a> Sence<'a> {
             accel: Some(Box::new(accel)),
             bound,
             light,
-            material: vec![],
+            material: material ,
             camera,
         };
         sence
@@ -75,7 +75,6 @@ impl<'a> Sence<'a> {
             //采样光源点
             let point = sampler.sample_2d_d();
             //采样吸收点
-            let scattering = sampler.sample_2d_d();
             s += sample_light(
                 surface,
                 point,
@@ -128,21 +127,20 @@ pub fn sample_light(
     flag: u32,
     handle: bool,
 ) -> DVec3 {
-    let mut ld = DVec3::ZERO;
     let mut light_pdf = 0.0;
-    let mut scattering_pdf = 0.0;
+    // let mut scattering_pdf = 0.0;
     let mut vis = Visibility::default();
     let mut inter = SurfaceInteraction::default();
     //射出
     let mut wi = Default::default();
 
     //采样值
-    let mut ld = match light {
+    let ld = match light {
         Light::AreaLight(area) => area.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
     };
     let f = if let Some(bsdf) = &surface.bsdf {
-        let f = bsdf.f(&inter.common.w0, &wi, flag) * wi.dot(surface.shading.n).clamp(0.0, 1.0);
-        scattering_pdf = bsdf.pdf(&surface.common.w0, &mut wi, flag);
+        let f = bsdf.f(&surface.common.w0, &wi, flag) * wi.dot(surface.shading.n).abs();
+        // scattering_pdf = bsdf.pdf(&surface.common.w0, &mut wi, flag);
         f
     } else {
         DVec3::ZERO

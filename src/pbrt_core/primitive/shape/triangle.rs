@@ -1,26 +1,36 @@
-use std::{sync::Arc, cell::RefCell};
+use std::{cell::RefCell, sync::Arc};
 
-use glam::{f64::{DMat4, DVec2, DVec3},u32::UVec3};
+use glam::{
+    f64::{DMat4, DVec2, DVec3},
+    u32::UVec3,
+};
 
 use crate::pbrt_core::{
-    material::{Material, matte::Matte, mirror::Mirror},
+    bxdf::TransportMode,
+    material::{matte::Matte, mirror::Mirror, Material},
     primitive::{mesh::Mesh, Primitive},
-    tool::{Bound, RayDiff, Shading, SurfaceInteraction}, bxdf::TransportMode, texture::constant::ConstantTexture,
+    texture::constant::ConstantTexture,
+    tool::{Bound, RayDiff, Shading, SurfaceInteraction},
 };
 #[derive(Debug)]
-pub struct Triangle {
+pub struct Triangle<'a> {
     index: [usize; 3],
     mesh: Arc<Mesh>,
     obj_to_world: DMat4,
-    materail: Option<Arc<dyn Material>>,
+    materail: Option<&'a Box<dyn Material>>,
 }
 #[allow(unused)]
-impl Triangle {
-    pub fn new(index: UVec3, mesh: Arc<Mesh>, obj_to_world: DMat4,materail:Option<Arc<dyn Material>>) -> Self {
+impl<'a> Triangle<'a> {
+    pub fn new(
+        index: UVec3,
+        mesh: Arc<Mesh>,
+        obj_to_world: DMat4,
+        materail: Option<&'a Box<dyn Material>>,
+    ) -> Self {
         Self {
             index: [index.x as usize, index.y as usize, index.z as usize],
             mesh,
-            materail:materail,
+            materail: materail,
             obj_to_world,
         }
     }
@@ -42,11 +52,9 @@ impl Triangle {
         let dp_02 = p0 - p2;
         let dp_12 = p1 - p2;
 
-
         let deter = duv_02[0] * duv_12[1] - duv_02[1] * duv_12[0];
         let v = (p2 - p0).cross(p1 - p0).normalize();
-        let (dpdu, dpdv, dndu, dndv) =
-        if deter.abs() < f64::EPSILON{
+        let (dpdu, dpdv, dndu, dndv) = if deter.abs() < f64::EPSILON {
             let dpdu = if v.x.abs() > v.y.abs() {
                 DVec3::new(-v.z, 0.0, v.x) / (v.x * v.x + v.z * v.z).sqrt()
             } else {
@@ -94,25 +102,18 @@ impl Triangle {
         if self.mesh.uv.is_empty() {
             DVec2::ZERO
         } else {
-            let mut uv = self.mesh.uv[self.index[i as usize]];
-            if uv.x<0.0{
-                uv.x=uv.x.abs().floor();
-            };
-            if uv.y<0.0{
-                uv.y=uv.y.abs().floor();
-            };
-            uv
+            self.mesh.uv[self.index[i as usize]]
         }
     }
 }
-impl Primitive for Triangle {
+impl<'a> Primitive for Triangle<'a> {
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let p0 = self.point(0);
         let p1 = self.point(1);
         let p2 = self.point(2);
         let min = p0.min(p1).min(p2);
         let max = p0.max(p1).max(p2);
-        
+
         Bound::<3>::new(min, max)
     }
     fn interacect(&self, ray: RayDiff) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
@@ -139,7 +140,7 @@ impl Primitive for Triangle {
         let a = s1.dot(s) / s1_e1;
         let b = s2.dot(ray.o.dir) / s1_e1;
         let c = 1.0 - a - b;
-        
+
         if t < 0.0 || b < 0.0 || b > 1.0 || a < 0.0 || a > 1.0 || c < 0.0 || c > 1.0 {
             None
         } else {
@@ -149,28 +150,26 @@ impl Primitive for Triangle {
             let uv = uv0 * a + uv1 * b + uv2 * c;
             let shading = self.compute_dnuv(normal.normalize());
 
-            let  surface = (SurfaceInteraction::new(
-                            p,
-                            uv,
-                            normal,
-                            -ray.o.dir,
-                            shading.dpdu,
-                            shading.dpdv,
-                            shading.dndu,
-                            shading.dndv,
-                            t,
-                            Some(self),
-                            None,
-                        ));
-           
+            let surface = (SurfaceInteraction::new(
+                p,
+                uv,
+                normal,
+                -ray.o.dir,
+                shading.dpdu,
+                shading.dpdv,
+                shading.dndu,
+                shading.dndv,
+                t,
+                Some(self),
+                None,
+            ));
+
             Some(surface)
         }
     }
-    fn compute_scattering(&self,surface:&mut SurfaceInteraction,mode:TransportMode) {
+    fn compute_scattering(&self, surface: &mut SurfaceInteraction, mode: TransportMode) {
         match &self.materail {
-            Some(material) => {
-                material.compute_scattering_functions(surface,mode)
-            },
+            Some(material) => material.compute_scattering_functions(surface, mode),
             None => (),
         }
     }

@@ -1,20 +1,27 @@
 use std::{
     collections::{BTreeMap, HashMap},
     fmt::Debug,
-    ops::{Add, Deref, DerefMut, Div},
+    ops::{Add, Deref, DerefMut, Div}, mem::{self, size_of},
 };
 
 use glam::{u32::UVec2, DVec2, DVec3, DVec4};
 use gltf::image::Data;
 use image::{DynamicImage, ImageBuffer};
 use log::{error, info};
-#[derive(Default, Clone)]
+#[derive(Default,Clone)]
 pub struct MipMap {
     //图像大小
     resolution: UVec2,
 
     mapping: HashMap<Level, Vec<Pixel>>,
 }
+// impl Clone for MipMap{
+//     fn clone(&self) -> Self {
+//        let mapping:HashMap<Level, Vec<Pixel>>=unsafe { 
+//         mem::transmute_copy(&self.mapping) };
+//         Self { resolution:self.resolution.clone(), mapping }
+//     }
+// }
 impl Debug for MipMap {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
@@ -66,10 +73,10 @@ struct Pixel {
 impl Pixel {
     pub fn from_sclie(array: &[u8]) -> Self {
         Self {
-            x: array[0] as f64,
-            y: array[1] as f64,
-            z: array[2] as f64,
-            w: 255.0,
+            x: array[0] as f64/255.0,
+            y: array[1] as f64/255.0,
+            z: array[2] as f64/255.0,
+            w: 1.0,
         }
     }
 }
@@ -139,7 +146,7 @@ impl MipMap {
         let h = image_data.height;
         data.insert(Level { x: 0, y: 0 }, image_data.pixels);
         //生成多级纹理
-        /// (0,0)->(0,1)->(1,0)->(1,1)
+        // (0,0)->(0,1)->(1,0)->(1,1)
         // for i in 0..w_level {
         //     let last = Level { x: i, y: i };
         //     for j in i + 1..h_level {
@@ -159,18 +166,18 @@ impl MipMap {
         //             Self::build_floor(data.get(&last).unwrap(), w >> i, h >> k),
         //         );
         //     }
-        for i in 1..w_level {
-            let last = Level { x: i - 1, y: i - 1 };
-            // for j in 1..h_level {
-            //层数
-            let level = Level { x: i, y: i };
-            data.insert(
-                level,
-                //依据上一层生成下一层和左右两边不规则层数。
-                Self::build_floor(data.get(&last).unwrap(), w >> i, h >> i),
-            );
-            // }
-        }
+        // for i in 1..w_level {
+        //     let last = Level { x: i - 1, y: i - 1 };
+        //     // for j in 1..h_level {
+        //     //层数
+        //     let level = Level { x: i, y: i };
+        //     data.insert(
+        //         level,
+        //         //依据上一层生成下一层和左右两边不规则层数。
+        //         Self::build_floor(data.get(&last).unwrap(), w >> i, h >> i),
+        //     );
+        //     // }
+        // }
         mipmap.mapping = data;
         mipmap
     }
@@ -181,10 +188,10 @@ impl MipMap {
             x: 0,
             y: 0,
         };
-        let pixel = self.mapping.get(&level).unwrap();
-        let len = uv.x * self.resolution.x as f64 * uv.y * self.resolution.y as f64;
-        let pixel = pixel.get(len as usize).unwrap();
-         DVec4::from(*pixel).truncate()/255.0
+        let pixel = self.mapping.get(&level).expect("获取MipMap失败");
+        let len = (uv.x * self.resolution.x as f64) as u32 *self.resolution.y  + (uv.y  * self.resolution.y as f64) as u32;
+        let pixel = pixel.get(len as usize).expect(format!("pixel message: len:{},w: {} h: {},uv:{}",len,self.resolution.x,self.resolution.y,uv).as_str());
+         DVec4::from(*pixel).truncate()
         // return DVec3::X;
         // let default = vec![];
         // let pixel = self.mapping.get(&level).unwrap_or_else(|| {

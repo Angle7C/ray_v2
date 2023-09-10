@@ -2,7 +2,9 @@ use std::f64::consts::*;
 
 use glam::f64::DVec3;
 
-use super::{BxDFAble, BxDFType, func};
+use crate::pbrt_core::tool::color::Color;
+
+use super::{BxDFAble, BxDFType, func::{self, cos_theta}, MicrofacetDistribution, frensnel::{Fresnel, self}};
 
 pub struct LambertianReflection{
     r: DVec3
@@ -66,5 +68,66 @@ impl BxDFAble for OrenNayar{
 
     fn rho(&self, w_in:DVec3, w_out: DVec3, sample_point: glam::DVec2) -> DVec3 {
         todo!()
+    }
+}
+
+
+pub struct MicrofacetReflection{
+    r:Color,
+    distribution:Box<dyn MicrofacetDistribution>,
+    fresnel:Fresnel,
+}
+impl MicrofacetReflection{
+    pub fn new(r:Color,distribution:Box<dyn MicrofacetDistribution>,frensnel:Fresnel){
+        unimplemented!()
+    }
+}
+impl BxDFAble for MicrofacetReflection{
+    fn match_type(&self, flag: u32) -> bool {
+        (BxDFType::Reflection | BxDFType::Glossy) &flag >0
+    }
+
+    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3 {
+        let cos_o=cos_theta(w_out).abs();
+        let cos_i=cos_theta(w_in).abs();
+        let mut wh=*w_in+*w_out;
+        if cos_i==0.0 || cos_o==0.0{
+            return DVec3::ZERO;
+        }
+        if wh.abs_diff_eq(DVec3::ZERO, f64::EPSILON){
+            return DVec3::ZERO;
+        }
+        wh=wh.normalize();
+        let dot=w_in.dot(wh);
+        let f=self.fresnel.evaluate(dot);
+        self.r*self.distribution.d(&wh) * self.distribution.g(w_out, w_in)
+        *f/(4.0 * cos_i*cos_o)
+
+    }
+    fn pdf(&self,w_out: DVec3, w_in: DVec3) -> f64 {
+        if func::vec3_same_hemisphere_vec3(&w_out, &w_in){
+            0.0
+        }else{
+            let wh=(w_in+w_out).normalize();
+            self.distribution.pdf(&w_out, &wh)/(4.0*w_out.dot(wh))
+        }
+    }
+    fn sample_f(
+            &self,
+            w_in: &mut DVec3,
+            w_out: &DVec3,
+            sample_point: glam::DVec2,
+            pdf: &mut f64,
+        ) -> DVec3 {
+        if w_out.z==0.0{
+            return Color::ZERO;
+        }
+        let wh=self.distribution.sample_wh(w_out, sample_point);
+        *w_in=func::reflect(w_out, &wh);
+        if func::vec3_same_hemisphere_vec3(w_out, &w_in){
+            return Color::ZERO
+        }
+        *pdf=self.distribution.pdf(w_out, &wh)/(4.0*w_out.dot(wh));
+        self.fi(w_in, w_out)
     }
 }
