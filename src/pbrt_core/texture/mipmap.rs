@@ -1,13 +1,11 @@
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::HashMap,
     fmt::Debug,
-    ops::{Add, Deref, DerefMut, Div}, mem::{self, size_of},
+    ops::{Add, Deref, DerefMut, Div}
 };
 
 use glam::{u32::UVec2, DVec2, DVec3, DVec4};
 use gltf::image::Data;
-use image::{DynamicImage, ImageBuffer};
-use log::{error, info};
 #[derive(Default,Clone)]
 pub struct MipMap {
     //图像大小
@@ -23,7 +21,7 @@ pub struct MipMap {
 //     }
 // }
 impl Debug for MipMap {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }
@@ -135,15 +133,15 @@ impl DerefMut for Pixel {
 
 impl MipMap {
     pub fn new(image_data: ImageData) -> Self {
-        let w_level = unsafe { f64::log2(image_data.width as f64).floor() } as usize;
-        let h_level = unsafe { f64::log2(image_data.height as f64).floor() } as usize;
+        let _w_level =  f64::log2(image_data.width as f64).floor()  as usize;
+        let _h_level =  f64::log2(image_data.height as f64).floor()  as usize;
         let mut mipmap = MipMap::default();
         //分辨率
         mipmap.resolution = UVec2::new(image_data.width as u32, image_data.height as u32);
         //多级纹理
         let mut data: HashMap<Level, Vec<Pixel>> = HashMap::new();
-        let w = image_data.width;
-        let h = image_data.height;
+        let _w = image_data.width;
+        let _h = image_data.height;
         data.insert(Level { x: 0, y: 0 }, image_data.pixels);
         //生成多级纹理
         // (0,0)->(0,1)->(1,0)->(1,1)
@@ -181,7 +179,7 @@ impl MipMap {
         mipmap.mapping = data;
         mipmap
     }
-    pub fn lookup(&self, uv: DVec2, duvdx: DVec2, duvdy: DVec2) -> DVec3 {
+    pub fn lookup(&self, uv: DVec2, _duvdx: DVec2, _duvdy: DVec2) -> DVec3 {
         // let x_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
         // let y_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
         let level = Level {
@@ -208,7 +206,7 @@ impl MipMap {
         // }
   
     }
-
+    #[allow(dead_code)]
     fn build_floor(data: &Vec<Pixel>, w: u32, h: u32) -> Vec<Pixel> {
         let len = (w * h) as usize;
         let mut pixel: Vec<Pixel> = Vec::with_capacity(len);
@@ -222,7 +220,7 @@ impl MipMap {
                     data.get(left_up as usize),
                     data.get(right_up as usize),
                     data.get(left_bottom as usize),
-                    data.get(right_up as usize),
+                    data.get(right_bottom as usize),
                 );
                 match (a, b, c, d) {
                     (Some(a), Some(b), Some(c), Some(d)) => {

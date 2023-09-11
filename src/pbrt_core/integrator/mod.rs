@@ -1,4 +1,4 @@
-use std::{sync::mpsc::{self, Sender, Receiver}, thread::{self, Scope},  path::Path, time::Instant, ops::Sub};
+use std::{sync::mpsc::{self, Sender, Receiver},   path::Path, time::Instant, ops::Sub, thread};
 
 use glam::{f64::DVec3, UVec2};
 use image::{Rgb, RgbImage};
@@ -10,7 +10,7 @@ use crate::pbrt_core::tool::tile::merage_tile;
 
 use self::{path::PathIntegrator, direct::DirectIntegrator};
 
-use super::{tool::{sence::Sence, film::{self, Film}, RayDiff, tile::Tile, color::Color}, camera::{Camera, CameraSample}, sampler::Sampler};
+use super::{tool::{sence::Sence, film::Film, RayDiff, tile::Tile, color::Color}, camera::{Camera, CameraSample}, sampler::Sampler};
 
 pub mod path;
 pub mod direct;
@@ -95,9 +95,6 @@ impl Integrator{
         }
     }
     fn output(rece: Receiver<Vec<Tile>>, size: UVec2, name: &str, num: usize) {
-        let bar_size = size.x/2;
-        let mut bar = ProgressBar::new(bar_size as u64);
-        let mut image = RgbImage::new(size.x, size.y);
         let mut list:Vec<Vec<Tile>>=vec![];
         for iter in rece.iter() {
             list.push(iter);
@@ -110,15 +107,13 @@ impl Integrator{
     }
 
     pub fn render_process_debug(self, name: &str, num: u64, sence: &Sence,size:UVec2) {
-        let (sender, receiver) = mpsc::channel::<(u64, u64, DVec3)>();
         let film = Film::new(size);
         let bar_size =size.x * size.y;
         let n = 1;
         let mut sampler = Sampler::default();
         let camera = sence.camera;
-        let mut bar = ProgressBar::new(bar_size as u64);
+        let bar = ProgressBar::new(bar_size as u64);
         let mut image = RgbImage::new(size.x, size.y);
-        let mut sum=0;
         while let Some(item) = film.iter() {
 
             for (u, v) in item {
@@ -129,7 +124,6 @@ impl Integrator{
                     color += self.fi(ray, sence,&mut sampler);
                 }
                 image.put_pixel(u as u32, v as u32, to_color(color, num as f64));
-                sum+=1;
                 bar.inc(1);
             }
         }
@@ -144,7 +138,7 @@ impl Integrator{
 
 }
 pub fn to_color(color:DVec3,ssp:f64)->Rgb<u8>{
-        let vec = (color / ssp);
+        let vec = (color / ssp).powf(2.0);
         let rgb = vec * 255.0;
         let color= Rgb([
             rgb.x.clamp(0.0, 255.0) as u8,

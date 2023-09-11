@@ -1,17 +1,15 @@
 use std::{
     fmt::Debug,
-    ops::{BitAnd, BitOr, BitOrAssign},
+    ops::{BitAnd, BitOr},
 };
 
 use glam::{DVec2, DVec3};
-use gltf::json::extras::Void;
 
 use self::area::AreaLight;
 
 use super::{
-    primitive::{shape::{self, Shape}, Primitive},
-    sampler::Sampler,
-    tool::{sence::Sence, InteractionCommon, SurfaceInteraction, Visibility},
+    primitive::{shape:: Shape, Primitive},
+    tool::{ InteractionCommon, SurfaceInteraction, Visibility},
 };
 
 pub mod area;
@@ -47,7 +45,7 @@ impl Light {
             Self::AreaLight(area) => area.get_shape(),
         }
     }
-    pub fn pdf_li(&self, inter: &InteractionCommon, wi: &DVec3) -> f64 {
+    pub fn pdf_li(&self, _inter: &InteractionCommon, _wi: &DVec3) -> f64 {
         unimplemented!()
     }
     pub fn le(&self, wi: &DVec3) -> DVec3 {
@@ -63,7 +61,7 @@ pub enum LightType {
     Infinite = 8,
 }
 impl LightType {
-    fn is_delta(flag: u32) -> bool {
+    fn _is_delta(flag: u32) -> bool {
         (flag & LightType::DeltaPosition > 0) || (flag & LightType::DeltaDirection > 0)
     }
 }

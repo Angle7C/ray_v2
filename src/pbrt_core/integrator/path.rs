@@ -1,18 +1,10 @@
 use glam::{f64::DVec3, u32::UVec2};
-use image::{Rgb, RgbImage};
-use log::info;
-
-use std::{
-    path::Path,
-    sync::mpsc::{self, Receiver, Sender},
-    thread,
-};
 
 use crate::pbrt_core::{
     bxdf::BxDFType,
     primitive::Primitive,
     sampler::Sampler,
-    tool::{film, sence::Sence, RayDiff},
+    tool::{sence::Sence, RayDiff},
 };
 
 use super::IntegratorAble;
@@ -21,16 +13,16 @@ use super::IntegratorAble;
 pub struct PathIntegrator {
     q: f64,
     max_path: usize,
-    sampler: Sampler,
-    size: UVec2,
+    _sampler: Sampler,
+    _size: UVec2,
 }
 impl Default for PathIntegrator {
     fn default() -> Self {
         Self {
             q: 0.9,
             max_path: 10,
-            sampler: Sampler::default(),
-            size: UVec2::new(512, 512),
+            _sampler: Sampler::default(),
+            _size: UVec2::new(512, 512),
         }
     }
 }
@@ -70,7 +62,7 @@ impl IntegratorAble for PathIntegrator {
                     let w_out = -ray.o.dir;
                     let mut w_in = DVec3::default();
                     let mut pdf = 0.0;
-                    let mut flags: u32 = BxDFType::All as u32;
+                    let flags: u32 = BxDFType::All as u32;
                     let f =
                         bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
                     beta *= f * w_in.dot(item.shading.n).clamp(0.0,1.0);
@@ -90,8 +82,8 @@ impl PathIntegrator {
         Self {
             q,
             max_path,
-            sampler,
-            size,
+            _sampler:sampler,
+            _size:size,
         }
     }
 }

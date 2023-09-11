@@ -4,7 +4,7 @@ use glam::DVec3;
 
 use crate::pbrt_core::tool::color::Color;
 
-use super::{BxDFAble, func::{cos_theta, self}, BxDFType, microfacet_distribution::TrowbridgeReitzDistribution, MicrofacetDistribution, frensnel::Fresnel};
+use super::{BxDFAble, func::{cos_theta, self}, BxDFType, MicrofacetDistribution, frensnel::Fresnel};
 
 //漫反射射项
 pub struct PbrDiff{
@@ -25,7 +25,7 @@ impl BxDFAble for PbrDiff {
     fn match_type(&self, flag: u32) -> bool {
         (BxDFType::Reflection | BxDFType::Diffuse) & flag > 0
     }
-    fn rho(&self, w_in: DVec3, w_out: DVec3, sample_point: glam::DVec2) -> DVec3 {
+    fn rho(&self, _w_in: DVec3, _w_out: DVec3, _sample_point: glam::DVec2) -> DVec3 {
         DVec3::ZERO
     }
 }

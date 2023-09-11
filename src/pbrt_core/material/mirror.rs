@@ -1,4 +1,4 @@
-use std::{sync::Arc, f64::INFINITY};
+use std::sync::Arc;
 
 use glam::DVec3;
 
@@ -16,7 +16,7 @@ impl Mirror{
     }
 }
 impl Material for Mirror{
-    fn compute_scattering_functions(&self,suface:&mut crate::pbrt_core::tool::SurfaceInteraction,mode:crate::pbrt_core::bxdf::TransportMode) {
+    fn compute_scattering_functions(&self,suface:&mut crate::pbrt_core::tool::SurfaceInteraction,_mode:crate::pbrt_core::bxdf::TransportMode) {
         let r=self.kr.evaluate(&suface.common).clamp(DVec3::ZERO, DVec3::splat(f64::INFINITY));
         suface.bsdf=Some(BSDF::new(suface, 1.0));
         if let Some(bsdf)=&mut suface.bsdf{
@@ -24,7 +24,7 @@ impl Material for Mirror{
             bsdf.bxdfs.push(BxDF::SpecularReflection(SpecularReflection::new(r, fresnel)));
         }
     }
-    fn bump(&self,suface:&crate::pbrt_core::tool::SurfaceInteraction, texture:& dyn Texture<f64>) {
+    fn bump(&self,_suface:&crate::pbrt_core::tool::SurfaceInteraction, _texture:& dyn Texture<f64>) {
         
     }
 }

@@ -3,7 +3,7 @@ use std::{f64::consts::PI, sync::Arc};
 use glam::{DMat4, DVec2, DVec3};
 
 use crate::pbrt_core::{
-    material::{self, Material},
+    material::Material,
     primitive::Primitive,
     tool::{Bound, Shading, SurfaceInteraction},
 };
@@ -67,7 +67,7 @@ impl Primitive for Shpere {
         let v = p.y.acos();
         let uv = DVec2::new(phi / (2.0 * PI), 1.0 - v / PI);
         //dpdu,dpdv计算
-        let z_radius = (p.x * p.x + p.y * p.y);
+        let z_radius = p.x * p.x + p.y * p.y;
         let inv_z_radius = 1.0 / z_radius;
         let cos_phi = p.x * inv_z_radius;
         let sin_phi = p.y * inv_z_radius;

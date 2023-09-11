@@ -27,7 +27,7 @@ impl BxDFAble for DisneyDiffuse {
     fn match_type(&self, flag: u32) -> bool {
         (BxDFType::Reflection | BxDFType::Diffuse) & flag > 0
     }
-    fn rho(&self, w_in: DVec3, w_out: DVec3, sample_point: glam::DVec2) -> DVec3 {
+    fn rho(&self, _w_in: DVec3, _w_out: DVec3, _sample_point: glam::DVec2) -> DVec3 {
         DVec3::ZERO
     }
 }

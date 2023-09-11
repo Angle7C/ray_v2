@@ -1,22 +1,19 @@
-use std::{ops::Add, sync::atomic::AtomicU32};
+use std::ops::Add;
 
 use bvh::aabb::AABB;
-use glam::{
-    f64::{DVec2, DVec3},
-    UVec2,
-};
+use glam::f64::{DVec2, DVec3};
 
 use self::sence::Sence;
 
-use super::{primitive::Primitive, material::BSDF, bxdf::TransportMode, light::{Light, LightAble}};
+use super::{bxdf::TransportMode, light::LightAble, material::BSDF, primitive::Primitive};
 
 pub mod color;
-pub mod sence;
-pub mod setting;
+pub mod film;
 pub mod func;
 pub mod log;
+pub mod sence;
+pub mod setting;
 pub mod tile;
-pub mod film;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
@@ -53,9 +50,9 @@ pub struct RayDiff {
     pub dy: Option<Ray>,
 }
 pub struct RayDiffHit {
-    p: DVec3,
-    p_dx: Option<DVec3>,
-    p_dy: Option<DVec3>,
+    pub p: DVec3,
+    pub p_dx: Option<DVec3>,
+    pub p_dy: Option<DVec3>,
 }
 impl RayDiff {
     pub fn new(o: Ray) -> Self {
@@ -168,42 +165,46 @@ impl Add<Bound<3>> for Bound<3> {
     }
 }
 
-
-
 /// 求交集合
-#[derive(Default,Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct InteractionCommon {
     pub w0: DVec3,
     pub p: DVec3,
     pub normal: DVec3,
     pub time: f64,
-    pub uv:DVec2,
+    pub uv: DVec2,
 }
-impl InteractionCommon{
-    pub fn new(w0:DVec3,p:DVec3,normal:DVec3,time:f64,uv:DVec2)->Self{
-        Self { w0, p, normal, time,uv }
+impl InteractionCommon {
+    pub fn new(w0: DVec3, p: DVec3, normal: DVec3, time: f64, uv: DVec2) -> Self {
+        Self {
+            w0,
+            p,
+            normal,
+            time,
+            uv,
+        }
     }
 }
 #[derive(Default)]
 pub struct SurfaceInteraction<'a> {
     pub common: InteractionCommon,
-    uv: DVec2,
-    dpdu: DVec3,
-    dpdv: DVec3,
+    _uv: DVec2,
+    _dpdu: DVec3,
+    _dpdv: DVec3,
     //求交的图元信息
     shape: Option<&'a dyn Primitive>,
     // 渲染信息与几何信息
     pub shading: Shading,
     // BSDF采样值。表示表面的对光的作用。
-    pub bsdf:Option<BSDF>,
+    pub bsdf: Option<BSDF>,
     //该交点是不是光源。
-    pub light:Option<&'a dyn LightAble>
+    pub light: Option<&'a dyn LightAble>,
 }
 impl<'a> SurfaceInteraction<'a> {
     pub fn new(
         p: DVec3,
         uv: DVec2,
-        normal:DVec3,
+        normal: DVec3,
         w_out: DVec3,
         dpdu: DVec3,
         dpdv: DVec3,
@@ -211,7 +212,7 @@ impl<'a> SurfaceInteraction<'a> {
         dndv: DVec3,
         time: f64,
         shape: Option<&'a dyn Primitive>,
-        light:Option<&'a dyn LightAble>,
+        light: Option<&'a dyn LightAble>,
     ) -> Self {
         Self {
             common: InteractionCommon {
@@ -221,9 +222,9 @@ impl<'a> SurfaceInteraction<'a> {
                 time: time,
                 uv,
             },
-            uv,
-            dpdu,
-            dpdv,
+            _uv: uv,
+            _dpdu: dpdu,
+            _dpdv: dpdv,
             shape,
             shading: Shading {
                 n: dpdu.cross(dpdv).normalize(),
@@ -232,27 +233,26 @@ impl<'a> SurfaceInteraction<'a> {
                 dndu,
                 dndv,
             },
-            bsdf:None,
-            light:light,
+            bsdf: None,
+            light: light,
         }
     }
-    pub fn compute_scattering(&mut self,ray:RayDiff,mode:TransportMode){
-        if let Some( shape)=self.shape{
-            let primitive = unsafe { &*shape };
-            primitive.compute_scattering(self,TransportMode::Importance);
+    pub fn compute_scattering(&mut self, _ray: RayDiff, _mode: TransportMode) {
+        if let Some(shape) = self.shape {
+            // let primitive = &*shape ;
+            shape.compute_scattering(self, TransportMode::Importance);
         }
     }
-    pub fn spawn_ray(&self,wi:&DVec3)->RayDiff{
-        let ray=Ray::new(self.common.p, *wi);
+    pub fn spawn_ray(&self, wi: &DVec3) -> RayDiff {
+        let ray = Ray::new(self.common.p, *wi);
         RayDiff::new(ray)
     }
-    pub fn le(&self,w_in:DVec3)->DVec3{
-        if let Some(light)=self.light{
+    pub fn le(&self, w_in: DVec3) -> DVec3 {
+        if let Some(light) = self.light {
             light.le(w_in)
-        }else{  
+        } else {
             DVec3::ZERO
         }
-
     }
 }
 #[derive(Default)]
@@ -275,26 +275,26 @@ impl Shading {
     }
 }
 #[derive(Default)]
-pub struct Visibility{
-    pub a:InteractionCommon,
-    pub b:InteractionCommon,
+pub struct Visibility {
+    pub a: InteractionCommon,
+    pub b: InteractionCommon,
 }
-impl Visibility{
+impl Visibility {
     //是否可视
-    fn is_vis(&self,sence:&Sence)->f64{
-        let dir=self.a.p-self.b.p;
-        let ray_diff=RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01,dir.length()-0.001));
-        if sence.interacect(ray_diff).is_none(){
+    fn is_vis(&self, sence: &Sence) -> f64 {
+        let dir = self.a.p - self.b.p;
+        let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.001));
+        if sence.interacect(ray_diff).is_none() {
             1.0
-        }else{
+        } else {
             0.0
         }
     }
-    fn g(&self,sence:&Sence)->f64{
-        let vis=self.is_vis(sence);
-        let dir=(self.a.p-self.b.p);
-        vis*self.a.normal.dot(dir.normalize()).abs()
-            *self.b.normal.dot(dir.normalize()).abs()/dir.length_squared()
+    fn g(&self, sence: &Sence) -> f64 {
+        let vis = self.is_vis(sence);
+        let dir = self.a.p - self.b.p;
+        vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs()
+            / dir.length_squared()
     }
     // fn get_dir(&self,sence:&Sence)->f64{}
 }

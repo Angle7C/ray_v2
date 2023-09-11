@@ -48,7 +48,7 @@ pub trait BxDFAble {
         }
     }
     //根据采样点sample_point计算，从wi射入，到wo射出时的反射率
-    fn rho(&self, w_in: DVec3, w_out: DVec3, sample_point: DVec2) -> DVec3{
+    fn rho(&self, _w_in: DVec3, _w_out: DVec3, _sample_point: DVec2) -> DVec3{
         DVec3::ZERO
     }
 }
@@ -239,7 +239,7 @@ pub(crate) mod func {
         true
     }
     #[inline]
-    pub fn face_forward(normal: DVec3, wo: DVec3) -> DVec3 {
+    pub fn _face_forward(normal: DVec3, wo: DVec3) -> DVec3 {
         if normal.dot(wo) > 0.0 {
             normal
         } else {

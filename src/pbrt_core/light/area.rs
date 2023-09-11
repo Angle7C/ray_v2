@@ -1,13 +1,13 @@
 use std::f64::consts::PI;
 
-use glam::{DVec3, DVec2, Vec3, DMat4};
+use glam::DVec3;
 
-use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, func::vec3_coordinate_system, Visibility, Bound}, sampler::{cosine_sample_hemisphere, self}, bxdf::BxDFType};
+use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, Visibility, Bound}};
 
 use super::LightAble;
 
 pub trait AreaLight: LightAble+Primitive {
-    fn l(&self, surface: &InteractionCommon, w: &DVec3) -> DVec3 {
+    fn l(&self, _surface: &InteractionCommon, _w: &DVec3) -> DVec3 {
         todo!()
     }
     fn get_shape(&self)->&Shape;

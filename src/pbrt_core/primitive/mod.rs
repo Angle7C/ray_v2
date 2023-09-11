@@ -1,13 +1,11 @@
 use std::fmt::Debug;
 
-use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
-use glam::f32::Vec3;
-
 use super::{
     bxdf::TransportMode,
-    light::{Light, LightAble},
-    tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction},
+    light::LightAble,
+    tool::{Bound, RayDiff, SurfaceInteraction},
 };
+use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
 
 pub mod bvh;
 pub mod mesh;
@@ -23,7 +21,7 @@ pub mod shape {
     pub enum Shape<'a> {
         Rect(Rectangle<'a>),
     }
-    
+
     impl<'a> Primitive for Shape<'a> {
         fn compute_scattering(
             &self,
@@ -62,12 +60,12 @@ pub mod shape {
             }
         }
         //对于在不同点采样的时，会存在不同pdf值
-        pub fn pdf(&self, common: &InteractionCommon, wi: &DVec3) -> f64 {
+        pub fn pdf(&self, _common: &InteractionCommon, _wi: &DVec3) -> f64 {
             1.0 / self.agt_area()
         }
-        pub fn get_mat(&self)->glam::DMat4{
+        pub fn get_mat(&self) -> glam::DMat4 {
             match self {
-                Self::Rect(rect) => rect.obj_to_world
+                Self::Rect(rect) => rect.obj_to_world,
             }
         }
     }
@@ -84,7 +82,7 @@ pub trait Primitive: Debug {
         self.world_bound().intesect(ray)
     }
     //材质计算
-    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: TransportMode) {}
+    fn compute_scattering(&self, _isct: &mut SurfaceInteraction, _mode: TransportMode) {}
     //获取光源
     fn get_light(&self) -> Option<&dyn LightAble> {
         None

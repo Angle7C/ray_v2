@@ -4,7 +4,6 @@ use glam::UVec2;
 
 /// 图片抽象
 pub struct Film {
-    index: u32,
     size: (u32, u32),
     atom_count: AtomicU32,
 }
@@ -13,13 +12,7 @@ unsafe impl Send for Film {}
 impl Film {
     pub fn new(size: UVec2) -> Self {
         let (x_size, y_size) = (size.x, size.y);
-        let index = if size.y / 2 == 0 {
-            size.y / 2
-        } else {
-            size.y / 2 + 1
-        };
         Self {
-            index,
             size: (x_size, y_size),
             atom_count: AtomicU32::new(0),
         }
@@ -29,7 +22,6 @@ impl Film {
             .atom_count
             .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         let x_index = index * 2;
-        let y_index = index * 2;
         let left_up = (x_index, 0);
         let right_down = (x_index + 2, self.size.1);
         if right_down.0 >= self.size.0 {

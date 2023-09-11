@@ -16,7 +16,7 @@ impl<T>  ConstantTexture<T>{
     }
 }
 impl<T> Debug for ConstantTexture<T>{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }

@@ -1,11 +1,10 @@
-use std::sync::Arc;
+
 
 use glam::{
     f64::{DVec2, DVec3},
     DVec4,
 };
 
-use crate::pbrt_core::material::Material;
 #[derive(Debug, Default)]
 
 pub struct Mesh {

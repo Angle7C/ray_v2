@@ -1,35 +1,37 @@
-use std::sync::Arc;
-
-use glam::{DMat2, DMat4, DVec3, Vec4Swizzles, DVec2, Quat, DQuat, DVec4};
+use glam::{DMat4, DQuat, DVec2, DVec3, DVec4};
 
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{Bound, SurfaceInteraction, InteractionCommon, setting::Parse},
+    tool::{setting::Parse, Bound, InteractionCommon, SurfaceInteraction},
 };
 #[derive(Debug)]
 pub struct Rectangle<'a> {
-   pub obj_to_world: DMat4,
+    pub obj_to_world: DMat4,
     material: Option<&'a dyn Material>,
 }
 impl<'a> Rectangle<'a> {
     pub fn new(obj_to_world: DMat4, material: Option<&'a dyn Material>) -> Self {
         Self {
             obj_to_world,
-            material
+            material,
         }
     }
     pub fn get_area(&self) -> f64 {
-        let p1=self.obj_to_world.transform_vector3(DVec3::X);
-        let p2=self.obj_to_world.transform_vector3(DVec3::Y);
+        let p1 = self.obj_to_world.transform_vector3(DVec3::X);
+        let p2 = self.obj_to_world.transform_vector3(DVec3::Y);
         p1.cross(p2).length()
         // DMat2::from_cols(self.obj_to_world.x_axis.xy(), self.obj_to_world.y_axis.xy()).determinant()
     }
-    pub fn sample_interaction(&self,sampler_point:DVec2)->InteractionCommon{
-        let p = self.obj_to_world.transform_point3(sampler_point.extend(0.0));
-        let mut  commom = InteractionCommon{..Default::default()};
-        commom.p=p;
-        commom.normal=self.obj_to_world.transform_vector3(DVec3::Z);
+    pub fn sample_interaction(&self, sampler_point: DVec2) -> InteractionCommon {
+        let p = self
+            .obj_to_world
+            .transform_point3(sampler_point.extend(0.0));
+        let mut commom = InteractionCommon {
+            ..Default::default()
+        };
+        commom.p = p;
+        commom.normal = self.obj_to_world.transform_vector3(DVec3::Z);
         commom
     }
 }
@@ -77,18 +79,21 @@ impl<'a> Primitive for Rectangle<'a> {
         Some(surface)
     }
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-        let min = self.obj_to_world.transform_point3(DVec3::ZERO)-DVec3::splat(0.003);
-        let max = self.obj_to_world.transform_point3(DVec3::ONE)+DVec3::splat(0.003);
+        let min = self.obj_to_world.transform_point3(DVec3::ZERO) - DVec3::splat(0.003);
+        let max = self.obj_to_world.transform_point3(DVec3::ONE) + DVec3::splat(0.003);
         Bound::<3>::new(min, max)
     }
 }
-impl<'a> Parse for Rectangle<'a>{
-    fn parse(value:&serde_json::Value)->Self {
-        let t=DVec3::parse(&value["T"]);
-        let s= DVec3::parse(&value["S"]);
-        let r=DVec4::parse(&value["R"]);
-        let r=DQuat::from_axis_angle(r.truncate(), r.w.to_radians());
+impl<'a> Parse for Rectangle<'a> {
+    fn parse(value: &serde_json::Value) -> Self {
+        let t = DVec3::parse(&value["T"]);
+        let s = DVec3::parse(&value["S"]);
+        let r = DVec4::parse(&value["R"]);
+        let r = DQuat::from_axis_angle(r.truncate(), r.w.to_radians());
         let obj_to_world = DMat4::from_scale_rotation_translation(s, r, t);
-        Self { obj_to_world, material:None }
+        Self {
+            obj_to_world,
+            material: None,
+        }
     }
 }

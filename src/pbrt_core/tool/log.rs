@@ -1,6 +1,6 @@
 use log::LevelFilter;
 use log4rs::{
-    append::{console::ConsoleAppender, file::FileAppender},
+    append::file::FileAppender,
     config::{Appender, Root},
     encode::pattern::PatternEncoder,
     Config,
@@ -15,11 +15,7 @@ pub fn log_init() {
         .unwrap();
     let config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(
-            Root::builder()
-                .appender("logfile")
-                .build(LevelFilter::Info),
-        )
+        .build(Root::builder().appender("logfile").build(LevelFilter::Info))
         .unwrap();
 
     log4rs::init_config(config).unwrap();

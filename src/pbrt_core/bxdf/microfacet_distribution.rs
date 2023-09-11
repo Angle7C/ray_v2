@@ -5,8 +5,8 @@ use glam::{DVec2, DVec3};
 use crate::pbrt_core::{tool::func::{spherical_direction, trowbridge_reitz_sample}, bxdf::func::vec3_same_hemisphere_vec3};
 
 use super::{
-    func::{self, cos2_phi, cos2_theta, cos_theta, sin2_phi, sin2_theta, sin_phi, sin_theta},
-    BxDFAble, MicrofacetDistribution,
+    func::{ cos2_phi, cos2_theta, cos_theta, sin2_phi, sin2_theta, sin_theta},
+     MicrofacetDistribution,
 };
 
 //使用Beckmann概率分布，适用各项同性
@@ -68,7 +68,7 @@ impl MicrofacetDistribution for BeckmannDistribution {
         (1.0 - 1.259 * a + 0.396 * a * a) / (3.535 * a + 2.181 * a * a)
     }
 
-    fn sample_wh(&self, w_out: &glam::DVec3, w_in: DVec2) -> glam::DVec3 {
+    fn sample_wh(&self, _w_out: &glam::DVec3, _w_in: DVec2) -> glam::DVec3 {
         todo!()
     }
 
@@ -102,9 +102,9 @@ impl MicrofacetDistribution for TrowbridgeReitzDistribution {
             return 0.0;
         }
         let cos_4_theta = cos2_theta(wh) * cos2_theta(wh);
-        let e=(tan_2_theta
+        let e=tan_2_theta
             * (cos2_phi(wh) / (self.alphax * self.alphax)
-                + sin2_theta(wh) / (self.alphay * self.alphay)));
+                + sin2_theta(wh) / (self.alphay * self.alphay));
         1.0/(PI*self.alphax*self.alphay*cos_4_theta*(1.00+e)*(1.0+e))
     }
     fn lamdba(&self, w: &glam::DVec3) -> f64 {

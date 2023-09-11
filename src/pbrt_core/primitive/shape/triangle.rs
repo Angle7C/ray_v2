@@ -1,4 +1,4 @@
-use std::{cell::RefCell, sync::Arc};
+use std::sync::Arc;
 
 use glam::{
     f64::{DMat4, DVec2, DVec3},
@@ -7,9 +7,8 @@ use glam::{
 
 use crate::pbrt_core::{
     bxdf::TransportMode,
-    material::{matte::Matte, mirror::Mirror, Material},
+    material::Material,
     primitive::{mesh::Mesh, Primitive},
-    texture::constant::ConstantTexture,
     tool::{Bound, RayDiff, Shading, SurfaceInteraction},
 };
 #[derive(Debug)]
@@ -150,7 +149,7 @@ impl<'a> Primitive for Triangle<'a> {
             let uv = uv0 * a + uv1 * b + uv2 * c;
             let shading = self.compute_dnuv(normal.normalize());
 
-            let surface = (SurfaceInteraction::new(
+            let surface = SurfaceInteraction::new(
                 p,
                 uv,
                 normal,
@@ -162,8 +161,7 @@ impl<'a> Primitive for Triangle<'a> {
                 t,
                 Some(self),
                 None,
-            ));
-
+            );
             Some(surface)
         }
     }

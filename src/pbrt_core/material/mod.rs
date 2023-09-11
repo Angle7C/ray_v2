@@ -1,13 +1,12 @@
 use std::fmt::Debug;
 
 use glam::{f64::DVec3, DVec2};
-use rand::{random, rngs::ThreadRng, Rng};
+use rand:: Rng;
 
 use super::{
-    bxdf::{BxDF, BxDFType, TransportMode},
-    sampler::cosine_sample_hemisphere,
+    bxdf::{BxDF,TransportMode},
     texture::Texture,
-    tool::{func, SurfaceInteraction},
+    tool::SurfaceInteraction,
 };
 pub mod disney;
 pub mod matte;
@@ -66,13 +65,13 @@ impl BSDF {
             bxdfs: vec![],
         }
     }
-    pub fn pdf(&self, w_out: &DVec3, w_in: &mut DVec3, flag: u32) -> f64 {
+    pub fn pdf(&self, _w_out: &DVec3, _w_in: &mut DVec3, _flag: u32) -> f64 {
         1.0
     }
     pub fn f(&self, w_out: &DVec3, w_in: &DVec3, flag: u32) -> DVec3 {
         let w_in = &mut self.world_to_local(*w_in);
         let w_out = &mut self.world_to_local(*w_out);
-        let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
+        let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
         let mut f = DVec3::ZERO;
         for  bxdf in &self.bxdfs {
             if bxdf.match_type(flag)

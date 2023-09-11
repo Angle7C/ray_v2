@@ -15,7 +15,7 @@ where T1:Copy+Mul<T2> + Mul<T2, Output = T2>,
     }
 }
 impl<T1:Copy,T2:Copy> std::fmt::Debug for ScaleTexture<T1,T2>{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }

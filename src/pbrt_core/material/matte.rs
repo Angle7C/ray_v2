@@ -11,13 +11,13 @@ use super::{Material, BSDF};
 #[derive(Debug)]
 pub struct Matte {
     kd: Arc<dyn Texture<DVec3>>,
-    bump: Option<Arc<dyn Texture<f64>>>,
+    _bump: Option<Arc<dyn Texture<f64>>>,
 }
 impl Matte {
     pub fn new(kd: Arc<dyn Texture<DVec3>>) -> Self {
         Self {
             kd: kd.clone(),
-            bump: None,
+            _bump: None,
         }
     }
 }
@@ -25,7 +25,7 @@ impl Material for Matte {
     fn compute_scattering_functions(
         &self,
         suface: &mut crate::pbrt_core::tool::SurfaceInteraction,
-        mode: crate::pbrt_core::bxdf::TransportMode,
+        _mode: crate::pbrt_core::bxdf::TransportMode,
     ) {
         let r = self
             .kd
@@ -42,8 +42,8 @@ impl Material for Matte {
 
     fn bump(
         &self,
-        suface: &crate::pbrt_core::tool::SurfaceInteraction,
-        texture: &dyn Texture<f64>,
+        _suface: &crate::pbrt_core::tool::SurfaceInteraction,
+        _texture: &dyn Texture<f64>,
     ) {
         todo!()
     }

@@ -36,7 +36,7 @@ impl BxDFAble for SpecularReflection {
         &self,
         w_in: &mut DVec3,
         w_out: &DVec3,
-        sample_point: glam::DVec2,
+        _sample_point: glam::DVec2,
         pdf: &mut f64,
     ) -> DVec3 {
         *w_in = w_out.mul(DVec3::new(-1.0, -1.0, 1.0));
@@ -48,12 +48,12 @@ impl BxDFAble for SpecularReflection {
 //镜面透射
 pub struct SpecularTransmission {
     //上方折射率
-    eta_a: f64,
+    _eta_a: f64,
     //下方折射率
-    eta_b: f64,
-    fresnel: Fresnel,
-    mode: TransportMode,
-    t: DVec3,
+    _eta_b: f64,
+    _fresnel: Fresnel,
+    _mode: TransportMode,
+    _t: DVec3,
 }
 impl BxDFAble for SpecularTransmission {
     fn fi(&self, _w_in: &DVec3, _w_out: &DVec3) -> DVec3 {

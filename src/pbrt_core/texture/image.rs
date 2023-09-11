@@ -1,5 +1,4 @@
-use glam::{DVec2, DVec3, DVec4};
-use log::info;
+use glam::{DVec2, DVec3};
 
 use crate::pbrt_core::filter::Filter;
 

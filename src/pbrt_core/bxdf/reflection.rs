@@ -4,7 +4,7 @@ use glam::f64::DVec3;
 
 use crate::pbrt_core::tool::color::Color;
 
-use super::{BxDFAble, BxDFType, func::{self, cos_theta}, MicrofacetDistribution, frensnel::{Fresnel, self}};
+use super::{BxDFAble, BxDFType, func::{self, cos_theta}, MicrofacetDistribution, frensnel::Fresnel};
 
 pub struct LambertianReflection{
     r: DVec3
@@ -66,7 +66,7 @@ impl BxDFAble for OrenNayar{
         self.r-FRAC_1_PI*(self.a+self.b*max_cos*sin_alpha*tan_beta)
     }
 
-    fn rho(&self, w_in:DVec3, w_out: DVec3, sample_point: glam::DVec2) -> DVec3 {
+    fn rho(&self, _w_in:DVec3, _w_out: DVec3, _sample_point: glam::DVec2) -> DVec3 {
         todo!()
     }
 }
@@ -78,7 +78,7 @@ pub struct MicrofacetReflection{
     fresnel:Fresnel,
 }
 impl MicrofacetReflection{
-    pub fn new(r:Color,distribution:Box<dyn MicrofacetDistribution>,frensnel:Fresnel){
+    pub fn new(_r:Color,_distribution:Box<dyn MicrofacetDistribution>,_frensnel:Fresnel){
         unimplemented!()
     }
 }

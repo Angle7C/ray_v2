@@ -1,9 +1,7 @@
-use std::{fmt::Debug, path::Path};
-
-use glam::{DVec3, UVec2};
-use gltf::json::extensions::texture::Info;
-use image::{codecs::hdr::Rgbe8Pixel, ImageBuffer, ImageFormat, Pixel, Rgb, RgbImage};
-use log::{info, warn, debug};
+use std::path::Path;
+use glam:: UVec2;
+use image::{ImageFormat, Rgb, RgbImage};
+use log::info;
 
 use super::color::Color;
 
@@ -35,7 +33,7 @@ impl Buffer {
             let y = index as u32 % self.width;
             rbg_buffer.put_pixel(x, y, Self::to_color(color, ssp))
         }
-        rbg_buffer.save_with_format(name, ImageFormat::Jpeg);
+        let _=rbg_buffer.save_with_format(name, format);
     }
     pub fn to_color(color: Color, ssp: f64) -> Rgb<u8> {
         if color.is_nan()||!color.is_finite(){
@@ -87,7 +85,7 @@ pub fn merage_tile(list: Vec<Vec<Tile>>, size: UVec2) -> Buffer {
     list.sort();
     let mut buffer = Buffer::new(size);
     for (index, tile) in list.iter_mut().enumerate() {
-        if (index != tile.index) {
+        if index != tile.index {
             info!(
                 "merage image buffer error index:{}, title_index:{}",
                 index, tile.index

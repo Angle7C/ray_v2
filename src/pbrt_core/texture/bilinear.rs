@@ -19,7 +19,7 @@ where T:Copy+Mul<f64,Output = T>+Add<T,Output=T>,
     }
 }
 impl<T:Copy> Debug for BilinearTexture<T>{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }

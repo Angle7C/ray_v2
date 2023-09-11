@@ -1,7 +1,7 @@
 use log::info;
 use pbrt_core::tool::{setting::Build, log::log_init};
 
-#[allow(unused, dead_code)]
+// #[allow(unused, dead_code)]
 pub mod pbrt_core;
 
 mod test;

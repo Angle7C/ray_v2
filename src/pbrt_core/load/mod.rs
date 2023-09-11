@@ -1,35 +1,23 @@
-use std::{
-    cell::RefCell,
-    collections::{BTreeSet, HashMap, HashSet},
-    hash::Hash,
-    pin::Pin,
-    rc::Weak,
-    sync::Arc,
-};
+use std::sync::Arc;
 
 use glam::{
     f64::{DMat4, DVec2, DVec3},
     u32::UVec3,
-    DVec4, Mat4, Quat, UVec2, UVec4, Vec2, Vec3, Vec4,
+    Mat4, Quat, UVec4, Vec2, Vec3, Vec4,
 };
-use gltf::{buffer::Data, import, Attribute, Buffer, Gltf};
+use gltf::{buffer::Data, import, Buffer};
 
-use crate::pbrt_core::primitive::{
-    mesh::Mesh,
-    shape::{shpere, triangle::Triangle, Shape},
-};
+use crate::pbrt_core::primitive::{mesh::Mesh, shape::triangle::Triangle};
 
 use super::{
-    camera::Camera,
-    material::{self, disney::Disney, matte::Matte, pbr::PbrMaterial, Material},
-    primitive::{shape, Primitive},
+    material::{matte::Matte, pbr::PbrMaterial, Material},
+    primitive::Primitive,
     texture::{
         constant::ConstantTexture,
         image::ImageTexture,
         mipmap::{ImageData, MipMap},
         Texture,
     },
-    tool::sence::Sence,
 };
 
 pub struct GltfLoad;
@@ -41,7 +29,7 @@ impl GltfLoad {
     where
         'b: 'a,
     {
-        let mut material;
+        let material;
         if let Ok((gltf, buffer, images)) = import(path) {
             //mesh几何
             *shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
@@ -53,7 +41,6 @@ impl GltfLoad {
             let mesh = Mesh::new(all_point, all_normal, all_uv, vec![]);
             let mesh = Arc::new(mesh);
             {
-                let mesh_slice = mesh.clone();
                 for i in 0..nodes {
                     let index = index_vec.get(i).unwrap();
                     let det_index = det_index_vec[i];
@@ -79,7 +66,6 @@ impl GltfLoad {
 fn load_mesh(
     mesh: gltf::Mesh,
     material_vec: &[Box<dyn Material>],
-    i: usize,
     buffer: &Vec<Data>,
     index: &mut Vec<UVec4>,
     point: &mut Vec<DVec3>,
@@ -89,13 +75,12 @@ fn load_mesh(
     let get_buffer = |x: Buffer| Some(&*buffer[x.index()].0);
     for primitive in mesh.primitives() {
         let material = primitive.material();
-        let (m, material_index) = if let Some(material_index) = material.index() {
+        let (_, material_index) = if let Some(material_index) = material.index() {
             (material_vec.get(material_index).unwrap(), material_index)
         } else {
             //默认材质
             (material_vec.last().unwrap(), material_vec.len() - 1)
         };
-        let attribute = primitive.attributes();
         let reader = primitive.reader(get_buffer);
         *index = reader
             .read_indices()
@@ -124,7 +109,7 @@ fn load_mesh(
                         .collect::<Vec<_>>();
                 }
                 gltf::Semantic::Tangents => {}
-                gltf::Semantic::Colors(color) => {}
+                gltf::Semantic::Colors(_) => {}
                 gltf::Semantic::TexCoords(coords) => {
                     *uv = reader
                         .read_tex_coords(coords)
@@ -133,8 +118,8 @@ fn load_mesh(
                         .map(|x| Vec2::from_array(x).as_dvec2())
                         .collect::<Vec<_>>();
                 }
-                gltf::Semantic::Joints(j) => {}
-                gltf::Semantic::Weights(w) => {}
+                gltf::Semantic::Joints(_) => {}
+                gltf::Semantic::Weights(_) => {}
             }
         }
     }
@@ -179,7 +164,7 @@ fn load_node(
     let mut normal_vec = vec![];
     let mut uv_vec = vec![];
     let mut nodes: usize = 0;
-    for (i, item) in gltf.nodes().enumerate() {
+    for (_, item) in gltf.nodes().enumerate() {
         let transform = match item.transform() {
             gltf::scene::Transform::Matrix { matrix } => {
                 Mat4::from_cols_array_2d(&matrix).as_dmat4()
@@ -205,7 +190,6 @@ fn load_node(
             load_mesh(
                 mesh,
                 &material_vec,
-                i,
                 &buffer,
                 &mut index,
                 &mut point,
@@ -283,7 +267,7 @@ pub fn add_material(
     //双面贴图
     let _ = material.double_sided();
     //自发光
-    let emissive_texture = material.emissive_factor();
+    let _emissive_texture = material.emissive_factor();
     //自发光贴图
     material.emissive_texture();
     //法线贴图

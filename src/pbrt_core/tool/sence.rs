@@ -1,4 +1,4 @@
-use std::{borrow::BorrowMut, fmt::Debug};
+use std::fmt::Debug;
 
 use glam::{DVec2, DVec3};
 use rand::Rng;
@@ -6,24 +6,24 @@ use rand::Rng;
 use crate::pbrt_core::{
     bxdf::BxDFType,
     camera::Camera,
-    light::{Light, LightAble},
-    material::{Material, self},
-    primitive::{self, bvh::BVH, Aggregate, GeometricePrimitive, ObjectType, Primitive},
+    light::Light,
+    material::Material,
+    primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
     sampler::Sampler,
 };
 
-use super::{Bound, InteractionCommon, Ray, RayDiff, SurfaceInteraction, Visibility};
+use super::{Bound, SurfaceInteraction, Visibility};
 
 pub struct Sence<'a> {
-    primitive: &'a [Box<dyn Primitive>],
+    _primitive: &'a [Box<dyn Primitive>],
     accel: Option<Box<dyn Aggregate>>,
     bound: Bound<3>,
     light: &'a [Light],
-    material:  &'a [Box<dyn Material>],
+    _material:  &'a [Box<dyn Material>],
     pub camera: Camera,
 }
 impl<'a> Debug for Sence<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }
@@ -49,12 +49,12 @@ impl<'a> Sence<'a> {
             .fold(Bound::<3>::default(), |a, b| a.merage(b));
 
         let accel: BVH<'_> = BVH::new(geoemtry);
-        let mut sence = Self {
-            primitive: primitive,
+        let sence = Self {
+            _primitive: primitive,
             accel: Some(Box::new(accel)),
             bound,
             light,
-            material: material ,
+            _material: material ,
             camera,
         };
         sence
@@ -89,10 +89,10 @@ impl<'a> Sence<'a> {
     }
     pub fn uniform_sample_all_light(
         &self,
-        surface: &SurfaceInteraction,
-        sampler: &mut Sampler,
+        _surface: &SurfaceInteraction,
+        _sampler: &mut Sampler,
         //是否有介质参与
-        handle: bool,
+        _handle: bool,
     ) -> DVec3 {
         unimplemented!()
     }
@@ -100,7 +100,7 @@ impl<'a> Sence<'a> {
 
 impl<'a> Primitive for Sence<'a> {
     fn interacect(&self, ray: super::RayDiff) -> Option<super::SurfaceInteraction> {
-        if (self.interacect_bound(&ray)) {
+        if self.interacect_bound(&ray) {
             if let Some(accel) = &self.accel {
                 accel.interacect(&ray)
             } else {
@@ -123,14 +123,13 @@ pub fn sample_light(
     u: DVec2,
     light: &Light,
     sence: &Sence,
-    sampler: &mut Sampler,
+    _sampler: &mut Sampler,
     flag: u32,
-    handle: bool,
+    _handle: bool,
 ) -> DVec3 {
     let mut light_pdf = 0.0;
     // let mut scattering_pdf = 0.0;
     let mut vis = Visibility::default();
-    let mut inter = SurfaceInteraction::default();
     //射出
     let mut wi = Default::default();
 
@@ -149,7 +148,7 @@ pub fn sample_light(
 
     ld * ok * f / light_pdf
 }
-fn power_heuristic(nf: u32, f_pdf: f64, ng: u32, g_pdf: f64) -> f64 {
+fn _power_heuristic(nf: u32, f_pdf: f64, ng: u32, g_pdf: f64) -> f64 {
     let f = nf as f64 * f_pdf;
     let g = ng as f64 * g_pdf;
     return (f * f) / (f * f + g * g);
