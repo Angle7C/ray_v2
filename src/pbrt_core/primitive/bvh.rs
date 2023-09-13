@@ -1,3 +1,4 @@
+
 use bvh::ray::Ray;
 
 use crate::pbrt_core::tool::SurfaceInteraction;
@@ -20,7 +21,7 @@ impl<'b> BVH<'b> {
 impl<'b> Aggregate for BVH<'b> {
     fn interacect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let o_ray = ray.clone();
-        let mut ray = Ray::new(o_ray.o.origin.as_vec3(), o_ray.o.dir.as_vec3());
+        let mut ray =  bvh::ray::Ray::new(o_ray.o.origin.as_vec3(), o_ray.o.dir.as_vec3());
         let iter = self.accel.traverse(&mut ray, &self.geo);
         let mut ans: Option<SurfaceInteraction> = None;
         let t_max = o_ray.o.t_max;

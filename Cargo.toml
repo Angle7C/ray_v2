@@ -8,7 +8,7 @@ edition = "2021"
 
 
 [dependencies]
-glam={version="0.23.0"}
+glam={version="0.23.0", features = ["serde"]}
 rand="*"
 gltf={version="1.3.0", features  =["KHR_lights_punctual"]}
 indicatif="*"
@@ -18,3 +18,4 @@ serde = { version = "1.0"}
 bvh="*"
 log="*"
 log4rs = "1.2.0"
+toml="*"

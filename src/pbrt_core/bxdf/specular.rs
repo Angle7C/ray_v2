@@ -23,15 +23,6 @@ impl BxDFAble for SpecularReflection {
     fn match_type(&self, flag: u32) -> bool {
         ((BxDFType::Specular | BxDFType::Reflection) & flag as u32) != 0
     }
-    //
-    fn rho(
-        &self,
-        _w_in: glam::DVec3,
-        _w_out: glam::DVec3,
-        _sample_point: glam::DVec2,
-    ) -> glam::DVec3 {
-        DVec3::ZERO
-    }
     fn sample_f(
         &self,
         w_in: &mut DVec3,
@@ -61,8 +52,5 @@ impl BxDFAble for SpecularTransmission {
     }
     fn match_type(&self, flag: u32) -> bool {
         ((BxDFType::Specular | BxDFType::Transmission) & flag as u32) != 0
-    }
-    fn rho(&self, _w_in: DVec3, _w_out: DVec3, _sample_point: glam::DVec2) -> DVec3 {
-        DVec3::ZERO
     }
 }

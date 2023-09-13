@@ -31,34 +31,37 @@ unsafe impl<'a> Sync for Sence<'a> {}
 
 impl<'a> Sence<'a> {
     pub fn new(primitive: Vec<Box<dyn Primitive>>, light: Vec<Light>, camera: Camera,material:&'static[Box<dyn Material>]) -> Self {
-        let light = light.leak();
-        let primitive = primitive.leak();
-        //场景集合
-        let mut geoemtry = primitive
-            .iter()
-            .map(|ele| GeometricePrimitive::new(ele.as_ref()))
-            .collect::<Vec<_>>();
-        let mut geoemtry_light = light
-            .iter()
-            .map(|item| GeometricePrimitive::new(item))
-            .collect::<Vec<_>>();
-        geoemtry.append(&mut geoemtry_light);
-        let bound = geoemtry
-            .iter()
-            .map(|ele| ele.world_bound())
-            .fold(Bound::<3>::default(), |a, b| a.merage(b));
+        // let light = light.leak();
+        // let primitive = primitive.leak();
+        // //场景集合
+        // let mut geoemtry = primitive
+        //     .iter()
+        //     .map(|ele| GeometricePrimitive::new(ele.as_ref()))
+        //     .collect::<Vec<_>>();
+        // let mut geoemtry_light = light
+        //     .iter()
+        //     .map(|item| GeometricePrimitive::new(item))
+        //     .collect::<Vec<_>>();
+        // geoemtry.append(&mut geoemtry_light);
+        // let bound = geoemtry
+        //     .iter()
+        //     .map(|ele| ele.world_bound())
+        //     .fold(Bound::<3>::default(), |a, b| a.merage(b));
 
-        let accel: BVH<'_> = BVH::new(geoemtry);
-        let sence = Self {
-            _primitive: primitive,
-            accel: Some(Box::new(accel)),
-            bound,
-            light,
-            _material: material ,
-            camera,
-        };
-        sence
+        // let accel: BVH<'_> = BVH::new(geoemtry);
+        // let sence = Self {
+        //     _primitive: primitive,
+        //     accel: Some(Box::new(accel)),
+        //     bound,
+        //     light,
+        //     _material: material ,
+        //     camera,
+        // };
+        // sence
+        unimplemented!()
     }
+
+
     pub fn uniform_sample_one_light(
         &self,
         surface: &SurfaceInteraction,
@@ -147,9 +150,4 @@ pub fn sample_light(
     let ok = vis.g(sence);
 
     ld * ok * f / light_pdf
-}
-fn _power_heuristic(nf: u32, f_pdf: f64, ng: u32, g_pdf: f64) -> f64 {
-    let f = nf as f64 * f_pdf;
-    let g = ng as f64 * g_pdf;
-    return (f * f) / (f * f + g * g);
 }

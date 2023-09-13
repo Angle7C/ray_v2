@@ -5,9 +5,13 @@ use super::{tool::{RayDiff, Ray}, sampler::Sampler};
 
 #[derive(Debug,Default,Clone, Copy)]
 pub struct Camera {
+    //相机原点
     eye: DVec3,
+    //屏幕——相机
     screen_to_camera: DMat4,
+    //相机-世界
     camera_to_world: DMat4,
+    //相机模型
     mode:CameraMode
 }
 
@@ -17,9 +21,11 @@ pub enum CameraMode {
     P,
     O,
 }
+//相机采样器
 pub struct  CameraSample{
     pub film_point:DVec2,
 }
+
 impl CameraSample{
     pub fn new(x:f64,y:f64,sampler:&mut Sampler)->Self{
        let point= sampler.sample_2d_d()+DVec2{x,y};
@@ -27,6 +33,7 @@ impl CameraSample{
     }
 }
 impl Camera {
+    //计算视口矩阵
     fn computer_viewport(size: DVec2) -> DMat4 {
         let mat = DMat4::from_cols(
             DVec4::new(size.x / 2.0, 0.0, 0.0, 0.0),
@@ -36,6 +43,7 @@ impl Camera {
         );
         mat.inverse()
     }
+    //构造
     pub fn new(eye: DVec3, center: DVec3, up: DVec3, size: Vec2, mode: CameraMode, fov: f64)->Self{
         let look_at_lh = DMat4::look_at_lh(eye, center,up);
         let p = match mode {

@@ -21,6 +21,7 @@ use super::{
 };
 
 pub struct GltfLoad;
+pub mod myload;
 impl GltfLoad {
     pub fn load<'a, 'b>(
         path: &str,

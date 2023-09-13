@@ -25,9 +25,6 @@ impl BxDFAble for PbrDiff {
     fn match_type(&self, flag: u32) -> bool {
         (BxDFType::Reflection | BxDFType::Diffuse) & flag > 0
     }
-    fn rho(&self, _w_in: DVec3, _w_out: DVec3, _sample_point: glam::DVec2) -> DVec3 {
-        DVec3::ZERO
-    }
 }
 pub struct PbrReflection{
     r:Color,

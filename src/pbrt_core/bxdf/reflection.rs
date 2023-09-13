@@ -17,10 +17,6 @@ impl BxDFAble for LambertianReflection{
         ((BxDFType::Reflection | BxDFType::Diffuse) & flag as u32) != 0
 
     }
-    fn rho(&self, _w_in:glam::DVec3, _w_out: glam::DVec3, _sample_point: glam::DVec2) -> glam::DVec3 {
-        self.r
-    }
-    
 }
 impl LambertianReflection{
     pub fn new(r:DVec3)->Self{
@@ -64,10 +60,6 @@ impl BxDFAble for OrenNayar{
             (sin_i,sin_o/cos_o.abs())
         };
         self.r-FRAC_1_PI*(self.a+self.b*max_cos*sin_alpha*tan_beta)
-    }
-
-    fn rho(&self, _w_in:DVec3, _w_out: DVec3, _sample_point: glam::DVec2) -> DVec3 {
-        todo!()
     }
 }
 
