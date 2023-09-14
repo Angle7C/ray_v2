@@ -1,9 +1,9 @@
-use glam::DVec3;
+use glam::Vec3;
 
 use crate::pbrt_core::{
     primitive::Primitive,
     sampler::Sampler,
-    tool::{sence::Sence, RayDiff},
+    tool::{sence::Sence, RayDiff, color::Color},
 };
 
 pub struct DirectIntegrator {
@@ -23,9 +23,9 @@ impl DirectIntegrator {
             _sample:sample,
         }
     }
-    pub fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> DVec3 {
-        let mut ans = DVec3::ZERO;
-        let beta=DVec3::ONE;
+    pub fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color {
+        let mut ans = Vec3::ZERO;
+        let beta=Vec3::ONE;
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         if let Some(mut item) = sence.interacect(ray) {
             if item.light.is_some() {

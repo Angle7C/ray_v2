@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use glam::DVec3;
+use glam::Vec3;
 
 use crate::pbrt_core::{
     bxdf::{
@@ -17,31 +17,31 @@ use super::{Material, BSDF};
 #[derive(Debug)]
 pub struct PbrMaterial {
     //基本颜色
-    base_color: Option<Arc<dyn Texture<DVec3>>>,
+    base_color: Option<Arc<dyn Texture>>,
     //金属度
-    metailc: Option<Arc<dyn Texture<DVec3>>>,
+    metailc: Option<Arc<dyn Texture>>,
     //粗糙度
-    roughness: Option<Arc<dyn Texture<DVec3>>>,
+    roughness: Option<Arc<dyn Texture>>,
     //亮度
-    _emissive: Option<Arc<dyn Texture<DVec3>>>,
+    _emissive: Option<Arc<dyn Texture>>,
     //遮挡贴图
-    _occlusion: Option<Arc<dyn Texture<DVec3>>>,
+    _occlusion: Option<Arc<dyn Texture>>,
     //法线贴图
-    _normal: Option<Arc<dyn Texture<DVec3>>>,
+    _normal: Option<Arc<dyn Texture>>,
 }
 impl PbrMaterial {
     pub fn new(
-        base_color: Option<Arc<dyn Texture<DVec3>>>,
+        base_color: Option<Arc<dyn Texture>>,
         //金属度
-        metailc: Option<Arc<dyn Texture<DVec3>>>,
+        metailc: Option<Arc<dyn Texture>>,
         //粗糙度
-        roughness: Option<Arc<dyn Texture<DVec3>>>,
+        roughness: Option<Arc<dyn Texture>>,
         //亮度
-        emissive: Option<Arc<dyn Texture<DVec3>>>,
+        emissive: Option<Arc<dyn Texture>>,
         //遮挡贴图
-        occlusion: Option<Arc<dyn Texture<DVec3>>>,
+        occlusion: Option<Arc<dyn Texture>>,
         //法线贴图
-        normal: Option<Arc<dyn Texture<DVec3>>>,
+        normal: Option<Arc<dyn Texture>>,
     ) -> Self {
         Self {
             base_color,
@@ -54,7 +54,7 @@ impl PbrMaterial {
     }
 }
 impl Material for PbrMaterial {
-    fn bump(&self, _suface: &SurfaceInteraction, _texture: &dyn Texture<f64>) {}
+    fn bump(&self, _suface: &SurfaceInteraction, _texture: &dyn Texture) {}
     fn compute_scattering_functions(
         &self,
         suface: &mut crate::pbrt_core::tool::SurfaceInteraction,
@@ -65,22 +65,22 @@ impl Material for PbrMaterial {
             .as_ref()
             .unwrap()
             .evaluate(&suface.common)
-            .clamp(DVec3::ZERO, DVec3::splat(f64::INFINITY));
+            .clamp(Vec3::ZERO, Vec3::splat(f32::INFINITY));
         let metallic = if let Some(ref metallic) = self.metailc {
             metallic.evaluate(&suface.common)
         } else {
-            DVec3::ZERO
+            Vec3::ZERO
         };
-        let r0 = metallic * r + (DVec3::ONE - metallic) * DVec3::splat(0.04);
+        let r0 = metallic * r + (Vec3::ONE - metallic) * Vec3::splat(0.04);
         let roughness = if let Some(ref roughness) = self.roughness {
             roughness.evaluate(&suface.common)
         } else {
-            DVec3::splat(0.5)
+            Vec3::splat(0.5)
         };
         let roughness = roughness_to_alpha(roughness.y);
         suface.bsdf = Some(BSDF::new(&suface, 1.0));
         if let Some(bsdf) = &mut suface.bsdf {
-            if r != DVec3::ZERO {
+            if r != Vec3::ZERO {
                 bsdf.bxdfs.push(BxDF::PbrDiff(PbrDiff::new(r)));
                 bsdf.bxdfs.push(BxDF::PbrReflection(PbrReflection::new(
                     r,

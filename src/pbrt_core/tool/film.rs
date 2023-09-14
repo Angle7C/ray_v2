@@ -65,7 +65,7 @@ impl FilmIter {
     }
 }
 impl Iterator for FilmIter {
-    type Item = (f64, f64);
+    type Item = (f32, f32);
     fn next(&mut self) -> Option<Self::Item> {
         let (mut x, mut y) = self.now;
         if y >= self.right_down.1 {
@@ -76,7 +76,7 @@ impl Iterator for FilmIter {
             None
         } else {
             self.now = (x, y + 1);
-            Some((x as f64, y as f64))
+            Some((x as f32, y as f32))
         }
     }
 }

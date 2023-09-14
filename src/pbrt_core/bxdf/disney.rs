@@ -1,6 +1,6 @@
-use std::f64::consts::FRAC_1_PI;
+use std::f32::consts::FRAC_1_PI;
 
-use glam::DVec3;
+use glam::Vec3;
 
 use crate::pbrt_core::tool::color::Color;
 
@@ -18,7 +18,7 @@ impl DisneyDiffuse {
     }
 }
 impl BxDFAble for DisneyDiffuse {
-    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3 {
+    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let fo = func::schlick_weight(cos_theta(w_out).abs());
         let fi = func::schlick_weight(cos_theta(w_in).abs());
 
@@ -31,19 +31,19 @@ impl BxDFAble for DisneyDiffuse {
 //电介质diff
 pub struct DisneyRetro {
     r: Color,
-    roughness: f64,
+    roughness: f32,
 }
 impl DisneyRetro {
-    pub fn new(r: Color, roughness: f64) -> Self {
+    pub fn new(r: Color, roughness: f32) -> Self {
         Self { r, roughness }
     }
 }
 
 impl BxDFAble for DisneyRetro{
-    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3 {
+    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let mut wh=*w_in+*w_out;
-        if wh==DVec3::ZERO{
-            return DVec3::ZERO;
+        if wh==Vec3::ZERO{
+            return Vec3::ZERO;
         };
         wh=wh.normalize();
         let cos=w_in.dot(wh);

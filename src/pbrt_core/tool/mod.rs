@@ -1,7 +1,7 @@
 use std::ops::Add;
 
 use bvh::aabb::AABB;
-use glam::f64::{DVec2, DVec3};
+use glam::{Vec2, Vec3};
 
 use self::sence::Sence;
 
@@ -14,27 +14,29 @@ pub mod log;
 pub mod sence;
 pub mod setting;
 pub mod tile;
+pub mod error;
+pub mod mipmap;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
-    pub origin: DVec3,
-    pub dir: DVec3,
-    pub t_min: f64,
-    pub t_max: f64,
+    pub origin: Vec3,
+    pub dir: Vec3,
+    pub t_min: f32,
+    pub t_max: f32,
 }
 impl Ray {
-    pub fn new(origin: DVec3, dir: DVec3) -> Self {
+    pub fn new(origin: Vec3, dir: Vec3) -> Self {
         Self {
             origin,
             dir: dir.normalize(),
-            t_max: f64::INFINITY,
+            t_max: f32::INFINITY,
             t_min: 0.0,
         }
     }
-    pub fn at(&self, t: f64) -> DVec3 {
+    pub fn at(&self, t: f32) -> Vec3 {
         self.origin + self.dir * t
     }
-    pub fn from_with_t(origin: DVec3, dir: DVec3, t_min: f64, t_max: f64) -> Self {
+    pub fn from_with_t(origin: Vec3, dir: Vec3, t_min: f32, t_max: f32) -> Self {
         Self {
             origin,
             dir: dir.normalize(),
@@ -50,9 +52,9 @@ pub struct RayDiff {
     pub dy: Option<Ray>,
 }
 pub struct RayDiffHit {
-    pub p: DVec3,
-    pub p_dx: Option<DVec3>,
-    pub p_dy: Option<DVec3>,
+    pub p: Vec3,
+    pub p_dx: Option<Vec3>,
+    pub p_dy: Option<Vec3>,
 }
 impl RayDiff {
     pub fn new(o: Ray) -> Self {
@@ -62,7 +64,7 @@ impl RayDiff {
             dy: None,
         }
     }
-    pub fn at(&self, t: f64) -> RayDiffHit {
+    pub fn at(&self, t: f32) -> RayDiffHit {
         let o = self.o.at(t);
         let p_dx = if let Some(ref dx) = self.dx {
             Some(dx.at(t))
@@ -82,8 +84,8 @@ impl RayDiff {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Bound<const N: usize> {
-    pub min: DVec3,
-    pub max: DVec3,
+    pub min: Vec3,
+    pub max: Vec3,
 }
 
 impl From<Bound<3>> for AABB {
@@ -91,14 +93,14 @@ impl From<Bound<3>> for AABB {
         let min = value.min;
         let max = value.max;
         Self {
-            min: min.as_vec3(),
-            max: max.as_vec3(),
+            min: min,
+            max: max,
         }
     }
 }
 
 impl Bound<2> {
-    pub fn new(min: DVec2, max: DVec2) -> Self {
+    pub fn new(min: Vec2, max: Vec2) -> Self {
         Self {
             min: min.min(max).extend(0.0),
             max: min.max(max).extend(0.0),
@@ -109,13 +111,13 @@ impl Bound<2> {
         let max = self.max.max(bound.max);
         Self { min, max }
     }
-    pub fn center(&self) -> DVec2 {
+    pub fn center(&self) -> Vec2 {
         let center = (self.min + self.max) / 2.0;
         center.truncate()
     }
 }
 impl Bound<3> {
-    pub fn new(min: DVec3, max: DVec3) -> Self {
+    pub fn new(min: Vec3, max: Vec3) -> Self {
         Self {
             min: min.min(max),
             max: max.max(min),
@@ -126,7 +128,7 @@ impl Bound<3> {
         let max = self.max.max(bound.max);
         Self { min, max }
     }
-    pub fn center(&self) -> DVec3 {
+    pub fn center(&self) -> Vec3 {
         let center = (self.min + self.max) / 2.0;
         center
     }
@@ -135,8 +137,8 @@ impl Bound<3> {
 impl<const N: usize> Default for Bound<N> {
     fn default() -> Self {
         Self {
-            min: DVec3::splat(f64::INFINITY),
-            max: DVec3::splat(-f64::INFINITY),
+            min: Vec3::splat(f32::INFINITY),
+            max: Vec3::splat(-f32::INFINITY),
         }
     }
 }
@@ -168,14 +170,14 @@ impl Add<Bound<3>> for Bound<3> {
 /// 求交集合
 #[derive(Default, Clone, Copy)]
 pub struct InteractionCommon {
-    pub w0: DVec3,
-    pub p: DVec3,
-    pub normal: DVec3,
-    pub time: f64,
-    pub uv: DVec2,
+    pub w0: Vec3,
+    pub p: Vec3,
+    pub normal: Vec3,
+    pub time: f32,
+    pub uv: Vec2,
 }
 impl InteractionCommon {
-    pub fn new(w0: DVec3, p: DVec3, normal: DVec3, time: f64, uv: DVec2) -> Self {
+    pub fn new(w0: Vec3, p: Vec3, normal: Vec3, time: f32, uv: Vec2) -> Self {
         Self {
             w0,
             p,
@@ -188,9 +190,9 @@ impl InteractionCommon {
 #[derive(Default)]
 pub struct SurfaceInteraction<'a> {
     pub common: InteractionCommon,
-    _uv: DVec2,
-    _dpdu: DVec3,
-    _dpdv: DVec3,
+    _uv: Vec2,
+    _dpdu: Vec3,
+    _dpdv: Vec3,
     //求交的图元信息
     shape: Option<&'a dyn Primitive>,
     // 渲染信息与几何信息
@@ -202,15 +204,15 @@ pub struct SurfaceInteraction<'a> {
 }
 impl<'a> SurfaceInteraction<'a> {
     pub fn new(
-        p: DVec3,
-        uv: DVec2,
-        normal: DVec3,
-        w_out: DVec3,
-        dpdu: DVec3,
-        dpdv: DVec3,
-        dndu: DVec3,
-        dndv: DVec3,
-        time: f64,
+        p: Vec3,
+        uv: Vec2,
+        normal: Vec3,
+        w_out: Vec3,
+        dpdu: Vec3,
+        dpdv: Vec3,
+        dndu: Vec3,
+        dndv: Vec3,
+        time: f32,
         shape: Option<&'a dyn Primitive>,
         light: Option<&'a dyn LightAble>,
     ) -> Self {
@@ -243,28 +245,28 @@ impl<'a> SurfaceInteraction<'a> {
             shape.compute_scattering(self, TransportMode::Importance);
         }
     }
-    pub fn spawn_ray(&self, wi: &DVec3) -> RayDiff {
+    pub fn spawn_ray(&self, wi: &Vec3) -> RayDiff {
         let ray = Ray::new(self.common.p, *wi);
         RayDiff::new(ray)
     }
-    pub fn le(&self, w_in: DVec3) -> DVec3 {
+    pub fn le(&self, w_in: Vec3) -> Vec3 {
         if let Some(light) = self.light {
             light.le(w_in)
         } else {
-            DVec3::ZERO
+            Vec3::ZERO
         }
     }
 }
 #[derive(Default)]
 pub struct Shading {
-    pub n: DVec3,
-    pub dpdu: DVec3,
-    pub dpdv: DVec3,
-    pub dndu: DVec3,
-    pub dndv: DVec3,
+    pub n: Vec3,
+    pub dpdu: Vec3,
+    pub dpdv: Vec3,
+    pub dndu: Vec3,
+    pub dndv: Vec3,
 }
 impl Shading {
-    pub fn new(n: DVec3, dpdu: DVec3, dpdv: DVec3, dndu: DVec3, dndv: DVec3) -> Self {
+    pub fn new(n: Vec3, dpdu: Vec3, dpdv: Vec3, dndu: Vec3, dndv: Vec3) -> Self {
         Self {
             n,
             dpdu,
@@ -281,7 +283,7 @@ pub struct Visibility {
 }
 impl Visibility {
     //是否可视
-    fn is_vis(&self, sence: &Sence) -> f64 {
+    fn is_vis(&self, sence: &Sence) -> f32 {
         let dir = self.a.p - self.b.p;
         let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.001));
         if sence.interacect(ray_diff).is_none() {
@@ -290,11 +292,11 @@ impl Visibility {
             0.0
         }
     }
-    fn g(&self, sence: &Sence) -> f64 {
+    fn g(&self, sence: &Sence) -> f32 {
         let vis = self.is_vis(sence);
         let dir = self.a.p - self.b.p;
         vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs()
             / dir.length_squared()
     }
-    // fn get_dir(&self,sence:&Sence)->f64{}
+    // fn get_dir(&self,sence:&Sence)->f32{}
 }

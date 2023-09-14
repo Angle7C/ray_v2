@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use glam::{DVec2, DVec3};
+use glam::{Vec2, Vec3};
 use rand::Rng;
 
 use crate::pbrt_core::{
@@ -8,7 +8,7 @@ use crate::pbrt_core::{
     camera::Camera,
     light::Light,
     material::Material,
-    primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
+    primitive::{ Aggregate,Primitive},
     sampler::Sampler,
 };
 
@@ -68,12 +68,12 @@ impl<'a> Sence<'a> {
         sampler: &mut Sampler,
         //是否有介质参与
         handle: bool,
-    ) -> DVec3 {
+    ) -> Vec3 {
         //随机选择一个光源
         let light_num = sampler.rand.gen_range(0..self.light.len());
         let light = &self.light[light_num];
 
-        let mut s = DVec3::ZERO;
+        let mut s = Vec3::ZERO;
         for _ in 0..8 {
             //采样光源点
             let point = sampler.sample_2d_d();
@@ -96,7 +96,7 @@ impl<'a> Sence<'a> {
         _sampler: &mut Sampler,
         //是否有介质参与
         _handle: bool,
-    ) -> DVec3 {
+    ) -> Vec3 {
         unimplemented!()
     }
 }
@@ -123,13 +123,13 @@ impl<'a> Primitive for Sence<'a> {
 }
 pub fn sample_light(
     surface: &SurfaceInteraction,
-    u: DVec2,
+    u: Vec2,
     light: &Light,
     sence: &Sence,
     _sampler: &mut Sampler,
     flag: u32,
     _handle: bool,
-) -> DVec3 {
+) -> Vec3 {
     let mut light_pdf = 0.0;
     // let mut scattering_pdf = 0.0;
     let mut vis = Visibility::default();
@@ -145,7 +145,7 @@ pub fn sample_light(
         // scattering_pdf = bsdf.pdf(&surface.common.w0, &mut wi, flag);
         f
     } else {
-        DVec3::ZERO
+        Vec3::ZERO
     };
     let ok = vis.g(sence);
 

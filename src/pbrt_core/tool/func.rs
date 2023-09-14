@@ -1,20 +1,20 @@
-use glam::DVec3;
+use glam::Vec3;
 
 use crate::pbrt_core::bxdf::func::{sin_phi, cos_phi, cos_theta};
 
-pub fn vec3_coordinate_system(v1:DVec3,v2:&mut DVec3,v3:&mut DVec3){
+pub fn vec3_coordinate_system(v1:Vec3,v2:&mut Vec3,v3:&mut Vec3){
     if v1.x.abs()>v1.y.abs(){
-        *v2=DVec3::new(-v1.z, 0.0, v1.x)
+        *v2=Vec3::new(-v1.z, 0.0, v1.x)
         /(v1.x*v1.x+v1.z*v1.z).sqrt();
     }else{
-        *v2=DVec3::new(0.0, v1.z, -v1.y)
+        *v2=Vec3::new(0.0, v1.z, -v1.y)
         /(v1.y*v1.y+v1.z+v1.z).sqrt();
     }
     *v3=v1.cross(*v2);
 }
 
-pub fn spherical_direction(sin_theta: f64, cos_theta: f64, phi: f64) -> DVec3 {
-    DVec3 {
+pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
+    Vec3 {
         x: sin_theta * phi.cos(),
         y: sin_theta * phi.sin(),
         z: cos_theta,
@@ -22,14 +22,14 @@ pub fn spherical_direction(sin_theta: f64, cos_theta: f64, phi: f64) -> DVec3 {
 }
 
 pub fn trowbridge_reitz_sample(
-    wi: &DVec3,
-    alpha_x: f64,
-    alpha_y: f64,
-    u1: f64,
-    u2: f64,
-) -> DVec3 {
+    wi: &Vec3,
+    alpha_x: f32,
+    alpha_y: f32,
+    u1: f32,
+    u2: f32,
+) -> Vec3 {
     // 1. stretch wi
-    let wi_stretched: DVec3 = DVec3 {
+    let wi_stretched: Vec3 = Vec3 {
         x: alpha_x * wi.x,
         y: alpha_y * wi.y,
         z: wi.z,
@@ -42,7 +42,7 @@ pub fn trowbridge_reitz_sample(
     trowbridge_reitz_sample_11(crate::pbrt_core::bxdf::func::cos_theta(&wi_stretched), u1, u2, &mut slope_x, &mut slope_y);
 
     // 3. rotate
-    let tmp: f64 = cos_theta(&wi_stretched) * slope_x - sin_phi(&wi_stretched) * slope_y;
+    let tmp: f32 = cos_theta(&wi_stretched) * slope_x - sin_phi(&wi_stretched) * slope_y;
     slope_y = sin_phi(&wi_stretched) * slope_x + cos_phi(&wi_stretched) * slope_y;
     slope_x = tmp;
 
@@ -51,7 +51,7 @@ pub fn trowbridge_reitz_sample(
     slope_y *= alpha_y;
 
     // 5. compute normal
-    DVec3 {
+    Vec3 {
         x: -slope_x,
         y: -slope_y,
         z: 1.0,
@@ -59,22 +59,22 @@ pub fn trowbridge_reitz_sample(
     .normalize()
 }
 pub fn trowbridge_reitz_sample_11(
-    cos_theta: f64,
-    u1: f64,
-    u2: f64,
-    slope_x: &mut f64,
-    slope_y: &mut f64,
+    cos_theta: f32,
+    u1: f32,
+    u2: f32,
+    slope_x: &mut f32,
+    slope_y: &mut f32,
 ) {
     // special case (normal incidence)
     if cos_theta > 0.9999 {
         let r = (u1 / (1.0 - u1)).sqrt();
-        let phi = std::f64::consts::TAU * u2;
+        let phi = std::f32::consts::TAU * u2;
         *slope_x = r * phi.cos();
         *slope_y = r * phi.sin();
         return;
     }
 
-    let sin_theta=0.0_f64
+    let sin_theta=0.0_f32
         .max(1.0  - cos_theta * cos_theta)
         .sqrt();
     let tan_theta = sin_theta / cos_theta;

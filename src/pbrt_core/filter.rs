@@ -1,4 +1,4 @@
-use glam::DVec2;
+use glam::Vec2;
 #[derive(Debug,Default)]
 pub enum Filter{
     #[default]
@@ -6,7 +6,7 @@ pub enum Filter{
 }
 impl Filter{
     #[inline]
-    pub fn filter_uv(&self,uv:&DVec2)->DVec2{
+    pub fn filter_uv(&self,uv:&Vec2)->Vec2{
         let x=if uv.x<0.0{
             uv.x.floor().abs()+uv.x
         }else if uv.x>=1.0{
@@ -21,6 +21,6 @@ impl Filter{
         }else{
             uv.y
         };
-        DVec2 { x, y }
+        Vec2 { x, y }
     }
 }

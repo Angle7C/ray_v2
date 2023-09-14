@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use glam::{
-    f64::{DMat4, DVec2, DVec3},
+use glam::{Vec2, Vec3,Mat4,
     u32::UVec3,
 };
 
@@ -15,7 +14,7 @@ use crate::pbrt_core::{
 pub struct Triangle<'a> {
     index: [usize; 3],
     mesh: Arc<Mesh>,
-    obj_to_world: DMat4,
+    obj_to_world: Mat4,
     materail: Option<&'a Box<dyn Material>>,
 }
 #[allow(unused)]
@@ -23,7 +22,7 @@ impl<'a> Triangle<'a> {
     pub fn new(
         index: UVec3,
         mesh: Arc<Mesh>,
-        obj_to_world: DMat4,
+        obj_to_world: Mat4,
         materail: Option<&'a Box<dyn Material>>,
     ) -> Self {
         Self {
@@ -33,7 +32,7 @@ impl<'a> Triangle<'a> {
             obj_to_world,
         }
     }
-    fn compute_dnuv(&self, n: DVec3) -> Shading {
+    fn compute_dnuv(&self, n: Vec3) -> Shading {
         let p0 = self.point(0);
         let p1 = self.point(1);
         let p2 = self.point(2);
@@ -53,14 +52,14 @@ impl<'a> Triangle<'a> {
 
         let deter = duv_02[0] * duv_12[1] - duv_02[1] * duv_12[0];
         let v = (p2 - p0).cross(p1 - p0).normalize();
-        let (dpdu, dpdv, dndu, dndv) = if deter.abs() < f64::EPSILON {
+        let (dpdu, dpdv, dndu, dndv) = if deter.abs() < f32::EPSILON {
             let dpdu = if v.x.abs() > v.y.abs() {
-                DVec3::new(-v.z, 0.0, v.x) / (v.x * v.x + v.z * v.z).sqrt()
+                Vec3::new(-v.z, 0.0, v.x) / (v.x * v.x + v.z * v.z).sqrt()
             } else {
-                DVec3::new(-0.0, v.z, -v.y) / (v.y * v.y + v.z * v.z).sqrt()
+                Vec3::new(-0.0, v.z, -v.y) / (v.y * v.y + v.z * v.z).sqrt()
             };
             let dpdv = v.cross(dpdu);
-            (dpdu, dpdv, DVec3::ZERO, DVec3::ZERO)
+            (dpdu, dpdv, Vec3::ZERO, Vec3::ZERO)
         } else {
             let inv_det = 1.0 / deter;
             let dn1 = n0 - n2;
@@ -73,15 +72,15 @@ impl<'a> Triangle<'a> {
                 (-dp_12[0] * dn1 + duv_02[0] * dn2) * inv_det,
             )
         };
-        Shading::new(dp_02.cross(dp_12), dpdu, dpdv, DVec3::ZERO, DVec3::ZERO)
+        Shading::new(dp_02.cross(dp_12), dpdu, dpdv, Vec3::ZERO, Vec3::ZERO)
     }
-    pub fn point(&self, i: u32) -> DVec3 {
+    pub fn point(&self, i: u32) -> Vec3 {
         self.obj_to_world
             .transform_point3(self.mesh.point[self.index[i as usize]])
     }
-    pub fn normal(&self, i: u32) -> DVec3 {
+    pub fn normal(&self, i: u32) -> Vec3 {
         if self.mesh.normal.is_empty() {
-            DVec3::ZERO
+            Vec3::ZERO
         } else {
             self.obj_to_world
                 .inverse()
@@ -89,17 +88,17 @@ impl<'a> Triangle<'a> {
                 .transform_vector3(self.mesh.normal[self.index[i as usize]])
         }
     }
-    pub fn tangent(&self, i: u32) -> DVec3 {
+    pub fn tangent(&self, i: u32) -> Vec3 {
         if self.mesh.normal.is_empty() {
-            DVec3::ZERO
+            Vec3::ZERO
         } else {
             // self.mesh.tangent[self.index[i as usize]]
-            DVec3::ZERO
+            Vec3::ZERO
         }
     }
-    pub fn uv(&self, i: u32) -> DVec2 {
+    pub fn uv(&self, i: u32) -> Vec2 {
         if self.mesh.uv.is_empty() {
-            DVec2::ZERO
+            Vec2::ZERO
         } else {
             self.mesh.uv[self.index[i as usize]]
         }

@@ -1,25 +1,25 @@
-use std::f64::consts::PI;
+use std::f32::consts::PI;
 
-use glam::DVec3;
+use glam::Vec3;
 
 use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, Visibility, Bound}};
 
 use super::LightAble;
 
 pub trait AreaLight: LightAble+Primitive {
-    fn l(&self, _surface: &InteractionCommon, _w: &DVec3) -> DVec3 {
+    fn l(&self, _surface: &InteractionCommon, _w: &Vec3) -> Vec3 {
         todo!()
     }
     fn get_shape(&self)->&Shape;
 }
 #[derive(Debug)]
 pub struct DiffuseAreaLight<'a> {
-    lemit: DVec3,
+    lemit: Vec3,
     shape: Shape<'a>,
-    area: f64,
+    area: f32,
 }
 impl<'a> DiffuseAreaLight<'a> {
-    pub fn new(lemit: DVec3, shape: Shape<'a>) -> Self {
+    pub fn new(lemit: Vec3, shape: Shape<'a>) -> Self {
         Self {
             lemit,
             area: shape.agt_area(),
@@ -28,11 +28,11 @@ impl<'a> DiffuseAreaLight<'a> {
     }
 }
 impl<'a> AreaLight for DiffuseAreaLight<'a> {
-    fn l(&self, surface: &InteractionCommon, w: &DVec3) -> DVec3 {
+    fn l(&self, surface: &InteractionCommon, w: &Vec3) -> Vec3 {
         if surface.normal.dot(*w) > 0.0 {
             self.lemit
         } else {
-            DVec3::ZERO
+            Vec3::ZERO
         }
     }
     fn get_shape(&self)->&Shape {
@@ -40,20 +40,20 @@ impl<'a> AreaLight for DiffuseAreaLight<'a> {
     }
 }
 impl<'a> LightAble for DiffuseAreaLight<'a> {
-    fn power(&self) -> DVec3 {
+    fn power(&self) -> Vec3 {
         return self.area * PI * self.lemit;
     }
     fn sample_li(
         &self,
         surface: &SurfaceInteraction,
         //光源采样参数
-        u: glam::DVec2,
-        w_in: &mut DVec3,
+        u: glam::Vec2,
+        w_in: &mut Vec3,
         //光源pdf
-        pdf: &mut f64,
+        pdf: &mut f32,
         //可见性测试
         vis: &mut crate::pbrt_core::tool::Visibility,
-    ) -> DVec3 {
+    ) -> Vec3 {
         // 从shape采样到点
         let common=self.shape.sample(u);
         
@@ -63,16 +63,16 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         *vis=Visibility{a:surface.common,b:common};
         self.l(&common,&-*w_in)
     }
-    fn sample_le(&self)->DVec3 {
+    fn sample_le(&self)->Vec3 {
         unimplemented!()
     }
-    fn le(&self,wi:DVec3)->DVec3 {
+    fn le(&self,wi:Vec3)->Vec3 {
         let w = self.shape.get_mat().inverse().transform_vector3(wi);
-        let cos = w.dot(DVec3::Z).clamp(0.0, 1.0);
+        let cos = w.dot(Vec3::Z).clamp(0.0, 1.0);
         self.lemit*cos
 
     }
-    fn pdf_li(&self,surface:&InteractionCommon,w_in:&DVec3)->f64 {
+    fn pdf_li(&self,surface:&InteractionCommon,w_in:&Vec3)->f32 {
         self.shape.pdf(surface, w_in)
     }
 }

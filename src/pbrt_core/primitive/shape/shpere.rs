@@ -1,6 +1,6 @@
-use std::{f64::consts::PI, sync::Arc};
+use std::{f32::consts::PI, sync::Arc};
 
-use glam::{DMat4, DVec2, DVec3};
+use glam::{Mat4, Vec2, Vec3};
 
 use crate::pbrt_core::{
     material::Material,
@@ -9,12 +9,12 @@ use crate::pbrt_core::{
 };
 #[derive(Debug)]
 pub struct Shpere {
-    r: f64,
-    obj_to_world: DMat4,
+    r: f32,
+    obj_to_world: Mat4,
     material: Option<Arc<dyn Material>>,
 }
 impl Shpere {
-    pub fn new(r: f64, material: Option<Arc<dyn Material>>, obj_to_world: DMat4) -> Self {
+    pub fn new(r: f32, material: Option<Arc<dyn Material>>, obj_to_world: Mat4) -> Self {
         Self {
             r,
             obj_to_world,
@@ -24,8 +24,8 @@ impl Shpere {
 }
 impl Primitive for Shpere {
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-        let min = DVec3::splat(-self.r);
-        let max = DVec3::splat(self.r);
+        let min = Vec3::splat(-self.r);
+        let max = Vec3::splat(self.r);
         let min = self.obj_to_world.transform_point3(min);
         let max = self.obj_to_world.transform_point3(max);
         Bound::<3>::new(min, max)
@@ -65,17 +65,17 @@ impl Primitive for Shpere {
             phi += 2.0 * PI;
         }
         let v = p.y.acos();
-        let uv = DVec2::new(phi / (2.0 * PI), 1.0 - v / PI);
+        let uv = Vec2::new(phi / (2.0 * PI), 1.0 - v / PI);
         //dpdu,dpdv计算
         let z_radius = p.x * p.x + p.y * p.y;
         let inv_z_radius = 1.0 / z_radius;
         let cos_phi = p.x * inv_z_radius;
         let sin_phi = p.y * inv_z_radius;
-        let dpdu = DVec3::new(2.0 * PI * p.y, 2.0 * PI * p.x, 0.0);
-        let dpdv = PI * DVec3::new(p.z * cos_phi, p.z * sin_phi, self.r * v.sin());
+        let dpdu = Vec3::new(2.0 * PI * p.y, 2.0 * PI * p.x, 0.0);
+        let dpdv = PI * Vec3::new(p.z * cos_phi, p.z * sin_phi, self.r * v.sin());
         //dndv,dndv计算
         let d2pduu = 4.0 * PI * PI * p.truncate().extend(0.0);
-        let d2pduv = PI * p.z * 2.0 * PI * DVec3::new(-sin_phi, cos_phi, 0.0);
+        let d2pduv = PI * p.z * 2.0 * PI * Vec3::new(-sin_phi, cos_phi, 0.0);
         let d2pdvv = -(PI * PI) * p;
 
         let e = dpdu.dot(dpdu);

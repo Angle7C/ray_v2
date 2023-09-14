@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use glam::{
-    f64::{DMat4, DVec2, DVec3},
     u32::UVec3,
     Mat4, Quat, UVec4, Vec2, Vec3, Vec4,
 };
@@ -15,9 +14,8 @@ use super::{
     texture::{
         constant::ConstantTexture,
         image::ImageTexture,
-        mipmap::{ImageData, MipMap},
         Texture,
-    },
+    }, tool::mipmap::{MipMap, ImageData},
 };
 
 pub struct GltfLoad;
@@ -69,9 +67,9 @@ fn load_mesh(
     material_vec: &[Box<dyn Material>],
     buffer: &Vec<Data>,
     index: &mut Vec<UVec4>,
-    point: &mut Vec<DVec3>,
-    normal: &mut Vec<DVec3>,
-    uv: &mut Vec<DVec2>,
+    point: &mut Vec<Vec3>,
+    normal: &mut Vec<Vec3>,
+    uv: &mut Vec<Vec2>,
 ) {
     let get_buffer = |x: Buffer| Some(&*buffer[x.index()].0);
     for primitive in mesh.primitives() {
@@ -99,14 +97,14 @@ fn load_mesh(
                     *point = reader
                         .read_positions()
                         .unwrap()
-                        .map(|x| Vec3::from_array(x).as_dvec3())
+                        .map(|x| Vec3::from_array(x))
                         .collect::<Vec<_>>();
                 }
                 gltf::Semantic::Normals => {
                     *normal = reader
                         .read_normals()
                         .unwrap()
-                        .map(|x| Vec3::from_array(x).as_dvec3())
+                        .map(|x| Vec3::from_array(x))
                         .collect::<Vec<_>>();
                 }
                 gltf::Semantic::Tangents => {}
@@ -116,7 +114,7 @@ fn load_mesh(
                         .read_tex_coords(coords)
                         .unwrap()
                         .into_f32()
-                        .map(|x| Vec2::from_array(x).as_dvec2())
+                        .map(|x| Vec2::from_array(x))
                         .collect::<Vec<_>>();
                 }
                 gltf::Semantic::Joints(_) => {}
@@ -142,7 +140,7 @@ where
         add_material(&material, &mip_vec, &mut material_vec);
     }
     material_vec.push(Box::new(Matte::new(Arc::new(ConstantTexture::new(
-        DVec3::splat(0.75),
+        Vec3::splat(0.75),
     )))));
     material_vec
 }
@@ -151,12 +149,12 @@ fn load_node(
     gltf: &gltf::Document,
     buffer: Vec<gltf::buffer::Data>,
 ) -> (
-    Vec<DVec3>,
-    Vec<DVec3>,
-    Vec<DVec2>,
+    Vec<Vec3>,
+    Vec<Vec3>,
+    Vec<Vec2>,
     Vec<Vec<UVec4>>,
     usize,
-    Vec<DMat4>,
+    Vec<Mat4>,
     Vec<UVec3>,
 ) {
     let mut transform_vec = vec![];
@@ -168,7 +166,7 @@ fn load_node(
     for (_, item) in gltf.nodes().enumerate() {
         let transform = match item.transform() {
             gltf::scene::Transform::Matrix { matrix } => {
-                Mat4::from_cols_array_2d(&matrix).as_dmat4()
+                Mat4::from_cols_array_2d(&matrix)
             }
             gltf::scene::Transform::Decomposed {
                 translation,
@@ -179,7 +177,6 @@ fn load_node(
                 Quat::from_array(rotation),
                 Vec3::from(translation),
             )
-            .as_dmat4(),
         };
 
         transform_vec.push(transform);
@@ -278,7 +275,7 @@ pub fn add_material(
     //pbr材质
     let pbr = material.pbr_metallic_roughness();
     //base_color
-    let base_color: Arc<dyn Texture<DVec3>> =
+    let base_color: Arc<dyn Texture> =
         if let Some(base_color_texture) = pbr.base_color_texture() {
             let i = base_color_texture.texture().index();
             Arc::new(ImageTexture::new(mip_map.get(i).unwrap().to_owned()))
@@ -286,11 +283,10 @@ pub fn add_material(
             Arc::new(ConstantTexture::new(
                 Vec4::from_array(pbr.base_color_factor())
                     .truncate()
-                    .as_dvec3(),
             ))
         };
     //金属度
-    let metailc: Arc<dyn Texture<DVec3>> =
+    let metailc: Arc<dyn Texture> =
         if let Some(metallic_roughness_texture) = pbr.metallic_roughness_texture() {
             Arc::new(ImageTexture::new(
                 mip_map
@@ -300,11 +296,11 @@ pub fn add_material(
             ))
         } else {
             Arc::new(ConstantTexture::new(
-                Vec3::splat(pbr.metallic_factor()).as_dvec3(),
+                Vec3::splat(pbr.metallic_factor())
             ))
         };
     //粗糙度
-    let roughness: Arc<dyn Texture<DVec3>> =
+    let roughness: Arc<dyn Texture> =
         if let Some(roughness_texture) = pbr.metallic_roughness_texture() {
             Arc::new(ImageTexture::new(
                 mip_map
@@ -314,7 +310,7 @@ pub fn add_material(
             ))
         } else {
             Arc::new(ConstantTexture::new(
-                Vec3::splat(pbr.roughness_factor()).as_dvec3(),
+                Vec3::splat(pbr.roughness_factor()),
             ))
         };
     let pbr_material = Box::new(PbrMaterial::new(

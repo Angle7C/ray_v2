@@ -13,13 +13,14 @@ pub mod shape {
     use self::rectangle::Rectangle;
     use super::Primitive;
     use crate::pbrt_core::tool::InteractionCommon;
-    use glam::{DVec2, DVec3};
+    use glam::{Vec3, Vec2};
     pub mod rectangle;
     pub mod shpere;
     pub mod triangle;
     #[derive(Debug)]
     pub enum Shape<'a> {
         Rect(Rectangle<'a>),
+        // Shpere(Shpere<'a>),
     }
 
     impl<'a> Primitive for Shape<'a> {
@@ -48,22 +49,22 @@ pub mod shape {
     }
     impl<'a> Shape<'a> {
         // 获得面积
-        pub fn agt_area(&self) -> f64 {
+        pub fn agt_area(&self) -> f32 {
             match self {
                 Shape::Rect(rect) => rect.get_area(),
             }
         }
         // 形状采样
-        pub fn sample(&self, smaple_point: DVec2) -> InteractionCommon {
+        pub fn sample(&self, smaple_point: Vec2) -> InteractionCommon {
             match self {
                 Self::Rect(rect) => rect.sample_interaction(smaple_point),
             }
         }
         //对于在不同点采样的时，会存在不同pdf值
-        pub fn pdf(&self, _common: &InteractionCommon, _wi: &DVec3) -> f64 {
+        pub fn pdf(&self, _common: &InteractionCommon, _wi: &Vec3) -> f32 {
             1.0 / self.agt_area()
         }
-        pub fn get_mat(&self) -> glam::DMat4 {
+        pub fn get_mat(&self) -> glam::Mat4 {
             match self {
                 Self::Rect(rect) => rect.obj_to_world,
             }

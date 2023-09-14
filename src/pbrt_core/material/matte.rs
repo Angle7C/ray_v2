@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use glam::DVec3;
+use glam::Vec3;
 
 use crate::pbrt_core::{
     bxdf::{reflection::LambertianReflection, BxDF},
@@ -10,11 +10,11 @@ use crate::pbrt_core::{
 use super::{Material, BSDF};
 #[derive(Debug)]
 pub struct Matte {
-    kd: Arc<dyn Texture<DVec3>>,
-    _bump: Option<Arc<dyn Texture<f64>>>,
+    kd: Arc<dyn Texture>,
+    _bump: Option<Arc<dyn Texture>>,
 }
 impl Matte {
-    pub fn new(kd: Arc<dyn Texture<DVec3>>) -> Self {
+    pub fn new(kd: Arc<dyn Texture>) -> Self {
         Self {
             kd: kd.clone(),
             _bump: None,
@@ -30,10 +30,10 @@ impl Material for Matte {
         let r = self
             .kd
             .evaluate(&suface.common)
-            .clamp(DVec3::ZERO, DVec3::splat(f64::INFINITY));
+            .clamp(Vec3::ZERO, Vec3::splat(f32::INFINITY));
         suface.bsdf = Some(BSDF::new(&suface, 1.0));
         if let Some(bsdf) = &mut suface.bsdf {
-            if r != DVec3::ZERO {
+            if r != Vec3::ZERO {
                 bsdf.bxdfs
                     .push(BxDF::LambertianReflection(LambertianReflection::new(r)))
             }
@@ -43,7 +43,7 @@ impl Material for Matte {
     fn bump(
         &self,
         _suface: &crate::pbrt_core::tool::SurfaceInteraction,
-        _texture: &dyn Texture<f64>,
+        _texture: &dyn Texture,
     ) {
         todo!()
     }

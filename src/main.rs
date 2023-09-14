@@ -9,11 +9,11 @@ mod test;
 pub fn main() {
     log_init();
     info!("******************************");
-    let build= Build::build("./file/sence.json");
+    // let build= Build::build("./file/sence.json");
     #[cfg(not(debug_assertions))]
         build.render();
     #[cfg(debug_assertions)]
-        build.render_debug();
+        // build.render_debug();
     info!("-------------------------------");
 
 }

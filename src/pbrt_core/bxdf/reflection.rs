@@ -1,16 +1,16 @@
-use std::f64::consts::*;
+use std::f32::consts::*;
 
-use glam::f64::DVec3;
+use glam::f32::Vec3;
 
 use crate::pbrt_core::tool::color::Color;
 
 use super::{BxDFAble, BxDFType, func::{self, cos_theta}, MicrofacetDistribution, frensnel::Fresnel};
 
 pub struct LambertianReflection{
-    r: DVec3
+    r: Vec3
 }
 impl BxDFAble for LambertianReflection{
-    fn fi(&self, _w_in: &glam::DVec3, _w_out: &glam::DVec3) -> glam::DVec3 {
+    fn fi(&self, _w_in: &glam::Vec3, _w_out: &glam::Vec3) -> glam::Vec3 {
         self.r*FRAC_1_PI
     }
     fn match_type(&self, flag: u32) -> bool {
@@ -19,18 +19,18 @@ impl BxDFAble for LambertianReflection{
     }
 }
 impl LambertianReflection{
-    pub fn new(r:DVec3)->Self{
+    pub fn new(r:Vec3)->Self{
         Self { r }
     }
 }
 
 pub struct OrenNayar {
-    r: DVec3,
-    a: f64,
-    b: f64,
+    r: Vec3,
+    a: f32,
+    b: f32,
 }
 impl OrenNayar {
-    pub fn new(r: DVec3,sigma:f64) -> Self {
+    pub fn new(r: Vec3,sigma:f32) -> Self {
         let sigma=sigma.to_radians();
         let sigma_2=sigma*sigma;
         let a=1.0-(sigma_2/(2.0*sigma_2+0.33));
@@ -43,13 +43,13 @@ impl BxDFAble for OrenNayar{
         ((BxDFType::Reflection | BxDFType::Diffuse) & flag as u32) != 0
     }
     #[inline]
-    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3 {
+    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let sin_i=func::sin_theta(w_in);
         let sin_o=func::sin_theta(w_out);
-        let mut max_cos:f64=0.0;
+        let mut max_cos:f32=0.0;
         let cos_i=func::cos_theta(w_in);
         let cos_o=func::cos_theta(w_out);
-        if sin_i >f64::EPSILON && sin_o >f64::EPSILON{
+        if sin_i >f32::EPSILON && sin_o >f32::EPSILON{
         
             let d_cos=cos_i*cos_o+sin_i*sin_o;
             max_cos=d_cos.clamp(0.0, 1.0);
@@ -79,15 +79,15 @@ impl BxDFAble for MicrofacetReflection{
         (BxDFType::Reflection | BxDFType::Glossy) &flag >0
     }
 
-    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3 {
+    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let cos_o=cos_theta(w_out).abs();
         let cos_i=cos_theta(w_in).abs();
         let mut wh=*w_in+*w_out;
         if cos_i==0.0 || cos_o==0.0{
-            return DVec3::ZERO;
+            return Vec3::ZERO;
         }
-        if wh.abs_diff_eq(DVec3::ZERO, f64::EPSILON){
-            return DVec3::ZERO;
+        if wh.abs_diff_eq(Vec3::ZERO, f32::EPSILON){
+            return Vec3::ZERO;
         }
         wh=wh.normalize();
         let dot=w_in.dot(wh);
@@ -96,7 +96,7 @@ impl BxDFAble for MicrofacetReflection{
         *f/(4.0 * cos_i*cos_o)
 
     }
-    fn pdf(&self,w_out: DVec3, w_in: DVec3) -> f64 {
+    fn pdf(&self,w_out: Vec3, w_in: Vec3) -> f32 {
         if func::vec3_same_hemisphere_vec3(&w_out, &w_in){
             0.0
         }else{
@@ -106,11 +106,11 @@ impl BxDFAble for MicrofacetReflection{
     }
     fn sample_f(
             &self,
-            w_in: &mut DVec3,
-            w_out: &DVec3,
-            sample_point: glam::DVec2,
-            pdf: &mut f64,
-        ) -> DVec3 {
+            w_in: &mut Vec3,
+            w_out: &Vec3,
+            sample_point: glam::Vec2,
+            pdf: &mut f32,
+        ) -> Vec3 {
         if w_out.z==0.0{
             return Color::ZERO;
         }

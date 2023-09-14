@@ -1,8 +1,8 @@
-use glam::{DVec2, DVec3};
+use glam::Vec3;
 
-use crate::pbrt_core::filter::Filter;
+use crate::pbrt_core::{filter::Filter, tool::mipmap::MipMap};
 
-use super::{mipmap::MipMap, Texture};
+use super::Texture;
 #[derive(Default, Debug)]
 pub struct ImageTexture {
     mipmap: MipMap,
@@ -17,10 +17,11 @@ impl ImageTexture {
     }
 }
 
-impl Texture<DVec3> for ImageTexture {
-    fn evaluate(&self, inter: &crate::pbrt_core::tool::InteractionCommon) -> DVec3 {
-        let uv=self.filter.filter_uv(&inter.uv);
-        let value = self.mipmap.lookup(uv, DVec2::ZERO, DVec2::ZERO);
-        value
+impl Texture for ImageTexture {
+    fn evaluate(&self, inter: &crate::pbrt_core::tool::InteractionCommon) -> Vec3 {
+        // let uv=self.filter.filter_uv(&inter.uv);
+        // let value = self.mipmap.lookup(uv, Vec2::ZERO, Vec2::ZERO);
+        // value
+        Vec3::ZERO
     }
 }

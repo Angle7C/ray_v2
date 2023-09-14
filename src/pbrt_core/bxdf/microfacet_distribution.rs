@@ -1,6 +1,6 @@
-use std::f64::consts::PI;
+use std::f32::consts::PI;
 
-use glam::{DVec2, DVec3};
+use glam::{Vec2, Vec3};
 
 use crate::pbrt_core::{tool::func::{spherical_direction, trowbridge_reitz_sample}, bxdf::func::vec3_same_hemisphere_vec3};
 
@@ -11,12 +11,12 @@ use super::{
 
 //使用Beckmann概率分布，适用各项同性
 pub struct BeckmannDistribution {
-    alphax: f64,
-    alphay: f64,
+    alphax: f32,
+    alphay: f32,
     sample_visible_area: bool,
 }
 impl BeckmannDistribution {
-    pub fn new(alphax: f64, alphay: f64, sample_visible_area: bool) -> Self {
+    pub fn new(alphax: f32, alphay: f32, sample_visible_area: bool) -> Self {
         Self {
             alphax: alphax.max(0.001),
             alphay: alphay.max(0.01),
@@ -25,7 +25,7 @@ impl BeckmannDistribution {
     }
 }
 // 粗糙度转换
-pub fn roughness_to_alpha(roughness: f64) -> f64 {
+pub fn roughness_to_alpha(roughness: f32) -> f32 {
     let mut roughness = roughness;
     let limit = 1e-3;
     if limit > roughness {
@@ -39,7 +39,7 @@ pub fn roughness_to_alpha(roughness: f64) -> f64 {
         + 0.000_640_711 * x * x * x * x
 }
 impl MicrofacetDistribution for BeckmannDistribution {
-    fn d(&self, wh: &glam::DVec3) -> f64 {
+    fn d(&self, wh: &glam::Vec3) -> f32 {
         let tan_2_theta = sin2_theta(wh) / cos2_theta(wh);
         if tan_2_theta.is_infinite() {
             return 0.0;
@@ -52,7 +52,7 @@ impl MicrofacetDistribution for BeckmannDistribution {
             / (PI * self.alphax * self.alphay * cos_4_theta)
     }
 
-    fn lamdba(&self, w: &glam::DVec3) -> f64 {
+    fn lamdba(&self, w: &glam::Vec3) -> f32 {
         let abs_tan_theta = sin_theta(w).abs() / cos_theta(w);
         if abs_tan_theta.is_infinite() {
             return 0.0;
@@ -68,11 +68,11 @@ impl MicrofacetDistribution for BeckmannDistribution {
         (1.0 - 1.259 * a + 0.396 * a * a) / (3.535 * a + 2.181 * a * a)
     }
 
-    fn sample_wh(&self, _w_out: &glam::DVec3, _w_in: DVec2) -> glam::DVec3 {
+    fn sample_wh(&self, _w_out: &glam::Vec3, _w_in: Vec2) -> glam::Vec3 {
         todo!()
     }
 
-    fn pdf(&self, w_out: &glam::DVec3, wh: &glam::DVec3) -> f64 {
+    fn pdf(&self, w_out: &glam::Vec3, wh: &glam::Vec3) -> f32 {
         if self.sample_visible_area {
             self.d(wh) * self.g1(w_out) * w_out.dot(*wh).abs() / cos_theta(w_out).abs()
         } else {
@@ -82,12 +82,12 @@ impl MicrofacetDistribution for BeckmannDistribution {
 }
 //GGX模型
 pub struct TrowbridgeReitzDistribution {
-    pub alphax: f64,
-    pub alphay: f64,
+    pub alphax: f32,
+    pub alphay: f32,
     pub sample_visible_area: bool,
 }
 impl TrowbridgeReitzDistribution {
-    pub fn new(alphax: f64, alphay: f64, sample_visible_area: bool) -> Self {
+    pub fn new(alphax: f32, alphay: f32, sample_visible_area: bool) -> Self {
         Self {
             alphax: alphax.max(0.001),
             alphay: alphay.max(0.01),
@@ -96,7 +96,7 @@ impl TrowbridgeReitzDistribution {
     }
 }
 impl MicrofacetDistribution for TrowbridgeReitzDistribution {
-    fn d(&self, wh: &glam::DVec3) -> f64 {
+    fn d(&self, wh: &glam::Vec3) -> f32 {
         let tan_2_theta = sin2_theta(wh) / cos2_theta(wh);
         if tan_2_theta.is_infinite() {
             return 0.0;
@@ -107,7 +107,7 @@ impl MicrofacetDistribution for TrowbridgeReitzDistribution {
                 + sin2_theta(wh) / (self.alphay * self.alphay));
         1.0/(PI*self.alphax*self.alphay*cos_4_theta*(1.00+e)*(1.0+e))
     }
-    fn lamdba(&self, w: &glam::DVec3) -> f64 {
+    fn lamdba(&self, w: &glam::Vec3) -> f32 {
         let abs_tan_theta = sin_theta(w).abs() / cos_theta(w);
         if abs_tan_theta.is_infinite() {
             return 0.0;
@@ -121,8 +121,8 @@ impl MicrofacetDistribution for TrowbridgeReitzDistribution {
        (-1.0+(1.0+a).sqrt())/2.0
     
     }
-    fn sample_wh(&self, w_out: &glam::DVec3, u: glam::DVec2) -> glam::DVec3 {
-        let mut wh:DVec3;
+    fn sample_wh(&self, w_out: &glam::Vec3, u: glam::Vec2) -> glam::Vec3 {
+        let mut wh:Vec3;
         if !self.sample_visible_area{
            
             let mut phi=(2.0*PI)*u.y;
@@ -141,7 +141,7 @@ impl MicrofacetDistribution for TrowbridgeReitzDistribution {
                 let tan_theta2=alpha2*u.x/(1.0-u.x);
                 1.0/(1.0+tan_theta2).sqrt()
             };
-            let sin_theta=0.0_f64.max(1.0-cos_theta*cos_theta).sqrt();
+            let sin_theta=0.0_f32.max(1.0-cos_theta*cos_theta).sqrt();
             wh=spherical_direction(sin_theta, cos_theta, phi);
             if !vec3_same_hemisphere_vec3(w_out, &wh){
                 wh=-wh;
@@ -157,7 +157,7 @@ impl MicrofacetDistribution for TrowbridgeReitzDistribution {
             unimplemented!()
         }
     }
-    fn pdf(&self, w_out: &glam::DVec3, wh: &glam::DVec3) -> f64 {
+    fn pdf(&self, w_out: &glam::Vec3, wh: &glam::Vec3) -> f32 {
        if self.sample_visible_area{
             self.d(wh)*self.g1(w_out)*w_out.dot(*wh).abs()/cos_theta(w_out).abs()
         }else{

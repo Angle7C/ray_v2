@@ -3,7 +3,7 @@ use std::{
     ops::{BitAnd, BitOr},
 };
 
-use glam::{DVec2, DVec3};
+use glam::{Vec2, Vec3};
 
 use self::area::AreaLight;
 
@@ -45,10 +45,10 @@ impl Light {
             Self::AreaLight(area) => area.get_shape(),
         }
     }
-    pub fn pdf_li(&self, _inter: &InteractionCommon, _wi: &DVec3) -> f64 {
+    pub fn pdf_li(&self, _inter: &InteractionCommon, _wi: &Vec3) -> f32 {
         unimplemented!()
     }
-    pub fn le(&self, wi: &DVec3) -> DVec3 {
+    pub fn le(&self, wi: &Vec3) -> Vec3 {
         match &self {
             Self::AreaLight(area) => area.le(*wi),
         }
@@ -107,16 +107,16 @@ pub trait LightAble: Debug {
     fn sample_li(
         &self,
         surface: &SurfaceInteraction,
-        u: DVec2,
-        w_in: &mut DVec3,
-        pdf: &mut f64,
+        u: Vec2,
+        w_in: &mut Vec3,
+        pdf: &mut f32,
         vis: &mut Visibility,
-    ) -> DVec3;
+    ) -> Vec3;
     /// 返回光源的光线，会返回入射方向和光线pdf
-    fn sample_le(&self) -> DVec3;
+    fn sample_le(&self) -> Vec3;
     // 光源强度
-    fn power(&self) -> DVec3;
+    fn power(&self) -> Vec3;
     //pdf采样
-    fn pdf_li(&self, surface: &InteractionCommon, w_in: &DVec3) -> f64;
-    fn le(&self,wi:DVec3)->DVec3;
+    fn pdf_li(&self, surface: &InteractionCommon, w_in: &Vec3) -> f32;
+    fn le(&self,wi:Vec3)->Vec3;
 }

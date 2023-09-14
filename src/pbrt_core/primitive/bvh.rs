@@ -21,12 +21,12 @@ impl<'b> BVH<'b> {
 impl<'b> Aggregate for BVH<'b> {
     fn interacect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let o_ray = ray.clone();
-        let mut ray =  bvh::ray::Ray::new(o_ray.o.origin.as_vec3(), o_ray.o.dir.as_vec3());
+        let mut ray =  bvh::ray::Ray::new(o_ray.o.origin, o_ray.o.dir);
         let iter = self.accel.traverse(&mut ray, &self.geo);
         let mut ans: Option<SurfaceInteraction> = None;
         let t_max = o_ray.o.t_max;
         let t_min = o_ray.o.t_min;
-        let mut t = f64::INFINITY;
+        let mut t = f32::INFINITY;
         for shape in iter {
             match (shape.interacect(o_ray), &ans) {
                 (Some(v), None)

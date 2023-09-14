@@ -1,17 +1,17 @@
-use glam::{f64::DVec3, u32::UVec2};
+use glam::{ u32::UVec2, Vec3};
 
 use crate::pbrt_core::{
     bxdf::BxDFType,
     primitive::Primitive,
     sampler::Sampler,
-    tool::{sence::Sence, RayDiff},
+    tool::{sence::Sence, RayDiff, color::Color},
 };
 
 use super::IntegratorAble;
 
 //路径追踪积分器
 pub struct PathIntegrator {
-    q: f64,
+    q: f32,
     max_path: usize,
     _sampler: Sampler,
     _size: UVec2,
@@ -27,10 +27,10 @@ impl Default for PathIntegrator {
     }
 }
 impl IntegratorAble for PathIntegrator {
-    fn is_next(&self, dept: &mut usize) -> Option<f64> {
+    fn is_next(&self, dept: &mut usize) -> Option<f32> {
         *dept += 1;
         if *dept > self.max_path {
-            let p: f64 = rand::random();
+            let p: f32 = rand::random();
             if p > self.q {
                 None
             } else {
@@ -40,10 +40,10 @@ impl IntegratorAble for PathIntegrator {
             Some(1.0)
         }
     }
-    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> DVec3 {
-        let mut ans = DVec3::ZERO;
+    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color {
+        let mut ans = Color::ZERO;
         let mut dept = 0;
-        let mut beta: DVec3 = DVec3::ONE;
+        let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         while let Some(p) = self.is_next(&mut dept) {
@@ -60,7 +60,7 @@ impl IntegratorAble for PathIntegrator {
                     ans +=  beta * sence.uniform_sample_one_light(&item, sampler, false);
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
-                    let mut w_in = DVec3::default();
+                    let mut w_in = Vec3::default();
                     let mut pdf = 0.0;
                     let flags: u32 = BxDFType::All as u32;
                     let f =
@@ -78,7 +78,7 @@ impl IntegratorAble for PathIntegrator {
     }
 }
 impl PathIntegrator {
-    pub fn new(q: f64, max_path: usize, sampler: Sampler, size: UVec2) -> Self {
+    pub fn new(q: f32, max_path: usize, sampler: Sampler, size: UVec2) -> Self {
         Self {
             q,
             max_path,

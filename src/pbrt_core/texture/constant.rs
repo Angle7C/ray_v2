@@ -1,21 +1,23 @@
 use std::fmt::Debug;
 
+use glam::Vec3;
+
 use super::Texture;
 
-pub struct ConstantTexture<T>{
-    value:T
+pub struct ConstantTexture{
+    value:Vec3
 }
-impl<T:Copy> Texture<T> for ConstantTexture<T>{
-    fn  evaluate(&self,_inter:&crate::pbrt_core::tool::InteractionCommon)->T {
+impl Texture for ConstantTexture{
+    fn  evaluate(&self,_inter:&crate::pbrt_core::tool::InteractionCommon)->Vec3 {
         self.value
     }
 }
-impl<T>  ConstantTexture<T>{
-    pub fn new(value:T)->Self{
+impl ConstantTexture{
+    pub fn new(value:Vec3)->Self{
         Self { value }
     }
 }
-impl<T> Debug for ConstantTexture<T>{
+impl Debug for ConstantTexture{
     fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }

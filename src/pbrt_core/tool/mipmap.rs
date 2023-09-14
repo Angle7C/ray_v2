@@ -1,36 +1,48 @@
 use std::{
     collections::HashMap,
     fmt::Debug,
-    ops::{Add, Deref, DerefMut, Div}
+    ops::{Add, Deref, DerefMut, Div},
 };
 
-use glam::{u32::UVec2, DVec2, DVec3, DVec4};
+use glam::{u32::UVec2, Vec2, Vec3, Vec4};
 use gltf::image::Data;
-#[derive(Default,Clone)]
+use image::DynamicImage;
+#[derive(Default, Clone)]
 pub struct MipMap {
     //图像大小
     resolution: UVec2,
 
     mapping: HashMap<Level, Vec<Pixel>>,
 }
-// impl Clone for MipMap{
-//     fn clone(&self) -> Self {
-//        let mapping:HashMap<Level, Vec<Pixel>>=unsafe { 
-//         mem::transmute_copy(&self.mapping) };
-//         Self { resolution:self.resolution.clone(), mapping }
-//     }
-// }
 impl Debug for MipMap {
     fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }
+#[derive(Default)]
 pub struct ImageData {
     width: u32,
     height: u32,
     pixels: Vec<Pixel>,
 }
 impl ImageData {
+    pub fn new_dynimage(image: DynamicImage) -> Self {
+        let mut image_data = ImageData::default();
+        let mut pixels = vec![];
+        match image {
+            DynamicImage::ImageRgb8(image) => {
+                image_data.width = image.width();
+                image_data.height = image.height();
+                for pixel in image.chunks(3).into_iter() {
+                    pixels.push(Pixel::from_sclie(pixel))
+                }
+            }
+            DynamicImage::ImageRgba8(image) => {}
+            _ => todo!(),
+        }
+        image_data.pixels = pixels;
+        image_data
+    }
     pub fn new(data: &Data) -> Self {
         let mut vec = vec![];
         match data.format {
@@ -63,17 +75,17 @@ pub struct Level {
 }
 #[derive(Clone, Copy, Default)]
 struct Pixel {
-    x: f64,
-    y: f64,
-    z: f64,
-    w: f64,
+    x: f32,
+    y: f32,
+    z: f32,
+    w: f32,
 }
 impl Pixel {
     pub fn from_sclie(array: &[u8]) -> Self {
         Self {
-            x: array[0] as f64/255.0,
-            y: array[1] as f64/255.0,
-            z: array[2] as f64/255.0,
+            x: array[0] as f32 / 255.0,
+            y: array[1] as f32 / 255.0,
+            z: array[2] as f32 / 255.0,
             w: 1.0,
         }
     }
@@ -88,9 +100,9 @@ impl Add for Pixel {
         Self { x, y, z, w }
     }
 }
-impl Div<f64> for Pixel {
+impl Div<f32> for Pixel {
     type Output = Self;
-    fn div(self, rhs: f64) -> Self::Output {
+    fn div(self, rhs: f32) -> Self::Output {
         Self {
             x: self.x / rhs,
             y: self.y / rhs,
@@ -99,8 +111,8 @@ impl Div<f64> for Pixel {
         }
     }
 }
-impl From<DVec4> for Pixel {
-    fn from(value: DVec4) -> Self {
+impl From<Vec4> for Pixel {
+    fn from(value: Vec4) -> Self {
         Self {
             x: value.x,
             y: value.y,
@@ -109,14 +121,9 @@ impl From<DVec4> for Pixel {
         }
     }
 }
-impl From<Pixel> for DVec4 {
+impl From<Pixel> for Vec4 {
     fn from(value: Pixel) -> Self {
-        Self {
-            x: value.x,
-            y: value.y,
-            z: value.z,
-            w: value.w,
-        }
+        Self::new(value.x, value.y, value.z, value.w)
     }
 }
 impl Deref for Pixel {
@@ -133,8 +140,8 @@ impl DerefMut for Pixel {
 
 impl MipMap {
     pub fn new(image_data: ImageData) -> Self {
-        let _w_level =  f64::log2(image_data.width as f64).floor()  as usize;
-        let _h_level =  f64::log2(image_data.height as f64).floor()  as usize;
+        let _w_level = f32::log2(image_data.width as f32).floor() as usize;
+        let _h_level = f32::log2(image_data.height as f32).floor() as usize;
         let mut mipmap = MipMap::default();
         //分辨率
         mipmap.resolution = UVec2::new(image_data.width as u32, image_data.height as u32);
@@ -179,32 +186,35 @@ impl MipMap {
         mipmap.mapping = data;
         mipmap
     }
-    pub fn lookup(&self, uv: DVec2, _duvdx: DVec2, _duvdy: DVec2) -> DVec3 {
+    pub fn lookup(&self, uv: Vec2, _duvdx: Vec2, _duvdy: Vec2) -> Vec3 {
         // let x_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
         // let y_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
-        let level = Level {
-            x: 0,
-            y: 0,
-        };
+        let level = Level { x: 0, y: 0 };
         let pixel = self.mapping.get(&level).expect("获取MipMap失败");
-        let len = (uv.x * self.resolution.x as f64) as u32 *self.resolution.y  + (uv.y  * self.resolution.y as f64) as u32;
-        let pixel = pixel.get(len as usize).expect(format!("pixel message: len:{},w: {} h: {},uv:{}",len,self.resolution.x,self.resolution.y,uv).as_str());
-         DVec4::from(*pixel).truncate()
-        // return DVec3::X;
+        let len = (uv.x * self.resolution.x as f32) as u32 * self.resolution.y
+            + (uv.y * self.resolution.y as f32) as u32;
+        let pixel = pixel.get(len as usize).expect(
+            format!(
+                "pixel message: len:{},w: {} h: {},uv:{}",
+                len, self.resolution.x, self.resolution.y, uv
+            )
+            .as_str(),
+        );
+        Vec4::from(*pixel).truncate()
+        // return Vec3::X;
         // let default = vec![];
         // let pixel = self.mapping.get(&level).unwrap_or_else(|| {
         //     error!("mipmap读取错误");
         //     &default
         // });
         // if pixel.is_empty() {
-        //     DVec3::ZERO
+        //     Vec3::ZERO
         // } else {
-        //     let len = uv.x * (2 << x_level) as f64 * uv.y * (2 << y_level) as f64;
+        //     let len = uv.x * (2 << x_level) as f32 * uv.y * (2 << y_level) as f32;
         //     let pixel = pixel.get(len as usize).unwrap();
-        //     let value = DVec4::from(*pixel);
+        //     let value = Vec4::from(*pixel);
         //     value.truncate()
         // }
-  
     }
     #[allow(dead_code)]
     fn build_floor(data: &Vec<Pixel>, w: u32, h: u32) -> Vec<Pixel> {
@@ -212,10 +222,10 @@ impl MipMap {
         let mut pixel: Vec<Pixel> = Vec::with_capacity(len);
         for i in 0..w {
             for j in 0..h {
-                let left_up = (i*2)+(j*2)*h;
-                let right_up = left_up+1;
-                let left_bottom = ((i+1)*2)+(j*2)*h;
-                let right_bottom = left_bottom+1;
+                let left_up = (i * 2) + (j * 2) * h;
+                let right_up = left_up + 1;
+                let left_bottom = ((i + 1) * 2) + (j * 2) * h;
+                let right_bottom = left_bottom + 1;
                 let (a, b, c, d) = (
                     data.get(left_up as usize),
                     data.get(right_up as usize),

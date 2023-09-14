@@ -1,6 +1,6 @@
 use std::{sync::mpsc::{self, Sender, Receiver},   path::Path, time::Instant, ops::Sub, thread};
 
-use glam::{f64::DVec3, UVec2};
+use glam::UVec2;
 use image::{Rgb, RgbImage};
 use indicatif::{ProgressBar, MultiProgress, ProgressStyle};
 use log::info;
@@ -19,11 +19,11 @@ pub enum Integrator{
     Direct(Box<DirectIntegrator>)
 }
 pub trait IntegratorAble{
-    fn is_next(&self, dept: &mut usize) -> Option<f64>;
-    fn fi(&self,ray:RayDiff,sence:&Sence,sampler:&mut Sampler)->DVec3;
+    fn is_next(&self, dept: &mut usize) -> Option<f32>;
+    fn fi(&self,ray:RayDiff,sence:&Sence,sampler:&mut Sampler)->Color;
 }
 impl IntegratorAble for Integrator{
-    fn is_next(&self, dept: &mut usize) -> Option<f64> {
+    fn is_next(&self, dept: &mut usize) -> Option<f32> {
         match &self{
             Integrator::Path(path) => path.is_next(dept),
             _=>None
@@ -78,7 +78,7 @@ impl Integrator{
                 let index=item.index;
                 let mut tile=Tile::new(index);
                 for (u, v) in item {
-                    let mut color = DVec3::ZERO;
+                    let mut color = Color::ZERO;
                     for _ in 0..n {
                         let camera_sample = CameraSample::new(u, v, &mut sampler);
                         let ray = camera.generate_ray(camera_sample);
@@ -103,7 +103,7 @@ impl Integrator{
         let path =
             Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
         format!("渲染完成，图像输出:{}", path.display());
-        buffer.write(image::ImageFormat::Jpeg, num as f64, path);
+        buffer.write(image::ImageFormat::Jpeg, num as f32, path);
     }
 
     pub fn render_process_debug(self, name: &str, num: u64, sence: &Sence,size:UVec2) {
@@ -117,13 +117,13 @@ impl Integrator{
         while let Some(item) = film.iter() {
 
             for (u, v) in item {
-                let mut color = DVec3::ZERO;
+                let mut color = Color::ZERO;
                 for _ in 0..n {
                     let camera_sample = CameraSample::new(u, v, &mut sampler);
                     let ray = camera.generate_ray(camera_sample);
                     color += self.fi(ray, sence,&mut sampler);
                 }
-                image.put_pixel(u as u32, v as u32, to_color(color, num as f64));
+                image.put_pixel(u as u32, v as u32, to_color(color, num as f32));
                 bar.inc(1);
             }
         }
@@ -137,7 +137,7 @@ impl Integrator{
     }
 
 }
-pub fn to_color(color:DVec3,ssp:f64)->Rgb<u8>{
+pub fn to_color(color:Color,ssp:f32)->Rgb<u8>{
         let vec = (color / ssp).powf(2.0);
         let rgb = vec * 255.0;
         let color= Rgb([

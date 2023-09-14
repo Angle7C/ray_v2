@@ -26,7 +26,7 @@ impl Buffer {
             height: size.y as u32,
         }
     }
-    pub fn write(self, format: ImageFormat, ssp: f64, name:  impl AsRef<Path>) {
+    pub fn write(self, format: ImageFormat, ssp: f32, name:  impl AsRef<Path>) {
         let mut rbg_buffer = RgbImage::new(self.width, self.height);
         for (index, color) in self.buffer.into_iter().enumerate() {
             let x = index as u32 / self.width;
@@ -35,7 +35,7 @@ impl Buffer {
         }
         let _=rbg_buffer.save_with_format(name, format);
     }
-    pub fn to_color(color: Color, ssp: f64) -> Rgb<u8> {
+    pub fn to_color(color: Color, ssp: f32) -> Rgb<u8> {
         if color.is_nan()||!color.is_finite(){
             info!("color nan:{}",color.is_nan());
             info!("color inf:{}",!color.is_finite());

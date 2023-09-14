@@ -1,6 +1,6 @@
-use std::{time::SystemTime, f64::consts::{FRAC_PI_4, FRAC_PI_2}};
+use std::{time::SystemTime, f32::consts::{FRAC_PI_4, FRAC_PI_2}};
 
-use glam::{f64::DVec2,f32::Vec2, DVec3};
+use glam::{Vec2, Vec3};
 use rand::{rngs::StdRng, SeedableRng, Rng};
 
 pub struct Sampler {
@@ -42,37 +42,37 @@ impl Sampler {
             }
         }
     }
-    pub fn sample_1d_d(&mut self)->f64{
+    pub fn sample_1d_d(&mut self)->f32{
         self.rand.gen_range(0.0..1.0)
     }
-    pub fn sample_2d_d(&mut self)->DVec2{
+    pub fn sample_2d_d(&mut self)->Vec2{
         let x=self.sample_1d_d();
         let y=self.sample_1d_d();
-        DVec2{x,y }
+        Vec2{x,y }
     }
     pub fn sample_2d(&mut self)->Vec2{
-        self.sample_2d_d().as_vec2()
+        self.sample_2d_d()
     }
     pub fn sample_d(&mut self)->f32{
         self.sample_1d_d() as f32
     }
-    pub fn smapel_dir(&mut self)->DVec3{
+    pub fn smapel_dir(&mut self)->Vec3{
         let x=self.sample_1d_d();
         let y=self.sample_1d_d();
         let z=self.sample_1d_d();
-        DVec3 { x,y, z }.normalize()
+        Vec3 { x,y, z }.normalize()
     }
 }
-pub fn cosine_sample_hemisphere(u:DVec2)->DVec3{
+pub fn cosine_sample_hemisphere(u:Vec2)->Vec3{
     let d=concentric_sample_disk(u);
-    let z=0.0_f64.max(1.0-d.length_squared() as f64)
+    let z=0.0_f32.max(1.0-d.length_squared())
     .sqrt();
     d.extend(z)
 }
-pub fn concentric_sample_disk(u:DVec2)->DVec2{
-    let offset=u*2.0-DVec2::ONE;
+pub fn concentric_sample_disk(u:Vec2)->Vec2{
+    let offset=u*2.0-Vec2::ONE;
     if offset.x==0.0&&offset.y==0.0{
-        return DVec2::ZERO;
+        return Vec2::ZERO;
     }
     let theta;
     let r;
@@ -83,7 +83,7 @@ pub fn concentric_sample_disk(u:DVec2)->DVec2{
         r=offset.y;
         theta=FRAC_PI_2-FRAC_PI_4*(offset.x/offset.y)
     }
-    DVec2{
+    Vec2{
         x:theta.cos(),
         y:theta.sin(),
     }*r

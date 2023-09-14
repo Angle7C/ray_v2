@@ -1,6 +1,6 @@
-use std::f64::consts::FRAC_1_PI;
+use std::f32::consts::FRAC_1_PI;
 
-use glam::DVec3;
+use glam::Vec3;
 
 use crate::pbrt_core::tool::color::Color;
 
@@ -16,7 +16,7 @@ impl PbrDiff {
     }
 }
 impl BxDFAble for PbrDiff {
-    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3 {
+    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let fo = func::schlick_weight(cos_theta(w_out).abs());
         let fi = func::schlick_weight(cos_theta(w_in).abs());
 
@@ -41,15 +41,15 @@ impl BxDFAble for PbrReflection{
         (BxDFType::Reflection | BxDFType::Glossy) &flag >0
     }
 
-    fn fi(&self, w_in: &DVec3, w_out: &DVec3) -> DVec3 {
+    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let cos_o=cos_theta(w_out).abs();
         let cos_i=cos_theta(w_in).abs();
         let mut wh=*w_in+*w_out;
         if cos_i==0.0 || cos_o==0.0{
-            return DVec3::ZERO;
+            return Vec3::ZERO;
         }
-        if wh.abs_diff_eq(DVec3::ZERO, f64::EPSILON){
-            return DVec3::ZERO;
+        if wh.abs_diff_eq(Vec3::ZERO, f32::EPSILON){
+            return Vec3::ZERO;
         }
         wh=wh.normalize();
         let dot=w_in.dot(wh);
@@ -58,7 +58,7 @@ impl BxDFAble for PbrReflection{
         *f/(4.0 * cos_i*cos_o)
 
     }
-    fn pdf(&self,w_out: DVec3, w_in: DVec3) -> f64 {
+    fn pdf(&self,w_out: Vec3, w_in: Vec3) -> f32 {
         if func::vec3_same_hemisphere_vec3(&w_out, &w_in){
             0.0
         }else{
@@ -68,11 +68,11 @@ impl BxDFAble for PbrReflection{
     }
     fn sample_f(
             &self,
-            w_in: &mut DVec3,
-            w_out: &DVec3,
-            sample_point: glam::DVec2,
-            pdf: &mut f64,
-        ) -> DVec3 {
+            w_in: &mut Vec3,
+            w_out: &Vec3,
+            sample_point: glam::Vec2,
+            pdf: &mut f32,
+        ) -> Vec3 {
         if w_out.z==0.0{
             return Color::ZERO;
         }
