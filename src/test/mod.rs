@@ -14,14 +14,9 @@ pub mod test{
     }
     #[test]
     fn load_test(){
-        let path=Path::new("./file/setting.toml");
-        let mut file = File::open(path).expect("读取配置文件失败");
-        let mut buf:String=String::new();
-        file.read_to_string(&mut buf).unwrap();
-        let a = Vec2::new(1.0, 1.0);
-        
-
-        let load = toml::from_str::<MyLoad>(&buf).unwrap();
-        print!("{:?}",load);
+        // let mut load=MyLoad::default();
+        let m = MaterialToml::Matte { kd: 0, sigma: 0 };
+        let str = toml::to_string(&m).unwrap();
+        print!("{:?}",str);
     }
 }

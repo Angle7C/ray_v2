@@ -1,4 +1,5 @@
 use glam::Vec3;
+use rand::{prelude::Distribution, distributions::{uniform::{UniformFloat, SampleRange}, Uniform}};
 
 use crate::pbrt_core::{filter::Filter, tool::mipmap::MipMap};
 
@@ -20,8 +21,8 @@ impl ImageTexture {
 impl Texture for ImageTexture {
     fn evaluate(&self, inter: &crate::pbrt_core::tool::InteractionCommon) -> Vec3 {
         // let uv=self.filter.filter_uv(&inter.uv);
-        // let value = self.mipmap.lookup(uv, Vec2::ZERO, Vec2::ZERO);
-        // value
+        // Distribution
         Vec3::ZERO
+        
     }
 }

@@ -16,6 +16,7 @@ pub mod setting;
 pub mod tile;
 pub mod error;
 pub mod mipmap;
+pub mod build;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
@@ -93,8 +94,8 @@ impl From<Bound<3>> for AABB {
         let min = value.min;
         let max = value.max;
         Self {
-            min: min,
-            max: max,
+            min,
+            max,
         }
     }
 }
@@ -295,8 +296,8 @@ impl Visibility {
     fn g(&self, sence: &Sence) -> f32 {
         let vis = self.is_vis(sence);
         let dir = self.a.p - self.b.p;
-        vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs()
-            / dir.length_squared()
+        let value=vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs();
+        value/ dir.length_squared()
     }
     // fn get_dir(&self,sence:&Sence)->f32{}
 }

@@ -6,62 +6,60 @@ use rand::Rng;
 use crate::pbrt_core::{
     bxdf::BxDFType,
     camera::Camera,
-    light::Light,
-    material::Material,
-    primitive::{ Aggregate,Primitive},
+    light::{Light, LightAble},
+    primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
     sampler::Sampler,
 };
 
 use super::{Bound, SurfaceInteraction, Visibility};
-
-pub struct Sence<'a> {
-    _primitive: &'a [Box<dyn Primitive>],
-    accel: Option<Box<dyn Aggregate>>,
-    bound: Bound<3>,
-    light: &'a [Light],
-    _material:  &'a [Box<dyn Material>],
+pub struct Sence {
+    shape: &'static [Box<dyn Primitive>],
     pub camera: Camera,
+    light: &'static [Light],
+    bound: Bound<3>,
+    // material: Vec<Box<dyn Material>>,
+    accel: Option<Box<dyn Aggregate>>,
 }
-impl<'a> Debug for Sence<'a> {
-    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        unimplemented!()
+unsafe impl Sync for Sence {}
+
+impl Sence {
+    pub fn new(
+        primitive: Vec<Box<dyn Primitive>>,
+        camera: Camera,
+        light: Vec<Light>,
+        // material: [Box<dyn Material>],
+    ) -> Self {
+        let light = light.leak();
+        let primitive = primitive.leak();
+        //场景集合
+
+        let mut geoemtry = primitive
+            .iter()
+            .map(|ele| GeometricePrimitive::new(ele.as_ref()))
+            .collect::<Vec<_>>();
+        let mut geoemtry_light = light
+            .iter()
+            .map(|item| GeometricePrimitive::new(item))
+            .collect::<Vec<_>>();
+        geoemtry.append(&mut geoemtry_light);
+        let bound = geoemtry
+            .iter()
+            .map(|ele| ele.world_bound())
+            .fold(Bound::<3>::default(), |a, b| a.merage(b));
+
+        let accel = Box::new(BVH::new(geoemtry));
+
+        let sence = Self {
+            shape: primitive,
+            camera,
+            bound,
+            light: light,
+            accel: Some(accel),
+        };
+        sence
     }
 }
-unsafe impl<'a> Sync for Sence<'a> {}
-
-impl<'a> Sence<'a> {
-    pub fn new(primitive: Vec<Box<dyn Primitive>>, light: Vec<Light>, camera: Camera,material:&'static[Box<dyn Material>]) -> Self {
-        // let light = light.leak();
-        // let primitive = primitive.leak();
-        // //场景集合
-        // let mut geoemtry = primitive
-        //     .iter()
-        //     .map(|ele| GeometricePrimitive::new(ele.as_ref()))
-        //     .collect::<Vec<_>>();
-        // let mut geoemtry_light = light
-        //     .iter()
-        //     .map(|item| GeometricePrimitive::new(item))
-        //     .collect::<Vec<_>>();
-        // geoemtry.append(&mut geoemtry_light);
-        // let bound = geoemtry
-        //     .iter()
-        //     .map(|ele| ele.world_bound())
-        //     .fold(Bound::<3>::default(), |a, b| a.merage(b));
-
-        // let accel: BVH<'_> = BVH::new(geoemtry);
-        // let sence = Self {
-        //     _primitive: primitive,
-        //     accel: Some(Box::new(accel)),
-        //     bound,
-        //     light,
-        //     _material: material ,
-        //     camera,
-        // };
-        // sence
-        unimplemented!()
-    }
-
-
+impl Sence {
     pub fn uniform_sample_one_light(
         &self,
         surface: &SurfaceInteraction,
@@ -100,8 +98,12 @@ impl<'a> Sence<'a> {
         unimplemented!()
     }
 }
-
-impl<'a> Primitive for Sence<'a> {
+impl Debug for Sence {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        unimplemented!()
+    }
+}
+impl Primitive for Sence {
     fn interacect(&self, ray: super::RayDiff) -> Option<super::SurfaceInteraction> {
         if self.interacect_bound(&ray) {
             if let Some(accel) = &self.accel {
@@ -139,6 +141,7 @@ pub fn sample_light(
     //采样值
     let ld = match light {
         Light::AreaLight(area) => area.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
+        Light::PointLight(p) => p.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
     };
     let f = if let Some(bsdf) = &surface.bsdf {
         let f = bsdf.f(&surface.common.w0, &wi, flag) * wi.dot(surface.shading.n).abs();

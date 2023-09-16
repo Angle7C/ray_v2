@@ -13,7 +13,7 @@ pub mod shape {
     use self::rectangle::Rectangle;
     use super::Primitive;
     use crate::pbrt_core::tool::InteractionCommon;
-    use glam::{Vec3, Vec2};
+    use glam::{Vec2, Vec3};
     pub mod rectangle;
     pub mod shpere;
     pub mod triangle;
@@ -88,6 +88,9 @@ pub trait Primitive: Debug {
     fn get_light(&self) -> Option<&dyn LightAble> {
         None
     }
+    fn get_area(&self) -> f32 {
+        1.0
+    }
 }
 pub trait Aggregate: Sync {
     fn interacect(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
@@ -109,6 +112,7 @@ impl PartialEq for ObjectType {
 #[derive(Debug)]
 pub struct GeometricePrimitive<'a> {
     primitive: &'a dyn Primitive,
+    light:Option<&'a dyn LightAble>,
     node_index: usize,
 }
 unsafe impl<'a> Sync for GeometricePrimitive<'a> {}
@@ -118,6 +122,7 @@ impl<'a> GeometricePrimitive<'a> {
         Self {
             primitive,
             node_index: 0,
+            light:None
         }
     }
 }

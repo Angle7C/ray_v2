@@ -5,16 +5,16 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{Bound, Shading, SurfaceInteraction},
+    tool::{Bound, Shading, SurfaceInteraction, func},
 };
 #[derive(Debug)]
-pub struct Shpere {
+pub struct Shpere<'a> {
     r: f32,
     obj_to_world: Mat4,
-    material: Option<Arc<dyn Material>>,
+    material: Option<&'a dyn Material>,
 }
-impl Shpere {
-    pub fn new(r: f32, material: Option<Arc<dyn Material>>, obj_to_world: Mat4) -> Self {
+impl<'a> Shpere<'a> {
+    pub fn new(r: f32, material: Option<&'a dyn Material>, obj_to_world: Mat4) -> Self {
         Self {
             r,
             obj_to_world,
@@ -22,7 +22,7 @@ impl Shpere {
         }
     }
 }
-impl Primitive for Shpere {
+impl<'a> Primitive for Shpere<'a> {
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let min = Vec3::splat(-self.r);
         let max = Vec3::splat(self.r);
@@ -45,29 +45,29 @@ impl Primitive for Shpere {
     ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
         let o = self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
-        let l = -o;
-        let s = l.dot(dir);
-        let r_2 = self.r * self.r;
-        let l_2 = l.dot(l);
-        if s < 0.0 && l_2 > r_2 {
-            return None;
+        let a=dir.dot(dir);
+        let b=2.0*dir.dot(o);
+        let c=o.dot(o)-self.r*self.r;
+        let t:f32;
+        if let Some((t1,t2)) = func::quadratic(a, b, c) {
+            t=(t1.min(t2)).max(0.0);
+            if t<0.0{
+                return None
+            }
+        }else{
+            return None
         }
-        let m = l_2 - r_2;
-        if m > r_2 {
-            return None;
-        }
-        let q = (r_2 - m).sqrt();
-        let t = if l_2 > r_2 { s - q } else { s + q };
-        let p = o + dir * t;
+        let p=o+t*dir;
+        let mut phi=(p.y/p.x).atan();
         //uv计算
-        let mut phi = (p.z / p.x).atan();
         if phi < 0.0 {
             phi += 2.0 * PI;
         }
-        let v = p.y.acos();
-        let uv = Vec2::new(phi / (2.0 * PI), 1.0 - v / PI);
+        let theta = (p.z/self.r).clamp(-1.0, 1.0);
+        let v=theta.acos()/PI;
+        let uv = Vec2::new(phi / (2.0 * PI),v);
         //dpdu,dpdv计算
-        let z_radius = p.x * p.x + p.y * p.y;
+        let z_radius = self.r;
         let inv_z_radius = 1.0 / z_radius;
         let cos_phi = p.x * inv_z_radius;
         let sin_phi = p.y * inv_z_radius;

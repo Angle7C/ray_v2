@@ -12,9 +12,11 @@ pub mod disney;
 pub mod matte;
 pub mod mirror;
 pub mod pbr;
+pub mod plastic;
+
 pub trait Material: Debug {
     fn compute_scattering_functions(&self, suface: &mut SurfaceInteraction, mode: TransportMode);
-    fn bump(&self, suface: &SurfaceInteraction, texture: &dyn Texture);
+    fn bump(&self, suface: &SurfaceInteraction, texture: &dyn Texture){}
 }
 // BSDF使用局部坐标系。
 pub struct BSDF {

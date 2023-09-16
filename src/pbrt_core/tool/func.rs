@@ -115,3 +115,14 @@ pub fn trowbridge_reitz_sample_11(
     assert!(!(*slope_y).is_infinite());
     assert!(!(*slope_y).is_nan());
 }
+
+pub fn quadratic(a:f32,b:f32,c:f32)->Option<(f32,f32)>{
+    let det=b*b-4.0*a*c;
+    if det<0.0{
+        None
+    }else{
+        let t1=(-b+det.sqrt())/(2.0*a);
+        let t2=(-b-det.sqrt())/(2.0*a);
+        Some((t1,t2))
+    }
+}
