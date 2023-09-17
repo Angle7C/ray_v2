@@ -2,7 +2,10 @@ use std::f32::consts::PI;
 
 use glam::{Mat4, Vec3};
 
-use crate::pbrt_core::{primitive::Primitive, tool::{Bound, Visibility, InteractionCommon}};
+use crate::pbrt_core::{
+    primitive::Primitive,
+    tool::{Bound, InteractionCommon, Visibility},
+};
 
 use super::LightAble;
 
@@ -43,9 +46,9 @@ impl LightAble for Point {
         *pdf = 1.0;
         *vis = Visibility {
             a: surface.common,
-            b: InteractionCommon::new(Vec3::ZERO, self.p,w_in.normalize(),Default::default(),Default::default()),
+            b: InteractionCommon::new(-*w_in, self.p, *w_in, 0.0, Default::default()),
         };
-        *w_in = (self.p - surface.common.p).normalize();
+
         self.lemit
     }
 }

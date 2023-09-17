@@ -67,7 +67,7 @@ impl<'a> Primitive for Rectangle<'a> {
             p,
             p.truncate(),
             n,
-            ray.o.dir,
+            -ray.o.dir,
             dpdu,
             dpdv,
             Vec3::ZERO,

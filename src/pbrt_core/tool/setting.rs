@@ -1,12 +1,6 @@
 use glam::UVec2;
 
 use crate::pbrt_core::{
-    integrator::{
-        direct::{DirectIntegrator, LightStartegy},
-        path::PathIntegrator,
-        Integrator,
-    },
-    sampler::Sampler,
 };
 
 use super::sence::Sence;

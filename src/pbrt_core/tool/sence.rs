@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use glam::{Vec2, Vec3};
+use log::info;
 use rand::Rng;
 
 use crate::pbrt_core::{
@@ -82,7 +83,7 @@ impl Sence {
                 light,
                 self,
                 sampler,
-                BxDFType::All.into(),
+                31,
                 handle,
             )
         }
@@ -151,6 +152,8 @@ pub fn sample_light(
         Vec3::ZERO
     };
     let ok = vis.g(sence);
-
+    if f.abs_diff_eq(Vec3::ZERO, f32::EPSILON){
+        info!("bsdf {:?}",f);
+    }
     ld * ok * f / light_pdf
 }

@@ -1,52 +1,55 @@
-name = "test"
+name = "image"
 
 [camera]
 mode = "P"
-size = [1024.0, 1024.0]
+size = [2048.0, 2048.0]
 far = 1000.0
 near = 0.01
-eye = [10.0, 0.0, 0.0]
+eye = [0.0, 4.0, 4.0]
 target = [0.0, 0.0, 0.0]
 up = [0.0, 1.0, 0.0]
-fov = 30.0
+fov = 110.0
 
 [[shapes]]
 mode = "Shpere"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.0, 0.0, 1.0] }
 r = 1.0
 material_index = 0
+
+[[shapes]]
+mode = "Shpere"
+trans = { r = [0.0, 0.0, 1.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, -100.0] }
+material_index = 0
+r = 99.0
+
 
 [[material]]
 mode = "Matte"
 kd = 0
-sigma = 1.0
+sigma = 0.0
 
 [[texture]]
 mode = "Constant"
 value = [0.7, 0.7, 0.7]
 
 [[light]]
+# shape = {mode = "Rect", trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }, material_index = 0}
+# mode = "Area"
+# lemit = [100.0, 100.0, 100.0]
+# trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }
 mode = "Point"
-point = [12.0, 0.0, 0.0]
-lemit = [100.0, 100.0, 100.0]
-trans = { r = [
-    1.0,
-    0.0,
-    0.0,
-    0.0,
-], s = [
-    1.0,
-    1.0,
-    1.0,
-], t = [
-    0.0,
-    0.0,
-    0.0,
-] }
+point = [0.0, 0.0, 10.0]
+lemit = [300.0, 300.0, 300.0]
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }
+
 
 [intergator]
-mode = "Path"
+# mode = "Path"
+# core_num = 6
+# sample_num = 4
+# q = 0.5
+# max_depth = 3
+mode = "Direct"
+sample_num = 1
 core_num = 6
-sample_num = 4
-q = 0.5
-max_depth = 3
+startegy = "UniformOne"

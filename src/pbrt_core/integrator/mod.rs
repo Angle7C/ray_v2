@@ -119,7 +119,6 @@ impl Integrator {
                     tile.push(color);
                 }
                 pb.inc(1);
-                info!("index:{} 渲染完成", index);
                 tiles.push(tile);
             }
             pb.finish();

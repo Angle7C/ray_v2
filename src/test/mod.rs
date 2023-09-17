@@ -12,11 +12,4 @@ pub mod test{
         log_init();
         // khr_lights_punctual
     }
-    #[test]
-    fn load_test(){
-        // let mut load=MyLoad::default();
-        let m = MaterialToml::Matte { kd: 0, sigma: 0 };
-        let str = toml::to_string(&m).unwrap();
-        print!("{:?}",str);
-    }
 }

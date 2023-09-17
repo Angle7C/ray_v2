@@ -63,7 +63,7 @@ impl BSDF {
             ns: si.shading.n,
             ng: si.common.normal,
             ss,
-            ts: si.shading.n.cross(ss),
+            ts: si.shading.n.cross(ss).normalize(),
             bxdfs: vec![],
         }
     }

@@ -1,11 +1,15 @@
-use std::sync::Arc;
+use std::{f32::consts::PI, sync::Arc};
 
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::{
     camera::{Camera, CameraMode},
-    integrator::{path::PathIntegrator, Integrator},
+    integrator::{
+        direct::{DirectIntegrator, LightStartegy},
+        path::PathIntegrator,
+        Integrator,
+    },
     light::{point::Point, Light},
     material::{matte::Matte, plastic::Plastic, Material},
     primitive::{
@@ -20,7 +24,7 @@ use crate::pbrt_core::{
         setting::Setting,
     },
 };
-#[derive(Deserialize, Debug, Serialize,Default)]
+#[derive(Deserialize, Debug, Serialize, Default)]
 pub struct MyLoad {
     camera: CameraToml,
     shapes: Vec<ShapeToml>,
@@ -47,7 +51,7 @@ impl MyLoad {
                 MaterialToml::Matte { kd, sigma } => {
                     let kd = texture.get(*kd);
                     // let sigma = texture.get(*sigma);
-                    Box::new(Matte::new(kd.unwrap().clone(),*sigma))
+                    Box::new(Matte::new(kd.unwrap().clone(), *sigma))
                 }
                 MaterialToml::Plastic { kd, ks, roughness } => {
                     let kd = texture.get(*kd).unwrap();
@@ -130,7 +134,15 @@ impl MyLoad {
                 CameraMode::P,
                 self.camera.fov,
             ),
-            _ => unimplemented!(),
+            "O" => Camera::new(
+                self.camera.eye,
+                self.camera.target,
+                self.camera.up,
+                self.camera.size,
+                CameraMode::O,
+                self.camera.fov,
+            ),
+            _=>unimplemented!()
         }
     }
     pub fn create_intergator(&self) -> Integrator {
@@ -138,7 +150,11 @@ impl MyLoad {
             IntegratorToml::Direct {
                 core_num,
                 sample_num,
-            } => todo!(),
+                startegy,
+            } => {
+                let direct = Box::new(DirectIntegrator::new(0, startegy, Sampler::new(1)));
+                Integrator::Direct(direct, core_num, Sampler::new(sample_num))
+            }
             IntegratorToml::Path {
                 core_num,
                 sample_num,
@@ -156,7 +172,13 @@ impl MyLoad {
             IntegratorToml::Direct {
                 core_num,
                 sample_num,
-            } => todo!(),
+                startegy,
+            } => Setting::new(
+                core_num,
+                self.name.to_owned(),
+                self.camera.size.as_uvec2(),
+                "direct".to_ascii_lowercase(),
+            ),
             IntegratorToml::Path {
                 core_num,
                 sample_num,
@@ -172,7 +194,7 @@ impl MyLoad {
     }
 }
 
-#[derive(Deserialize, Debug, Serialize,Default)]
+#[derive(Deserialize, Debug, Serialize, Default)]
 pub struct CameraToml {
     pub mode: String,
     pub size: Vec2,
@@ -183,7 +205,7 @@ pub struct CameraToml {
     pub up: Vec3,
     pub fov: f32,
 }
-#[derive(Deserialize, Debug, Serialize,Default)]
+#[derive(Deserialize, Debug, Serialize, Default)]
 
 pub struct TransformToml {
     r: Vec4,
@@ -192,7 +214,8 @@ pub struct TransformToml {
 }
 impl TransformToml {
     pub fn get_mat(&self) -> Mat4 {
-        let quat = Quat::from_axis_angle(self.r.truncate(), self.r.z);
+        let angle = self.r.w.to_radians();
+        let quat = Quat::from_axis_angle(self.r.truncate(), angle);
         Mat4::from_scale_rotation_translation(self.s, quat, self.t)
     }
 }
@@ -229,7 +252,6 @@ pub enum MaterialToml {
 pub enum TextureToml {
     Image { path: String },
     Constant { value: Vec3 },
-
     // Value{value:f32}
 }
 #[derive(Deserialize, Debug, Serialize)]
@@ -273,7 +295,6 @@ pub enum LightToml {
 #[derive(Deserialize, Debug, Serialize, Clone, Copy)]
 #[serde(tag = "mode")]
 pub enum IntegratorToml {
-
     Path {
         core_num: usize,
         sample_num: usize,
@@ -283,10 +304,16 @@ pub enum IntegratorToml {
     Direct {
         core_num: usize,
         sample_num: usize,
+        startegy: LightStartegy,
     },
 }
 impl Default for IntegratorToml {
     fn default() -> Self {
-        Self::Path { core_num: 8, sample_num: 1, q: 0.9, max_depth: 5 }
+        Self::Path {
+            core_num: 8,
+            sample_num: 1,
+            q: 0.9,
+            max_depth: 5,
+        }
     }
 }

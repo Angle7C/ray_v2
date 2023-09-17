@@ -1,4 +1,5 @@
 use glam::Vec3;
+use serde::{Serialize, Deserialize};
 
 use crate::pbrt_core::{
     primitive::Primitive,
@@ -7,10 +8,10 @@ use crate::pbrt_core::{
 };
 
 pub struct DirectIntegrator {
-    _max_depth: u32,
     _strategy: LightStartegy,
     _sample: Sampler,
 }
+#[derive(Deserialize, Debug, Serialize, Clone, Copy)]
 pub enum LightStartegy {
     UniformAll,
     UniformOne,
@@ -18,7 +19,6 @@ pub enum LightStartegy {
 impl DirectIntegrator {
     pub fn new(max_depth: u32, strategy: LightStartegy, sample: Sampler) -> Self {
         Self {
-            _max_depth:max_depth,
             _strategy:strategy,
             _sample:sample,
         }
@@ -28,6 +28,7 @@ impl DirectIntegrator {
         let beta=Vec3::ONE;
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         if let Some(mut item) = sence.interacect(ray) {
+            // return (item.common.normal+Vec3::ONE)/2.0;
             if item.light.is_some() {
                 ans += beta * item.le(ray.o.dir);
                 return ans;
