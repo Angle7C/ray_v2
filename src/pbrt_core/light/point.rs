@@ -9,7 +9,8 @@ use crate::pbrt_core::{
 
 use super::LightAble;
 
-#[derive(Debug)]
+#[derive(Debug,Clone, Copy)]
+// #[derive(Debug,)]
 pub struct Point {
     p: Vec3,
     lemit: Vec3,

@@ -1,3 +1,4 @@
+use std::default::Default;
 use std::fmt::Debug;
 
 use glam::{Vec2, Vec3};
@@ -13,14 +14,17 @@ use crate::pbrt_core::{
 };
 
 use super::{Bound, SurfaceInteraction, Visibility};
+
 pub struct Sence {
     shape: &'static [Box<dyn Primitive>],
     pub camera: Camera,
     light: &'static [Light],
+    env: &'static [Light],
     bound: Bound<3>,
     // material: Vec<Box<dyn Material>>,
     accel: Option<Box<dyn Aggregate>>,
 }
+
 unsafe impl Sync for Sence {}
 
 impl Sence {
@@ -28,6 +32,7 @@ impl Sence {
         primitive: Vec<Box<dyn Primitive>>,
         camera: Camera,
         light: Vec<Light>,
+        env: Vec<Light>,
         // material: [Box<dyn Material>],
     ) -> Self {
         let light = light.leak();
@@ -47,6 +52,7 @@ impl Sence {
             .iter()
             .map(|ele| ele.world_bound())
             .fold(Bound::<3>::default(), |a, b| a.merage(b));
+        // let mut env=vec![];
 
         let accel = Box::new(BVH::new(geoemtry));
 
@@ -55,12 +61,59 @@ impl Sence {
             camera,
             bound,
             light: light,
+            env:env.leak(),
             accel: Some(accel),
         };
         sence
     }
 }
+
 impl Sence {
+    pub fn has_env(&self) -> bool {
+        !self.env.is_empty()
+    }
+    pub fn get_env_light(
+        &self,
+        surface: &SurfaceInteraction,
+        wi:Vec3,
+        u: Vec2,
+        flag: u32,
+        _handle: bool,
+    ) -> Vec3 {
+        let mut light_pdf = 0.0;
+        // let mut scattering_pdf = 0.0;
+        let mut vis = Visibility::default();
+        //射出
+        let mut ans = Vec3::ZERO;
+        let mut pdf=0.0;
+        let mut wi=wi;
+        for light in self.env {
+            let ld = match light {
+                Light::Infinite(inf) => inf.le(wi),
+                _ => todo!(),
+            };
+            let f = if let Some(bsdf) = &surface.bsdf {
+                let f = bsdf.sample_f(&surface.common.w0, &mut wi, u,&mut pdf,31) * wi.dot(surface.shading.n).abs();
+                f
+            } else {
+                Vec3::ZERO
+            };
+            ans += ld * f;
+        };
+        ans
+    }
+    pub fn get_hit_env(&self,wi:Vec3)->Vec3{
+        let mut ans = Vec3::ZERO;
+        for light in self.env {
+            let ld = match light {
+                Light::Infinite(inf) => inf.le(wi),
+                _ => todo!(),
+            };
+            ans += ld;
+        }
+        ans
+    }
+
     pub fn uniform_sample_one_light(
         &self,
         surface: &SurfaceInteraction,
@@ -99,11 +152,13 @@ impl Sence {
         unimplemented!()
     }
 }
+
 impl Debug for Sence {
     fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }
+
 impl Primitive for Sence {
     fn interacect(&self, ray: super::RayDiff) -> Option<super::SurfaceInteraction> {
         if self.interacect_bound(&ray) {
@@ -124,6 +179,7 @@ impl Primitive for Sence {
         self.world_bound().intesect(ray)
     }
 }
+
 pub fn sample_light(
     surface: &SurfaceInteraction,
     u: Vec2,
@@ -143,6 +199,7 @@ pub fn sample_light(
     let ld = match light {
         Light::AreaLight(area) => area.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
         Light::PointLight(p) => p.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
+        Light::Infinite(inf) => inf.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
     };
     let f = if let Some(bsdf) = &surface.bsdf {
         let f = bsdf.f(&surface.common.w0, &wi, flag) * wi.dot(surface.shading.n).abs();
@@ -152,7 +209,7 @@ pub fn sample_light(
         Vec3::ZERO
     };
     let ok = vis.g(sence);
-    if f.abs_diff_eq(Vec3::ZERO, f32::EPSILON){
+    if f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         info!("bsdf {:?}",f);
     }
     ld * ok * f / light_pdf

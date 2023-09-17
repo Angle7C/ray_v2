@@ -5,7 +5,7 @@ use std::{
 
 use glam::{Vec2, Vec3};
 
-use self::{area::AreaLight, point::Point};
+use self::{area::AreaLight, infinite::InfiniteLight, point::Point};
 
 use super::{
     primitive::{shape::Shape, Primitive},
@@ -13,36 +13,44 @@ use super::{
 };
 
 pub mod area;
+pub mod infinite;
 pub mod point;
 pub mod spot;
 #[derive(Debug)]
 pub enum Light {
     AreaLight(Box<dyn AreaLight>),
     PointLight(Box<Point>),
+    Infinite(Box<InfiniteLight>),
 }
 impl Primitive for Light {
     fn get_light(&self) -> Option<&dyn LightAble> {
         match &self {
             Light::AreaLight(ref area) => area.get_light(),
             Light::PointLight(ref point) => point.get_light(),
+            Light::Infinite(ref inf)=>inf.get_light(),
         }
     }
     fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: super::bxdf::TransportMode) {
         match &self {
             Light::AreaLight(area) => area.compute_scattering(isct, mode),
             Light::PointLight(point) => point.compute_scattering(isct, mode),
+            Light::Infinite(ref infinite)=>infinite.compute_scattering(isct,mode)
         }
     }
     fn interacect(&self, ray: super::tool::RayDiff) -> Option<SurfaceInteraction> {
         match &self {
             Light::AreaLight(area) => area.interacect(ray),
             Light::PointLight(point) => point.interacect(ray),
+            Light::Infinite(ref infinite)=>infinite.interacect(ray),
+
         }
     }
     fn world_bound(&self) -> super::tool::Bound<3> {
         match &self {
             Light::AreaLight(area) => area.world_bound(),
             Light::PointLight(point) => point.world_bound(),
+            Light::Infinite(ref infinite)=>infinite.world_bound(),
+
         }
     }
 }
@@ -59,6 +67,7 @@ impl Light {
     pub fn le(&self, wi: &Vec3) -> Vec3 {
         match &self {
             Self::AreaLight(area) => area.le(*wi),
+            Self::Infinite(inf)=>inf.le(*wi),
             _ => todo!(),
         }
     }

@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, sync::Arc};
+use std::sync::Arc;
 
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
@@ -10,10 +10,10 @@ use crate::pbrt_core::{
         path::PathIntegrator,
         Integrator,
     },
-    light::{point::Point, Light},
+    light::{area::DiffuseAreaLight, point::Point, Light},
     material::{matte::Matte, plastic::Plastic, Material},
     primitive::{
-        shape::{rectangle::Rectangle, shpere::Shpere},
+        shape::{rectangle::Rectangle, shpere::Shpere, Shape},
         Primitive,
     },
     sampler::Sampler,
@@ -24,24 +24,35 @@ use crate::pbrt_core::{
         setting::Setting,
     },
 };
+use crate::pbrt_core::light::infinite::InfiniteLight;
+use crate::pbrt_core::light::LightAble;
+use crate::pbrt_core::material::mirror::Mirror;
+
+static mut SHAPE: Vec<Shape> = vec![];
+
 #[derive(Deserialize, Debug, Serialize, Default)]
 pub struct MyLoad {
     camera: CameraToml,
+    primitive: Vec<ShapeToml>,
     shapes: Vec<ShapeToml>,
     material: Vec<MaterialToml>,
     light: Vec<LightToml>,
+    env_light: Vec<LightToml>,
     texture: Vec<TextureToml>,
     pub intergator: IntegratorToml,
     name: String,
 }
+
 impl MyLoad {
     pub fn load_sence(&self) -> Sence {
         let texture = self.load_texture().leak();
         let material = self.load_material(texture).leak();
-        let shape = self.load_shape(material);
-        let lights = self.load_light();
+        let primitive = self.load_primitive(material);
+        let env_light = self.load_env(texture);
+        self.load_shape();
+        let lights = self.load_light(unsafe { &SHAPE });
         let camera = self.load_camera();
-        let sence = Sence::new(shape, camera, lights);
+        let sence = Sence::new(primitive, camera, lights, env_light);
         sence
     }
     fn load_material(&self, texture: &'static [Arc<dyn Texture>]) -> Vec<Box<dyn Material>> {
@@ -58,6 +69,10 @@ impl MyLoad {
                     let ks = texture.get(*ks).unwrap();
                     let roughness = texture.get(*roughness).unwrap();
                     Box::new(Plastic::new(kd.clone(), ks.clone(), roughness.clone()))
+                }
+                MaterialToml::Mirror {kr}=>{
+                    let kr=texture.get(*kr).unwrap();
+                    Box::new(Mirror::new(kr.clone()))
                 }
                 //    MaterialToml::Fourier {  } => todo!(),
                 _ => todo!(),
@@ -82,9 +97,9 @@ impl MyLoad {
         }
         vec
     }
-    fn load_shape(&self, material: &'static [Box<dyn Material>]) -> Vec<Box<dyn Primitive>> {
+    fn load_primitive(&self, material: &'static [Box<dyn Material>]) -> Vec<Box<dyn Primitive>> {
         let mut vec = vec![];
-        for item in &self.shapes {
+        for item in &self.primitive {
             let shape: Box<dyn Primitive> = match item {
                 ShapeToml::Rect {
                     trans,
@@ -107,7 +122,7 @@ impl MyLoad {
         }
         vec
     }
-    fn load_light(&self) -> Vec<Light> {
+    fn load_light<'a>(&'a self, shape: &'static [Shape<'static>]) -> Vec<Light> {
         let mut vec = vec![];
         for item in &self.light {
             let light: Light = match item {
@@ -116,11 +131,49 @@ impl MyLoad {
                     point,
                     lemit,
                 } => Light::PointLight(Box::new(Point::new(*lemit, *point, trans.get_mat()))),
+                LightToml::Area { lemit, shape_index } => Light::AreaLight(Box::new(
+                    DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap()),
+                )),
                 _ => todo!(),
             };
             vec.push(light)
         }
         vec
+    }
+
+    fn load_env(&self, texture: &'static [Arc<dyn Texture>]) -> Vec<Light> {
+        let mut vec = vec![];
+        for env_light in &self.env_light {
+            let env: Light = match env_light {
+                LightToml::Infinite { world_center, world_radius, lemit, skybox } => {
+                    Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))
+                }
+                _ => unimplemented!()
+            };
+            vec.push(env);
+        };
+        vec
+    }
+    fn load_shape(&self) {
+        // let mut vec = vec![];
+        for item in &self.shapes {
+            let shape: Shape = match item {
+                ShapeToml::Rect {
+                    trans,
+                    material_index,
+                } => Shape::Rect(Rectangle::new(trans.get_mat(), None)),
+
+                ShapeToml::Shpere {
+                    trans,
+                    r,
+                    material_index,
+                } => {
+                    Box::new(Shpere::new(*r, None, trans.get_mat()));
+                    unimplemented!()
+                }
+            };
+            unsafe { SHAPE.push(shape) }
+        }
     }
     fn _load_env(&mut self) {}
     fn load_camera(&self) -> Camera {
@@ -142,7 +195,7 @@ impl MyLoad {
                 CameraMode::O,
                 self.camera.fov,
             ),
-            _=>unimplemented!()
+            _ => unimplemented!(),
         }
     }
     pub fn create_intergator(&self) -> Integrator {
@@ -205,13 +258,14 @@ pub struct CameraToml {
     pub up: Vec3,
     pub fov: f32,
 }
-#[derive(Deserialize, Debug, Serialize, Default)]
 
+#[derive(Deserialize, Debug, Serialize, Default)]
 pub struct TransformToml {
     r: Vec4,
     s: Vec3,
     t: Vec3,
 }
+
 impl TransformToml {
     pub fn get_mat(&self) -> Mat4 {
         let angle = self.r.w.to_radians();
@@ -219,6 +273,7 @@ impl TransformToml {
         Mat4::from_scale_rotation_translation(self.s, quat, self.t)
     }
 }
+
 #[derive(Deserialize, Debug, Serialize)]
 #[serde(tag = "mode")]
 pub enum ShapeToml {
@@ -245,8 +300,12 @@ pub enum MaterialToml {
         ks: usize,
         roughness: usize,
     },
+    Mirror{
+        kr:usize,
+    },
     Fourier {},
 }
+
 #[derive(Deserialize, Debug, Serialize)]
 #[serde(tag = "mode")]
 pub enum TextureToml {
@@ -254,6 +313,7 @@ pub enum TextureToml {
     Constant { value: Vec3 },
     // Value{value:f32}
 }
+
 #[derive(Deserialize, Debug, Serialize)]
 #[serde(tag = "mode")]
 pub enum LightToml {
@@ -280,15 +340,14 @@ pub enum LightToml {
         world_radius: Vec3,
     },
     Area {
-        trans: TransformToml,
         lemit: Vec3,
         shape_index: usize,
     },
     Infinite {
-        skybox: TextureToml,
+        skybox: usize,
         lemit: Vec3,
         world_center: Vec3,
-        world_radius: Vec3,
+        world_radius: f32,
     },
 }
 
@@ -307,6 +366,7 @@ pub enum IntegratorToml {
         startegy: LightStartegy,
     },
 }
+
 impl Default for IntegratorToml {
     fn default() -> Self {
         Self::Path {
