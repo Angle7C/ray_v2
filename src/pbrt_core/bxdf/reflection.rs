@@ -70,8 +70,8 @@ pub struct MicrofacetReflection{
     fresnel:Fresnel,
 }
 impl MicrofacetReflection{
-    pub fn new(_r:Color,_distribution:Box<dyn MicrofacetDistribution>,_frensnel:Fresnel){
-        unimplemented!()
+    pub fn new(r:Color,distribution:Box<dyn MicrofacetDistribution>,fresnel:Fresnel)->Self{
+       Self { r, distribution, fresnel }
     }
 }
 impl BxDFAble for MicrofacetReflection{

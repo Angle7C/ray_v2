@@ -12,6 +12,8 @@ pub mod disney;
 pub mod matte;
 pub mod mirror;
 pub mod pbr;
+pub mod metal;
+
 pub trait Material: Debug {
     fn compute_scattering_functions(&self, suface: &mut SurfaceInteraction, mode: TransportMode);
     fn bump(&self, suface: &SurfaceInteraction, texture: &dyn Texture);
