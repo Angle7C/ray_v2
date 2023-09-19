@@ -12,11 +12,15 @@ pub mod disney;
 pub mod matte;
 pub mod mirror;
 pub mod pbr;
+<<<<<<< HEAD
 pub mod metal;
+=======
+pub mod plastic;
+>>>>>>> 7a60ccd219cccb5eecd675e9d9151b97582d7331
 
 pub trait Material: Debug {
     fn compute_scattering_functions(&self, suface: &mut SurfaceInteraction, mode: TransportMode);
-    fn bump(&self, suface: &SurfaceInteraction, texture: &dyn Texture);
+    fn bump(&self, suface: &SurfaceInteraction, texture: &dyn Texture){}
 }
 // BSDF使用局部坐标系。
 pub struct BSDF {
@@ -63,7 +67,7 @@ impl BSDF {
             ns: si.shading.n,
             ng: si.common.normal,
             ss,
-            ts: si.shading.n.cross(ss),
+            ts: si.shading.n.cross(ss).normalize(),
             bxdfs: vec![],
         }
     }

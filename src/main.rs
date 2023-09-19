@@ -1,5 +1,5 @@
 use log::info;
-use pbrt_core::tool::{setting::Build, log::log_init};
+use pbrt_core::tool::{log::log_init, build::Context};
 
 // #[allow(unused, dead_code)]
 pub mod pbrt_core;
@@ -8,12 +8,8 @@ mod test;
 
 pub fn main() {
     log_init();
-    info!("******************************");
-    // let build= Build::build("./file/sence.json");
-    #[cfg(not(debug_assertions))]
-        build.render();
-    #[cfg(debug_assertions)]
-        // build.render_debug();
-    info!("-------------------------------");
+
+    let context= Context::new("./file/setting.toml");
+    context.render();
 
 }

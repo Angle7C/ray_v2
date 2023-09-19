@@ -140,8 +140,8 @@ where
         add_material(&material, &mip_vec, &mut material_vec);
     }
     material_vec.push(Box::new(Matte::new(Arc::new(ConstantTexture::new(
-        Vec3::splat(0.75),
-    )))));
+        Vec3::splat(0.75)
+    )),0.0)));
     material_vec
 }
 fn load_node(

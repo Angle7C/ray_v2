@@ -2,6 +2,7 @@ use std::ops::Add;
 
 use bvh::aabb::AABB;
 use glam::{Vec2, Vec3};
+use ::log::info;
 
 use self::sence::Sence;
 
@@ -16,6 +17,7 @@ pub mod setting;
 pub mod tile;
 pub mod error;
 pub mod mipmap;
+pub mod build;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
@@ -93,8 +95,8 @@ impl From<Bound<3>> for AABB {
         let min = value.min;
         let max = value.max;
         Self {
-            min: min,
-            max: max,
+            min,
+            max,
         }
     }
 }
@@ -168,7 +170,7 @@ impl Add<Bound<3>> for Bound<3> {
 }
 
 /// 求交集合
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy,Debug)]
 pub struct InteractionCommon {
     pub w0: Vec3,
     pub p: Vec3,
@@ -220,7 +222,7 @@ impl<'a> SurfaceInteraction<'a> {
             common: InteractionCommon {
                 w0: w_out,
                 p: p,
-                normal: normal,
+                normal: normal.normalize(),
                 time: time,
                 uv,
             },
@@ -276,7 +278,7 @@ impl Shading {
         }
     }
 }
-#[derive(Default)]
+#[derive(Default,Debug)]
 pub struct Visibility {
     pub a: InteractionCommon,
     pub b: InteractionCommon,
@@ -285,7 +287,7 @@ impl Visibility {
     //是否可视
     fn is_vis(&self, sence: &Sence) -> f32 {
         let dir = self.a.p - self.b.p;
-        let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.001));
+        let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.01));
         if sence.interacect(ray_diff).is_none() {
             1.0
         } else {
@@ -295,8 +297,8 @@ impl Visibility {
     fn g(&self, sence: &Sence) -> f32 {
         let vis = self.is_vis(sence);
         let dir = self.a.p - self.b.p;
-        vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs()
-            / dir.length_squared()
+        let value=vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs();
+        value/ dir.length_squared()
     }
     // fn get_dir(&self,sence:&Sence)->f32{}
 }
