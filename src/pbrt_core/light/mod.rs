@@ -131,10 +131,18 @@ pub trait LightAble: Debug + Primitive {
         vis: &mut Visibility,
     ) -> Vec3;
     /// 返回光源的光线，会返回入射方向和光线pdf
-    fn sample_le(&self) -> Vec3;
+    fn sample_le(&self,wi:Vec3,vis:&mut Visibility,surface: &InteractionCommon) -> Vec3{
+        Vec3::ZERO
+    }
     // 光源强度
     fn power(&self) -> Vec3;
     //pdf采样
     fn pdf_li(&self, surface: &InteractionCommon, w_in: &Vec3) -> f32;
     fn le(&self, wi: Vec3) -> Vec3;
+}
+pub enum LightDistribution{
+
+}
+pub struct SpatialLightDistribution{
+    
 }

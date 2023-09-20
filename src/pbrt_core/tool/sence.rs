@@ -19,7 +19,7 @@ pub struct Sence {
     shape: &'static [Box<dyn Primitive>],
     pub camera: Camera,
     light: &'static [Light],
-    env: &'static [Light],
+    env: Vec<&'static Light>,
     bound: Bound<3>,
     // material: Vec<Box<dyn Material>>,
     accel: Option<Box<dyn Aggregate>>,
@@ -32,8 +32,6 @@ impl Sence {
         primitive: Vec<Box<dyn Primitive>>,
         camera: Camera,
         light: Vec<Light>,
-        env: Vec<Light>,
-        // material: [Box<dyn Material>],
     ) -> Self {
         let light = light.leak();
         let primitive = primitive.leak();
@@ -52,7 +50,15 @@ impl Sence {
             .iter()
             .map(|ele| ele.world_bound())
             .fold(Bound::<3>::default(), |a, b| a.merage(b));
-        // let mut env=vec![];
+        let mut env=vec![];
+        for item in light.iter(){
+            match item {
+                Light::Infinite(_)=>{
+                    env.push(item)
+                },
+                _=>continue
+            }
+        }
 
         let accel = Box::new(BVH::new(geoemtry));
 
@@ -61,7 +67,7 @@ impl Sence {
             camera,
             bound,
             light: light,
-            env:env.leak(),
+            env: env,
             accel: Some(accel),
         };
         sence
@@ -75,36 +81,39 @@ impl Sence {
     pub fn get_env_light(
         &self,
         surface: &SurfaceInteraction,
-        wi:Vec3,
+        wi: Vec3,
         u: Vec2,
         flag: u32,
         _handle: bool,
     ) -> Vec3 {
-        let mut light_pdf = 0.0;
-        // let mut scattering_pdf = 0.0;
-        let mut vis = Visibility::default();
         //射出
+        let mut vis = Visibility::default();
         let mut ans = Vec3::ZERO;
-        let mut pdf=0.0;
-        let mut wi=wi;
-        for light in self.env {
-            let ld = match light {
-                Light::Infinite(inf) => inf.le(wi),
-                _ => todo!(),
-            };
+        let mut pdf = 0.0;
+        let mut wi = wi;
+        if self.env.len()==0{
+            return Vec3::ZERO;
+        }
+        for light in &self.env {
             let f = if let Some(bsdf) = &surface.bsdf {
-                let f = bsdf.sample_f(&surface.common.w0, &mut wi, u,&mut pdf,31) * wi.dot(surface.shading.n).abs();
-                f
+                bsdf.sample_f(&surface.common.w0, &mut wi, u, &mut pdf, 31)
+                    * wi.dot(surface.shading.n).abs()
             } else {
                 Vec3::ZERO
             };
-            ans += ld * f;
-        };
+            let ld = match light {
+                Light::Infinite(inf) => inf.sample_le(wi, &mut vis, &surface.common),
+                _ => todo!(),
+            };
+
+            ans += ld * f * vis.g_inf(self);
+        }
         ans
     }
-    pub fn get_hit_env(&self,wi:Vec3)->Vec3{
+    ///没有击中任何物体
+    pub fn get_hit_env(&self, wi: Vec3) -> Vec3 {
         let mut ans = Vec3::ZERO;
-        for light in self.env {
+        for light in &self.env {
             let ld = match light {
                 Light::Infinite(inf) => inf.le(wi),
                 _ => todo!(),
@@ -121,6 +130,9 @@ impl Sence {
         //是否有介质参与
         handle: bool,
     ) -> Vec3 {
+        if self.light.len() == 0 {
+            return Vec3::ZERO;
+        }
         //随机选择一个光源
         let light_num = sampler.rand.gen_range(0..self.light.len());
         let light = &self.light[light_num];
@@ -130,15 +142,7 @@ impl Sence {
             //采样光源点
             let point = sampler.sample_2d_d();
             //采样吸收点
-            s += sample_light(
-                surface,
-                point,
-                light,
-                self,
-                sampler,
-                31,
-                handle,
-            )
+            s += sample_light(surface, point, light, self, sampler, 31, handle)
         }
         s / 8.0
     }
@@ -210,7 +214,7 @@ pub fn sample_light(
     };
     let ok = vis.g(sence);
     if f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-        info!("bsdf {:?}",f);
+        info!("bsdf {:?}", f);
     }
     ld * ok * f / light_pdf
 }

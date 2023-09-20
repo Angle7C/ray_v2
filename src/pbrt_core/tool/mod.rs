@@ -1,23 +1,23 @@
 use std::ops::Add;
 
+use ::log::info;
 use bvh::aabb::AABB;
 use glam::{Vec2, Vec3};
-use ::log::info;
 
 use self::sence::Sence;
 
 use super::{bxdf::TransportMode, light::LightAble, material::BSDF, primitive::Primitive};
 
+pub mod build;
 pub mod color;
+pub mod error;
 pub mod film;
 pub mod func;
 pub mod log;
+pub mod mipmap;
 pub mod sence;
 pub mod setting;
 pub mod tile;
-pub mod error;
-pub mod mipmap;
-pub mod build;
 /// 光线
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Ray {
@@ -94,10 +94,7 @@ impl From<Bound<3>> for AABB {
     fn from(value: Bound<3>) -> Self {
         let min = value.min;
         let max = value.max;
-        Self {
-            min,
-            max,
-        }
+        Self { min, max }
     }
 }
 
@@ -170,7 +167,7 @@ impl Add<Bound<3>> for Bound<3> {
 }
 
 /// 求交集合
-#[derive(Default, Clone, Copy,Debug)]
+#[derive(Default, Clone, Copy, Debug)]
 pub struct InteractionCommon {
     pub w0: Vec3,
     pub p: Vec3,
@@ -278,7 +275,7 @@ impl Shading {
         }
     }
 }
-#[derive(Default,Debug)]
+#[derive(Default, Debug)]
 pub struct Visibility {
     pub a: InteractionCommon,
     pub b: InteractionCommon,
@@ -287,7 +284,12 @@ impl Visibility {
     //是否可视
     fn is_vis(&self, sence: &Sence) -> f32 {
         let dir = self.a.p - self.b.p;
-        let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.01));
+        let ray_diff = RayDiff::new(Ray::from_with_t(
+            self.b.p + self.b.normal * 0.1,
+            dir,
+            1.0,
+            dir.length() - 0.1,
+        ));
         if sence.interacect(ray_diff).is_none() {
             1.0
         } else {
@@ -297,8 +299,15 @@ impl Visibility {
     fn g(&self, sence: &Sence) -> f32 {
         let vis = self.is_vis(sence);
         let dir = self.a.p - self.b.p;
-        let value=vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs();
-        value/ dir.length_squared()
+        let value = vis
+            * self.a.normal.dot(dir.normalize()).abs()
+            * self.b.normal.dot(dir.normalize()).abs();
+        value / dir.length_squared()
+    }
+    fn g_inf(&self, sence: &Sence) -> f32 {
+        let vis = self.is_vis(sence);
+        let value = vis;
+        value 
     }
     // fn get_dir(&self,sence:&Sence)->f32{}
 }

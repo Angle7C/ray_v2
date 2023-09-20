@@ -67,7 +67,7 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         *vis = Visibility { a: surface.common, b: common };
         self.l(&common, &-*w_in)
     }
-    fn sample_le(&self) -> Vec3 {
+    fn sample_le(&self,wi:Vec3,vis:&mut Visibility,surface: &InteractionCommon) -> Vec3 {
         unimplemented!()
     }
     fn le(&self, wi: Vec3) -> Vec3 {

@@ -51,13 +51,12 @@ impl IntegratorAble for PathIntegrator {
                     ans += beta * item.le(ray.o.dir);
                     return ans;
                 }
-
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
                     ans += beta * sence.uniform_sample_one_light(&item, sampler, false);
+                    // ans += beta * sence.get_env_light(&item, ray.o.dir,sampler.sample_2d_d(), 31,false);
 
-                    // ans += beta*sence.get_env_light(&item, ray.o.dir,sampler.sample_2d_d(), 31,false);
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = Vec3::default();
@@ -66,13 +65,13 @@ impl IntegratorAble for PathIntegrator {
                     let f =
                         bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
                     beta *= f * w_in.dot(item.shading.n).clamp(0.0, 1.0);
-
+                    
                     ray = item.spawn_ray(&w_in);
                 }
                 beta = beta / p;
             } else {
-                ans+=sence.get_hit_env(ray.o.dir)*beta;
-                return ans;
+                // ans+=sence.get_hit_env(ray.o.dir)*beta;
+               break;
             }
         }
         ans

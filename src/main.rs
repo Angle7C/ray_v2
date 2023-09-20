@@ -1,4 +1,4 @@
-use log::info;
+
 use pbrt_core::tool::{log::log_init, build::Context};
 
 // #[allow(unused, dead_code)]

@@ -17,7 +17,7 @@ pub struct Point {
     // object_to_wworld:Mat4
 }
 impl Point {
-    pub fn new(lemit: Vec3, p: Vec3, object_to_wworld: Mat4) -> Self {
+    pub fn new(lemit: Vec3, p: Vec3, _object_to_wworld: Mat4) -> Self {
         Self { p, lemit }
     }
 }
@@ -25,14 +25,14 @@ impl LightAble for Point {
     fn le(&self, wi: Vec3) -> Vec3 {
         self.lemit
     }
-    fn pdf_li(&self, surface: &crate::pbrt_core::tool::InteractionCommon, w_in: &Vec3) -> f32 {
+    fn pdf_li(&self, _surface: &crate::pbrt_core::tool::InteractionCommon, w_in: &Vec3) -> f32 {
         1.0
     }
     fn power(&self) -> Vec3 {
         self.lemit * 2.0 * PI
     }
-    fn sample_le(&self) -> Vec3 {
-        self.lemit
+    fn sample_le(&self,wi:Vec3,vis:&mut Visibility,surface: &InteractionCommon) -> Vec3 {
+        unimplemented!()
     }
     fn sample_li(
         &self,

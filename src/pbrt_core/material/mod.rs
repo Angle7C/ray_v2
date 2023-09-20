@@ -12,11 +12,8 @@ pub mod disney;
 pub mod matte;
 pub mod mirror;
 pub mod pbr;
-<<<<<<< HEAD
 pub mod metal;
-=======
 pub mod plastic;
->>>>>>> 7a60ccd219cccb5eecd675e9d9151b97582d7331
 
 pub trait Material: Debug {
     fn compute_scattering_functions(&self, suface: &mut SurfaceInteraction, mode: TransportMode);

@@ -2,7 +2,7 @@ use std::{time::SystemTime, f32::consts::{FRAC_PI_4, FRAC_PI_2}};
 
 use glam::{Vec2, Vec3};
 use rand::{rngs::StdRng, SeedableRng, Rng};
-
+pub mod distribution_1d;
 pub struct Sampler {
    pub  rand: StdRng,
    pub  num:usize
