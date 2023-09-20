@@ -46,18 +46,16 @@ impl IntegratorAble for PathIntegrator {
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
-                // return item.common.normal.abs();
                 if item.light.is_some() {
                     ans += beta * item.le(ray.o.dir);
                     return ans;
                 }
-
+               
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
                     ans += beta * sence.uniform_sample_one_light(&item, sampler, false);
-
-                    // ans += beta*sence.get_env_light(&item, ray.o.dir,sampler.sample_2d_d(), 31,false);
+                    // sence.get_hit_env()
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = Vec3::default();
@@ -69,9 +67,9 @@ impl IntegratorAble for PathIntegrator {
 
                     ray = item.spawn_ray(&w_in);
                 }
+
                 beta = beta / p;
             } else {
-                ans+=sence.get_hit_env(ray.o.dir)*beta;
                 return ans;
             }
         }

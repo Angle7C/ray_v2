@@ -69,6 +69,7 @@ pub fn cosine_sample_hemisphere(u:Vec2)->Vec3{
     .sqrt();
     d.extend(z)
 }
+
 pub fn concentric_sample_disk(u:Vec2)->Vec2{
     let offset=u*2.0-Vec2::ONE;
     if offset.x==0.0&&offset.y==0.0{

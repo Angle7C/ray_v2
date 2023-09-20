@@ -25,7 +25,6 @@ use crate::pbrt_core::{
     },
 };
 use crate::pbrt_core::light::infinite::InfiniteLight;
-use crate::pbrt_core::light::LightAble;
 use crate::pbrt_core::material::mirror::Mirror;
 
 static mut SHAPE: Vec<Shape> = vec![];
@@ -37,7 +36,7 @@ pub struct MyLoad {
     shapes: Vec<ShapeToml>,
     material: Vec<MaterialToml>,
     light: Vec<LightToml>,
-    env_light: Vec<LightToml>,
+    // env_light: Vec<LightToml>,
     texture: Vec<TextureToml>,
     pub intergator: IntegratorToml,
     name: String,
@@ -48,11 +47,12 @@ impl MyLoad {
         let texture = self.load_texture().leak();
         let material = self.load_material(texture).leak();
         let primitive = self.load_primitive(material);
-        let env_light = self.load_env(texture);
+
+
         self.load_shape();
-        let lights = self.load_light(unsafe { &SHAPE });
+        let mut lights = self.load_light(unsafe { &SHAPE },texture);
         let camera = self.load_camera();
-        let sence = Sence::new(primitive, camera, lights, env_light);
+        let sence = Sence::new(primitive, camera, lights);
         sence
     }
     fn load_material(&self, texture: &'static [Arc<dyn Texture>]) -> Vec<Box<dyn Material>> {
@@ -122,7 +122,7 @@ impl MyLoad {
         }
         vec
     }
-    fn load_light<'a>(&'a self, shape: &'static [Shape<'static>]) -> Vec<Light> {
+    fn load_light<'a>(&'a self, shape: &'static [Shape<'static>],texture: &'static [Arc<dyn Texture>]) -> Vec<Light> {
         let mut vec = vec![];
         for item in &self.light {
             let light: Light = match item {
@@ -134,24 +134,14 @@ impl MyLoad {
                 LightToml::Area { lemit, shape_index } => Light::AreaLight(Box::new(
                     DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap()),
                 )),
+                LightToml::Infinite { world_center, world_radius, lemit, skybox } => {
+                    continue
+                    // Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))
+                }
                 _ => todo!(),
             };
             vec.push(light)
         }
-        vec
-    }
-
-    fn load_env(&self, texture: &'static [Arc<dyn Texture>]) -> Vec<Light> {
-        let mut vec = vec![];
-        for env_light in &self.env_light {
-            let env: Light = match env_light {
-                LightToml::Infinite { world_center, world_radius, lemit, skybox } => {
-                    Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))
-                }
-                _ => unimplemented!()
-            };
-            vec.push(env);
-        };
         vec
     }
     fn load_shape(&self) {
@@ -175,7 +165,6 @@ impl MyLoad {
             unsafe { SHAPE.push(shape) }
         }
     }
-    fn _load_env(&mut self) {}
     fn load_camera(&self) -> Camera {
         let mode = self.camera.mode.as_str();
         match mode {

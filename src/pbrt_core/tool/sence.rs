@@ -6,20 +6,20 @@ use log::info;
 use rand::Rng;
 
 use crate::pbrt_core::{
-    bxdf::BxDFType,
     camera::Camera,
-    light::{Light, LightAble},
+    light::{LightAble},
     primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
     sampler::Sampler,
 };
+use crate::pbrt_core::light::Light;
 
 use super::{Bound, SurfaceInteraction, Visibility};
 
 pub struct Sence {
     shape: &'static [Box<dyn Primitive>],
     pub camera: Camera,
-    light: &'static [Light],
-    env: &'static [Light],
+    pub light: &'static [Light],
+    env: Vec<&'static Light>,
     bound: Bound<3>,
     // material: Vec<Box<dyn Material>>,
     accel: Option<Box<dyn Aggregate>>,
@@ -32,13 +32,11 @@ impl Sence {
         primitive: Vec<Box<dyn Primitive>>,
         camera: Camera,
         light: Vec<Light>,
-        env: Vec<Light>,
-        // material: [Box<dyn Material>],
     ) -> Self {
-        let light = light.leak();
         let primitive = primitive.leak();
-        //场景集合
 
+        //场景集合
+        let light = light.leak();
         let mut geoemtry = primitive
             .iter()
             .map(|ele| GeometricePrimitive::new(ele.as_ref()))
@@ -52,16 +50,27 @@ impl Sence {
             .iter()
             .map(|ele| ele.world_bound())
             .fold(Bound::<3>::default(), |a, b| a.merage(b));
-        // let mut env=vec![];
+        let mut env: Vec<&Light> = vec![];
+        let mut t = vec![];
+        light.iter().for_each(|i| {
+            if match i {
+                Light::Infinite( _) => true,
+                _ => false,
+            } {
+                env.push(i);
+            } else {
+                t.push(i);
+            }
+        });
 
         let accel = Box::new(BVH::new(geoemtry));
-
+        // let x = t.leak();
         let sence = Self {
             shape: primitive,
             camera,
             bound,
             light: light,
-            env:env.leak(),
+            env: env,
             accel: Some(accel),
         };
         sence
@@ -75,7 +84,7 @@ impl Sence {
     pub fn get_env_light(
         &self,
         surface: &SurfaceInteraction,
-        wi:Vec3,
+        wi: Vec3,
         u: Vec2,
         flag: u32,
         _handle: bool,
@@ -85,26 +94,27 @@ impl Sence {
         let mut vis = Visibility::default();
         //射出
         let mut ans = Vec3::ZERO;
-        let mut pdf=0.0;
-        let mut wi=wi;
-        for light in self.env {
-            let ld = match light {
-                Light::Infinite(inf) => inf.le(wi),
-                _ => todo!(),
-            };
+        let mut pdf = 0.0;
+        let mut wi = wi;
+        for light in &self.env {
             let f = if let Some(bsdf) = &surface.bsdf {
-                let f = bsdf.sample_f(&surface.common.w0, &mut wi, u,&mut pdf,31) * wi.dot(surface.shading.n).abs();
+                let f = bsdf.sample_f(&surface.common.w0, &mut wi, u, &mut pdf, 31) * wi.dot(surface.shading.n).abs();
                 f
             } else {
                 Vec3::ZERO
             };
-            ans += ld * f;
+            let ld = match light {
+                Light::Infinite(inf) => inf.sample_li(surface,u,&mut wi,&mut light_pdf,&mut vis),
+                _ => todo!(),
+            };
+
+            ans += ld * f *vis.g_inf(self);
         };
         ans
     }
-    pub fn get_hit_env(&self,wi:Vec3)->Vec3{
+    pub fn get_hit_env(&self, wi: Vec3) -> Vec3 {
         let mut ans = Vec3::ZERO;
-        for light in self.env {
+        for light in &self.env {
             let ld = match light {
                 Light::Infinite(inf) => inf.le(wi),
                 _ => todo!(),
@@ -121,6 +131,9 @@ impl Sence {
         //是否有介质参与
         handle: bool,
     ) -> Vec3 {
+        if self.light.len() == 0 {
+            return Vec3::ZERO;
+        }
         //随机选择一个光源
         let light_num = sampler.rand.gen_range(0..self.light.len());
         let light = &self.light[light_num];
@@ -197,9 +210,9 @@ pub fn sample_light(
 
     //采样值
     let ld = match light {
-        Light::AreaLight(area) => area.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
-        Light::PointLight(p) => p.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
-        Light::Infinite(inf) => inf.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
+        Light::AreaLight(area) => area.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis)*vis.g(sence),
+        Light::PointLight(p) => p.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis)*vis.g(sence),
+        Light::Infinite(inf) =>inf.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis)*vis.g(sence),
     };
     let f = if let Some(bsdf) = &surface.bsdf {
         let f = bsdf.f(&surface.common.w0, &wi, flag) * wi.dot(surface.shading.n).abs();
@@ -208,9 +221,5 @@ pub fn sample_light(
     } else {
         Vec3::ZERO
     };
-    let ok = vis.g(sence);
-    if f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-        info!("bsdf {:?}",f);
-    }
-    ld * ok * f / light_pdf
+    ld * f / light_pdf
 }

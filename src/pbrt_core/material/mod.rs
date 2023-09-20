@@ -40,6 +40,7 @@ impl BSDF {
         u: Vec2,
         pdf: &mut f32,
         flag: u32,
+
     ) -> Vec3 {
         *pdf = 0.0;
         let w_out = self.world_to_local(*w_out);

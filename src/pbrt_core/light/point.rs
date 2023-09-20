@@ -1,58 +1,60 @@
 use std::f32::consts::PI;
 
-use glam::{Mat4, Vec3};
+use glam::{Mat4, Vec2, Vec3};
 
 use crate::pbrt_core::{
     primitive::Primitive,
     tool::{Bound, InteractionCommon, Visibility},
 };
+use crate::pbrt_core::light::LightType;
+use crate::pbrt_core::tool::color::Color;
 
 use super::LightAble;
 
-#[derive(Debug,Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 // #[derive(Debug,)]
 pub struct Point {
     p: Vec3,
     lemit: Vec3,
     // object_to_wworld:Mat4
 }
+
 impl Point {
     pub fn new(lemit: Vec3, p: Vec3, object_to_wworld: Mat4) -> Self {
         Self { p, lemit }
     }
 }
+
 impl LightAble for Point {
     fn le(&self, wi: Vec3) -> Vec3 {
-        self.lemit
+        Color::ZERO
     }
     fn pdf_li(&self, surface: &crate::pbrt_core::tool::InteractionCommon, w_in: &Vec3) -> f32 {
-        1.0
+        0.0
     }
     fn power(&self) -> Vec3 {
-        self.lemit * 2.0 * PI
+        self.lemit * 4.0 * PI
     }
-    fn sample_le(&self) -> Vec3 {
-        self.lemit
-    }
-    fn sample_li(
-        &self,
-        surface: &crate::pbrt_core::tool::SurfaceInteraction,
-        u: glam::Vec2,
-        w_in: &mut Vec3,
-        pdf: &mut f32,
-        vis: &mut crate::pbrt_core::tool::Visibility,
-    ) -> Vec3 {
-        *w_in = (surface.common.p - self.p).normalize();
-
+    #[inline]
+    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
+        *wi = (surface_common.p - self.p).normalize();
         *pdf = 1.0;
-        *vis = Visibility {
-            a: surface.common,
-            b: InteractionCommon::new(-*w_in, self.p, *w_in, 0.0, Default::default()),
-        };
-
-        self.lemit
+        light_common.p = self.p;
+        light_common.time = surface_common.time;
+        *vis = Visibility { a: *surface_common, b: *light_common };
+        self.lemit/ self.p.distance_squared(surface_common.p)
+    }
+    fn get_type(&self) -> LightType {
+        LightType::DeltaPosition
+    }
+    fn get_n_sample(&self) -> usize {
+        1
+    }
+    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
+        unimplemented!()
     }
 }
+
 impl Primitive for Point {
     fn get_area(&self) -> f32 {
         1.0

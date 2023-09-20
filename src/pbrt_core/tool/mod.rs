@@ -285,20 +285,23 @@ pub struct Visibility {
 }
 impl Visibility {
     //是否可视
-    fn is_vis(&self, sence: &Sence) -> f32 {
+    pub fn is_vis(&self, sence: &Sence) -> bool {
         let dir = self.a.p - self.b.p;
         let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.01));
-        if sence.interacect(ray_diff).is_none() {
-            1.0
-        } else {
-            0.0
-        }
+        sence.interacect(ray_diff).is_none()
     }
     fn g(&self, sence: &Sence) -> f32 {
-        let vis = self.is_vis(sence);
+        let vis = if self.is_vis(sence){1.0}else{0.0};
         let dir = self.a.p - self.b.p;
         let value=vis * self.a.normal.dot(dir.normalize()).abs() * self.b.normal.dot(dir.normalize()).abs();
         value/ dir.length_squared()
+    }
+    fn g_inf(&self, sence: &Sence) -> f32 {
+        let vis = self.is_vis(sence);
+        if vis {1.0}else{0.0}
+        // * self.a.normal.dot(dir.normalize()).abs()
+        // * self.b.normal.dot(dir.normalize()).abs();
+        // value
     }
     // fn get_dir(&self,sence:&Sence)->f32{}
 }

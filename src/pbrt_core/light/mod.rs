@@ -4,6 +4,9 @@ use std::{
 };
 
 use glam::{Vec2, Vec3};
+use crate::pbrt_core::bxdf::BxDFType;
+use crate::pbrt_core::tool::color::Color;
+use crate::pbrt_core::tool::Ray;
 
 use self::{area::AreaLight, infinite::InfiniteLight, point::Point};
 
@@ -53,6 +56,7 @@ impl Primitive for Light {
 
         }
     }
+    
 }
 impl Light {
     pub fn get_shape(&self) -> &Shape {
@@ -71,6 +75,57 @@ impl Light {
             _ => todo!(),
         }
     }
+    pub fn get_type(&self)->LightType{
+        unimplemented!()
+    }
+
+}
+
+impl LightAble for Light {
+    fn sample_li(&self, surface: &SurfaceInteraction, u: Vec2, w_in: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
+        todo!()
+    }
+
+    fn sample_le(&self) -> Vec3 {
+        todo!()
+    }
+
+    fn power(&self) -> Vec3 {
+        todo!()
+    }
+
+    fn pdf_li(&self, surface: &InteractionCommon, w_in: &Vec3) -> f32 {
+        todo!()
+    }
+
+    fn le(&self, wi: Vec3) -> Vec3 {
+        todo!()
+    }
+}
+
+pub trait LightAble: Debug + Primitive {
+    ///对场景中得某一个点的 入射方向进行采样，会返回入射方向和光线pdf
+    fn sample_li(
+        &self,
+        surface_common: &InteractionCommon,
+        light_common:&mut InteractionCommon,
+        u: Vec2,
+        wi: &mut Vec3,
+        pdf: &mut f32,
+        vis: &mut Visibility,
+    ) -> Vec3;
+    /// 返回光源的光线，会返回入射方向和光线pdf
+    // fn sample_le(&self,u1:Vec2,u2:Vec2,time:f32,ray:&mut Ray,light_n:&mut Vec3,pdf_pos:&mut f32,pdf_dir:&mut Vec3) -> Vec3;
+    // fn pdf_le(&self,ray:&Ray,light_n:Vec3,pdf_pos:&mut f32,pdf_dir:&mut Vec3)->Vec3;
+    // 光源强度
+    fn power(&self) -> Vec3;
+    //pdf采样
+    fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32;
+    fn le(&self, ray:Ray) -> Vec3;
+    fn get_type(&self)->LightType;
+    fn li(&self,inter:&InteractionCommon,w:&Vec3)->Color;
+
+    fn get_n_sample(&self)->usize;
 }
 pub enum LightType {
     DeltaPosition = 1,
@@ -79,8 +134,12 @@ pub enum LightType {
     Infinite = 8,
 }
 impl LightType {
-    fn _is_delta(flag: u32) -> bool {
-        (flag & LightType::DeltaPosition > 0) || (flag & LightType::DeltaDirection > 0)
+    pub fn is_delta(flag: LightType) -> bool {
+        match flag {
+            LightType::DeltaDirection=>true,
+            LightType::DeltaPosition=>true,
+            _=>false
+        }
     }
 }
 impl BitAnd<u32> for LightType {
@@ -118,23 +177,4 @@ impl BitOr<LightType> for LightType {
     fn bitor(self, rhs: LightType) -> Self::Output {
         self as u32 | rhs as u32
     }
-}
-
-pub trait LightAble: Debug + Primitive {
-    ///对场景中得某一个点的 入射方向进行采样，会返回入射方向和光线pdf
-    fn sample_li(
-        &self,
-        surface: &SurfaceInteraction,
-        u: Vec2,
-        w_in: &mut Vec3,
-        pdf: &mut f32,
-        vis: &mut Visibility,
-    ) -> Vec3;
-    /// 返回光源的光线，会返回入射方向和光线pdf
-    fn sample_le(&self) -> Vec3;
-    // 光源强度
-    fn power(&self) -> Vec3;
-    //pdf采样
-    fn pdf_li(&self, surface: &InteractionCommon, w_in: &Vec3) -> f32;
-    fn le(&self, wi: Vec3) -> Vec3;
 }

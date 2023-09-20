@@ -6,13 +6,16 @@ use std::{
     time::Instant,
 };
 
-use glam::UVec2;
+use glam::{UVec2, Vec2, Vec3};
 use image::{Rgb, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::info;
 use rand::seq::index;
 
 use crate::pbrt_core::{tool::tile::merage_tile, sampler};
+use crate::pbrt_core::bxdf::BxDFType;
+use crate::pbrt_core::light::{Light, LightAble, LightType};
+use crate::pbrt_core::tool::{InteractionCommon, SurfaceInteraction, Visibility};
 
 use self::{direct::DirectIntegrator, path::PathIntegrator};
 
@@ -24,14 +27,17 @@ use super::{
 
 pub mod direct;
 pub mod path;
+
 pub enum Integrator {
     Path(Box<PathIntegrator>, usize, Sampler),
     Direct(Box<DirectIntegrator>, usize, Sampler),
 }
+
 pub trait IntegratorAble {
     fn is_next(&self, dept: &mut usize) -> Option<f32>;
     fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color;
 }
+
 impl IntegratorAble for Integrator {
     fn is_next(&self, dept: &mut usize) -> Option<f32> {
         match &self {
@@ -47,17 +53,18 @@ impl IntegratorAble for Integrator {
         }
     }
 }
+
 impl Integrator {
     fn get_num(&self) -> usize {
         match &self {
-            Integrator::Path(_, index,_) => *index,
-            Integrator::Direct(_, index,_) => *index,
+            Integrator::Path(_, index, _) => *index,
+            Integrator::Direct(_, index, _) => *index,
         }
     }
-    fn get_sample(&self)->Sampler{
+    fn get_sample(&self) -> Sampler {
         match &self {
-            Integrator::Path(_, _,sampler) => sampler.clone(),
-            Integrator::Direct(_, _,sampler) => sampler.clone(),
+            Integrator::Path(_, _, sampler) => sampler.clone(),
+            Integrator::Direct(_, _, sampler) => sampler.clone(),
         }
     }
     pub fn render_process(self, name: &str, sence: &Sence, size: UVec2) {
@@ -68,7 +75,7 @@ impl Integrator {
         let (m, style) = pbr();
         let core = self.get_num();
         let len = size.x / (core * 2) as u32;
-        let num=self.get_sample().num;
+        let num = self.get_sample().num;
         thread::scope(|scope| {
             for _ in 0..core {
                 let pb = m.add(ProgressBar::new(len as u64));
@@ -99,8 +106,8 @@ impl Integrator {
         mut sampler: Sampler,
         pb: ProgressBar,
     ) -> impl FnOnce() + 'a
-    where
-        'b: 'a,
+        where
+            'b: 'a,
     {
         move || {
             let n = sampler.num;
@@ -134,7 +141,7 @@ impl Integrator {
         let path =
             Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
         format!("渲染完成，图像输出:{}", path.display());
-        println!("{}",path.display());
+        println!("{}", path.display());
         buffer.write(image::ImageFormat::Jpeg, num as f32, path);
     }
 
@@ -167,6 +174,7 @@ impl Integrator {
             .expect("图片保存失败");
     }
 }
+
 pub fn to_color(color: Color, ssp: f32) -> Rgb<u8> {
     let vec = (color / ssp).powf(2.0);
     let rgb = vec * 255.0;
@@ -183,7 +191,107 @@ pub fn pbr() -> (MultiProgress, ProgressStyle) {
     let sty = ProgressStyle::with_template(
         "[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7} {msg}",
     )
-    .unwrap()
-    .progress_chars("##-");
+        .unwrap()
+        .progress_chars("##-");
     (m, sty)
+}
+
+pub fn uniform_sample_all_light(
+    common: &SurfaceInteraction,
+    sence: &Sence,
+    mut sampler: Sampler,
+    n_light_sample: Vec<i32>,
+    handle_media: bool,
+) -> Color {
+    let mut l = Color::ZERO;
+
+    for (index,light) in sence.light.iter().enumerate() {
+        let mut ld=Vec3::ZERO;
+        if n_light_sample[index]==1{
+            let u_light = sampler.sample_2d_d();
+            let u_scattering = sampler.sample_2d_d();
+            ld+=estimate_direct(common,light,sampler.sample_2d_d(),sence,sampler.clone(),handle_media);
+
+        }else{
+            for i in 0..n_light_sample[index]{
+                ld+=estimate_direct(common,light,sampler.sample_2d_d(),sence,sampler.clone(),handle_media);
+            }
+            ld/=n_light_sample[index]
+        }
+        l+=ld;
+
+    }
+    todo!()
+}
+
+pub fn estimate_direct(
+    inter: &SurfaceInteraction,
+    light:&Light,
+    u_light:Vec2,
+    sence:&Sence,
+    mut sampler:Sampler,
+    handle_media:bool,
+    specular:bool,
+)->Color{
+    let bxdf_flags=if specular {
+        BxDFType::All.into()
+    }else{
+        BxDFType::All & !BxDFType::Specular
+    };
+    let mut ld=Vec3::ZERO;
+    let mut wi:Vec3;
+    let mut pdf:f32=0.0;
+    let mut vis:Visibility;
+    let mut li=light.sample_li(inter,u_light,&mut wi,&mut pdf, &mut vis);
+    //合理的pdf和采样出光线
+    if pdf>0.0&&!li.abs_diff_eq(Vec3::ZERO,f32::EPSILON){
+        //计算BSDF
+        if let Some(ref bsdf)=inter.bsdf{
+            bsdf.f(&inter.common.w0,&wi,bxdf_flags)* wi.dot(inter.shading.n).abs();
+
+        }
+        //介质缩减
+        if handle_media{
+            todo!()
+        }else if !vis.is_vis(sence) {
+            li=Color::ZERO;
+        }
+        //计算光贡献
+        if !li.abs_diff_eq(Vec3::ZERO,f32::EPSILON){
+            if LightType::is_delta(light.get_type()){
+                ld+=f*li/pdf;
+            }else{
+                let weight=power_heuristic(1.0,pdf,1.0,1.0);
+                ld+=f*li*weight/pdf;
+            }
+        }
+    }
+    //BSDF重要性采样
+    if !LightType::is_delta(light.get_type()){
+        let mut  sampled_specular=false;
+        let mut   smapled_type=BxDFType::None;
+        if let Some(ref bsdf)=inter.bsdf{
+            let mut f=bsdf.sample_f(&inter.common.w0,&mut wi,sampler.sample_2d_d(),&mut pdf,bxdf_flags);
+            f*=wi.dot(inter.common.w0);
+            sampled_specular=smapled_type& BxDFType::Specular >0;
+            let weight;
+            if(!sampled_specular){
+                let light_pdf=light.pdf_li(&inter.common,&wi);
+                if light_pdf.abs()<f32::EPSILON{
+                    return ld;
+                }
+                weight=power_heuristic(1.0,1.0,1.0,light_pdf);
+            }
+        }else{
+
+        }
+
+    };
+    todo!()
+}
+
+pub fn power_heuristic(nf:f32,f_pdf:f32,ng:f32,g_pdf:f32)->f32{
+    let f=nf*f_pdf;
+    let g=ng*g_pdf;
+    (f*f)/(f*f+g*g)
 }

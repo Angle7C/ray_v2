@@ -5,7 +5,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::light::LightAble;
 use crate::pbrt_core::primitive::Primitive;
 use crate::pbrt_core::texture::Texture;
-use crate::pbrt_core::tool::{Bound, InteractionCommon, SurfaceInteraction, Visibility};
+use crate::pbrt_core::tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction, Visibility};
 
 #[derive(Debug)]
 pub struct InfiniteLight {
@@ -34,18 +34,27 @@ impl Primitive for InfiniteLight {
     fn get_light(&self) -> Option<&dyn LightAble> {
         Some(self)
     }
+    fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
+        return None;
+        // let mut interaction = SurfaceInteraction::default();
+        // interaction.light=self.get_light();
+        // interaction.common.normal=-ray.o.dir+Vec3::ONE*0.002;
+        // interaction.common.time=f32::MAX;
+        // Some(interaction)
+    }
 }
 
 impl LightAble for InfiniteLight {
     fn sample_li(&self, surface: &SurfaceInteraction, u: Vec2, w_in: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
         let theta = u.x * PI;
         let phi = u.y * 2.0 * PI;
-        let (sin_t, cos_t) = theta.sin_cos();
-        let (sin_phi, cos_phi) = phi.sin_cos();
-        *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
+        // let (sin_t, cos_t) = theta.sin_cos();
+        // let (sin_phi, cos_phi) = phi.sin_cos();
+        // *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
         let hit_p = surface.common.p + *w_in * 2.0 * self.r;
-        let common = InteractionCommon::new(*w_in, hit_p, *w_in, 0.0, u);
+        let common = InteractionCommon::new(*w_in, hit_p, *w_in, 01.0, u);
         *vis = Visibility { a: surface.common, b: common };
+        *pdf=1.0;
         self.color.evaluate(&common)
     }
 

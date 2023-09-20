@@ -1,8 +1,10 @@
 use std::f32::consts::PI;
 
-use glam::Vec3;
+use glam::{Vec2, Vec3};
 
 use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, Visibility, Bound}};
+use crate::pbrt_core::light::LightType;
+use crate::pbrt_core::tool::color::Color;
 
 use super::LightAble;
 
@@ -47,36 +49,37 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn power(&self) -> Vec3 {
         return self.area * PI * self.lemit;
     }
-    fn sample_li(
-        &self,
-        surface: &SurfaceInteraction,
-        //光源采样参数
-        u: glam::Vec2,
-        w_in: &mut Vec3,
-        //光源pdf
-        pdf: &mut f32,
-        //可见性测试
-        vis: &mut crate::pbrt_core::tool::Visibility,
-    ) -> Vec3 {
-        // 从shape采样到点
-        let common = self.shape.sample(u);
-
-        *w_in = (surface.common.p - common.p).normalize();
-
-        *pdf = self.shape.pdf(&common, &w_in);
-        *vis = Visibility { a: surface.common, b: common };
-        self.l(&common, &-*w_in)
+    fn get_n_sample(&self) -> usize {
+        8
     }
-    fn sample_le(&self) -> Vec3 {
-        unimplemented!()
+    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
+        *light_common = self.shape.sample(u,surface_common,pdf);
+        if pdf.abs()==f32::EPSILON || (light_common.p-surface_common.p).length_squared().abs()<f32::EPSILON{
+            *pdf=0.0;
+            Vec3::ZERO
+        }else{
+            *wi=(light_common.p-surface_common.p).normalize();
+            *vis=Visibility{a:*surface_common,b:*light_common};
+            self.l(light_common,&-*wi)
+        }
+
     }
     fn le(&self, wi: Vec3) -> Vec3 {
-        let w = self.shape.get_mat().inverse().transform_vector3(wi);
-        let cos = w.dot(Vec3::Z).clamp(0.0, 1.0);
-        self.lemit * cos
+        Vec3::ZERO
+      
+    }
+    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
+        if inter.normal.dot(w)>0.0 {
+            self.lemit
+        }else{
+            Vec3::ZERO
+        }
     }
     fn pdf_li(&self, surface: &InteractionCommon, w_in: &Vec3) -> f32 {
         self.shape.pdf(surface, w_in)
+    }
+    fn get_type(&self) -> LightType {
+        LightType::Infinite
     }
 }
 

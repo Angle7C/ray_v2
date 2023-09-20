@@ -1,4 +1,3 @@
-
 use bvh::ray::Ray;
 
 use crate::pbrt_core::tool::SurfaceInteraction;
@@ -9,6 +8,7 @@ pub struct BVH<'b> {
     geo: Vec<GeometricePrimitive<'b>>,
     accel: bvh::bvh::BVH,
 }
+
 impl<'b> BVH<'b> {
     pub fn new(mut shape: Vec<GeometricePrimitive<'b>>) -> Self {
         let flat_bvh = bvh::bvh::BVH::build(&mut shape);
@@ -18,10 +18,11 @@ impl<'b> BVH<'b> {
         }
     }
 }
+
 impl<'b> Aggregate for BVH<'b> {
     fn interacect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let o_ray = ray.clone();
-        let mut ray =  bvh::ray::Ray::new(o_ray.o.origin, o_ray.o.dir);
+        let mut ray = bvh::ray::Ray::new(o_ray.o.origin, o_ray.o.dir);
         let iter = self.accel.traverse(&mut ray, &self.geo);
         let mut ans: Option<SurfaceInteraction> = None;
         let t_max = o_ray.o.t_max;
@@ -30,20 +31,19 @@ impl<'b> Aggregate for BVH<'b> {
         for shape in iter {
             match (shape.interacect(o_ray), &ans) {
                 (Some(v), None)
-                    if v.common.time >= t_min && v.common.time <= t_max && v.common.time <= t =>
-                {
-                    t = v.common.time;
-
-                    ans = Some(v);
-                }
+                if v.common.time >= t_min && v.common.time <= t_max && v.common.time <= t =>
+                    {
+                        t = v.common.time;
+                        ans = Some(v);
+                    }
                 (Some(v), Some(item))
-                    if v.common.time >= t_min
-                        && v.common.time <= item.common.time
-                        && v.common.time <= t =>
-                {
-                    t = v.common.time;
-                    ans = Some(v)
-                }
+                if v.common.time >= t_min
+                    && v.common.time <= item.common.time
+                    && v.common.time <= t =>
+                    {
+                        t = v.common.time;
+                        ans = Some(v)
+                    }
                 _ => continue,
             }
         }
