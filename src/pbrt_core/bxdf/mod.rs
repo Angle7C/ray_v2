@@ -2,7 +2,7 @@ use std::f32::consts::FRAC_1_PI;
 
 use glam::{Vec2,Vec3};
 
-use self::{reflection::{LambertianReflection, OrenNayar}, specular::SpecularReflection, pbr::{PbrDiff, PbrReflection}};
+use self::{reflection::{LambertianReflection, OrenNayar, MicrofacetReflection}, specular::SpecularReflection, pbr::{PbrDiff, PbrReflection}};
 
 use super::sampler::cosine_sample_hemisphere;
 // 菲涅尔反射率
@@ -72,7 +72,8 @@ pub enum BxDF {
     SpecularReflection(SpecularReflection),
     OrenNayar(OrenNayar),
     PbrDiff(PbrDiff),
-    PbrReflection(PbrReflection)
+    PbrReflection(PbrReflection),
+    MicrofacetReflection(MicrofacetReflection)
 }
 impl BxDF {
     pub fn match_type(&self, flag: u32) -> bool {
@@ -81,7 +82,9 @@ impl BxDF {
             Self::SpecularReflection(spec_ref)=>spec_ref.match_type(flag),
             Self::OrenNayar(oren)=>oren.match_type(flag),
             Self::PbrDiff(diff)=>diff.match_type(flag),
-            Self::PbrReflection(reflection)=>reflection.match_type(flag)
+            Self::PbrReflection(reflection)=>reflection.match_type(flag),
+            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.match_type(flag),
+            _=>todo!()
         }
     }
     pub fn f(&self, w_out: &Vec3, w_in: &mut Vec3) -> Vec3 {
@@ -90,7 +93,9 @@ impl BxDF {
             BxDF::SpecularReflection(spec_ref)=>spec_ref.fi(w_in, w_out),
             Self::OrenNayar(oren)=>oren.fi(w_in, w_out),
             Self::PbrDiff(diff)=>diff.fi(w_in, w_out),
-            Self::PbrReflection(reflection)=>reflection.fi(w_in, w_out)
+            Self::PbrReflection(reflection)=>reflection.fi(w_in, w_out),
+            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.fi(w_in, w_out),
+            _=>todo!()
         }
     }
     pub fn sample_f(&self, w_out: &Vec3, wi: &mut Vec3, u: Vec2, pdf: &mut f32) -> Vec3 {
@@ -100,6 +105,8 @@ impl BxDF {
             Self::OrenNayar(oren)=>oren.sample_f(wi, w_out, u, pdf),
             Self::PbrDiff(diff)=>diff.sample_f(wi, w_out, u, pdf),
             Self::PbrReflection(reflection)=>reflection.sample_f(wi, w_out, u, pdf),
+            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.sample_f(wi, w_out, u, pdf),
+            _=>todo!()
         }
     }
 }
