@@ -8,6 +8,7 @@ use crate::pbrt_core::{
 };
 use crate::pbrt_core::light::LightType;
 use crate::pbrt_core::tool::color::Color;
+use crate::pbrt_core::tool::{Ray, RayDiff};
 
 use super::LightAble;
 
@@ -26,11 +27,11 @@ impl Point {
 }
 
 impl LightAble for Point {
-    fn le(&self, wi: Vec3) -> Vec3 {
-        Color::ZERO
-    }
     fn pdf_li(&self, surface: &crate::pbrt_core::tool::InteractionCommon, w_in: &Vec3) -> f32 {
         0.0
+    }
+    fn le(&self, ray: RayDiff) -> Vec3 {
+        Vec3::ZERO
     }
     fn power(&self) -> Vec3 {
         self.lemit * 4.0 * PI

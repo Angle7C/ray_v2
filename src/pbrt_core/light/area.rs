@@ -5,6 +5,7 @@ use glam::{Vec2, Vec3};
 use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, Visibility, Bound}};
 use crate::pbrt_core::light::LightType;
 use crate::pbrt_core::tool::color::Color;
+use crate::pbrt_core::tool::{Ray, RayDiff};
 
 use super::LightAble;
 
@@ -64,9 +65,8 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         }
 
     }
-    fn le(&self, wi: Vec3) -> Vec3 {
-        Vec3::ZERO
-      
+    fn le(&self, ray: RayDiff) -> Vec3 {
+        todo!()
     }
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
         if inter.normal.dot(w)>0.0 {

@@ -47,6 +47,9 @@ pub trait BxDFAble {
             0.0
         }
     }
+    fn get_type(&self)->u32{
+        0
+    }
 }
 
 
@@ -108,6 +111,12 @@ impl BxDF {
             Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.sample_f(wi, w_out, u, pdf),
             _=>todo!()
         }
+    }
+    pub fn get_type(&self)->u32{
+        0
+    }
+    pub fn pdf(&self,wo:&Vec3,wi:&Vec3)->f32{
+        1.0
     }
 }
 #[derive(Debug, Clone, Copy)]

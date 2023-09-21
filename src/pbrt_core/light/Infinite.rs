@@ -45,25 +45,24 @@ impl Primitive for InfiniteLight {
 }
 
 impl LightAble for InfiniteLight {
-    fn sample_li(&self, surface: &SurfaceInteraction, u: Vec2, w_in: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
-        let theta = u.x * PI;
-        let phi = u.y * 2.0 * PI;
+    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
+        unimplemented!()
+        // let theta = u.x * PI;
+        // let phi = u.y * 2.0 * PI;
         // let (sin_t, cos_t) = theta.sin_cos();
         // let (sin_phi, cos_phi) = phi.sin_cos();
         // *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
-        let hit_p = surface.common.p + *w_in * 2.0 * self.r;
-        let common = InteractionCommon::new(*w_in, hit_p, *w_in, 01.0, u);
-        *vis = Visibility { a: surface.common, b: common };
-        *pdf=1.0;
-        self.color.evaluate(&common)
+        // let hit_p = surface.common.p + *w_in * 2.0 * self.r;
+        // let common = InteractionCommon::new(*w_in, hit_p, *w_in, 01.0, u);
+        // *vis = Visibility { a: surface.common, b: common };
+        // *pdf=1.0;
+        // self.color.evaluate(&common)
     }
 
-    fn sample_le(&self) -> Vec3 {
-        todo!()
-    }
 
     fn power(&self) -> Vec3 {
-        let common = InteractionCommon::default();
+        let mut common = InteractionCommon::default();
+        common.uv=Vec2::splat(0.5);
         PI * self.r * self.r * self.color.evaluate(&common)
     }
 
@@ -72,7 +71,7 @@ impl LightAble for InfiniteLight {
     }
 
     fn le(&self, wi: Vec3) -> Vec3 {
-        let w = self.obj_to_world.transform_vector3(wi);
+        let w = self.obj_to_world.inverse().transform_vector3(wi).normalize();
         let mut phi = (w.y).atan2(w.x);
         //uv计算
         if phi < 0.0 {
