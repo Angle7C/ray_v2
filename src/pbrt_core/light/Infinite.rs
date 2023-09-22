@@ -55,7 +55,8 @@ impl Primitive for InfiniteLight {
 
 impl LightAble for InfiniteLight {
     fn power(&self) -> Vec3 {
-        let common = InteractionCommon::default();
+        let mut common = InteractionCommon::default();
+        common.uv=Vec2::splat(0.5);
         PI * self.r * self.r * self.color.evaluate(&common)
     }
 
@@ -64,7 +65,7 @@ impl LightAble for InfiniteLight {
     }
 
     fn le(&self, ray: RayDiff) -> Vec3 {
-        let w = self.obj_to_world.transform_vector3(ray.o.dir);
+        let w = self.obj_to_world.inverse().transform_vector3(ray.o.dir).normalize();
         let mut phi = (w.y).atan2(w.x);
         //uv计算
         if phi < 0.0 {

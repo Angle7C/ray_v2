@@ -10,12 +10,12 @@ use glam::{UVec2, Vec2, Vec3};
 use image::{Rgb, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::info;
-use rand::seq::index;
 
 use crate::pbrt_core::bxdf::BxDFType;
 use crate::pbrt_core::light::{Light, LightAble, LightType};
+use crate::pbrt_core::primitive::Primitive;
+use crate::pbrt_core::tool::tile::merage_tile;
 use crate::pbrt_core::tool::{InteractionCommon, SurfaceInteraction, Visibility};
-use crate::pbrt_core::{sampler, tool::tile::merage_tile};
 
 use self::{direct::DirectIntegrator, path::PathIntegrator};
 
@@ -217,7 +217,7 @@ pub fn uniform_sample_all_light(
                 sence,
                 sampler.clone(),
                 handle_media,
-                true,
+                false,
             );
         } else {
             for i in 0..n_light_sample[index] {
@@ -253,14 +253,14 @@ pub fn estimate_direct(
         BxDFType::All as u32 & !BxDFType::Specular
     };
     let mut ld = Vec3::ZERO;
-    let mut wi: Vec3=Default::default();
+    let mut wi: Vec3;
     let mut pdf: f32 = 0.0;
-    let mut vis: Visibility=Default::default();
-    let mut light_common = InteractionCommon::default();
+    let mut vis: Visibility;
+    let mut light_common: InteractionCommon;
     let mut li = light.sample_li(
         &inter.common,
         &mut light_common,
-        u_light,
+        sampler.sample_2d_d(),
         &mut wi,
         &mut pdf,
         &mut vis,
@@ -268,31 +268,33 @@ pub fn estimate_direct(
     //合理的pdf和采样出光线
     if pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         //计算BSDF
-       let f= if let Some(ref bsdf) = inter.bsdf {
+        let mut f = if let Some(ref bsdf) = inter.bsdf {
             bsdf.f(&inter.common.w0, &wi, bxdf_flags) * wi.dot(inter.shading.n).abs()
-        }else{
+        } else {
+            //介质传播
             Vec3::ZERO
         };
-        //介质缩减
-        if handle_media {
-            todo!()
-        } else if !vis.is_vis(sence) {
-            li = Color::ZERO;
-        }
         //计算光贡献
-        if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-            if LightType::is_delta(light.get_type()) {
-                ld += f * li *vis.g(sence)/ pdf ;
-            } else {
-                let weight = power_heuristic(1.0, pdf, 1.0, 1.0);
-                ld += f * li * weight*vis.g(sence) / pdf;
+        if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+            if handle_media {
+                todo!()
+            } else if !vis.is_vis(sence) {
+                li = Color::ZERO;
+            }
+            if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+                if LightType::is_delta(light.get_type()) {
+                    ld += f * li / pdf;
+                } else {
+                    let weight = power_heuristic(1.0, pdf, 1.0, 1.0);
+                    ld += f * li * weight / pdf;
+                }
             }
         }
     }
     //BSDF重要性采样
     if !LightType::is_delta(light.get_type()) {
         let mut sampled_specular = false;
-        let mut smapled_type = BxDFType::None;
+        let mut smapled_type = BxDFType::None as u32;
         if let Some(ref bsdf) = inter.bsdf {
             let mut f = bsdf.sample_f(
                 &inter.common.w0,
@@ -300,18 +302,41 @@ pub fn estimate_direct(
                 sampler.sample_2d_d(),
                 &mut pdf,
                 bxdf_flags,
+                &mut smapled_type,
             );
-            f *= wi.dot(inter.common.w0).abs();
-            sampled_specular = smapled_type & BxDFType::Specular > 0;
-            let weight;
-            if (!sampled_specular) {
-                let light_pdf = light.pdf_li(inter, &wi);
+            f *= wi.dot(inter.shading.n);
+            sampled_specular =  BxDFType::Specular as u32 & smapled_type > 0;
+            let weight = if !sampled_specular {
+                let light_pdf = light.pdf_li(&inter, &wi);
                 if light_pdf.abs() < f32::EPSILON {
                     return ld;
                 }
-                weight = power_heuristic(1.0, 1.0, 1.0, light_pdf);
+                power_heuristic(1.0, 1.0, 1.0, light_pdf)
+            } else {
+                1.0
+            };
+            //计算透射率
+            let ray = inter.spawn_ray(&wi);
+            let tr = Vec3::ONE;
+            let mut found_surface_inter = false;
+            //handle_media? sence.intersct_tr():scene.intersect
+            if handle_media {
+            } else if let Some(light_isect) = sence.interacect(ray) {
+                found_surface_inter = true;
+                if let Some(area_light) = light_isect.light {
+                    li = area_light.le(ray)
+                }
+            }
+            let mut li = Vec3::ZERO;
+            if found_surface_inter {
+            } else {
+                li = light.le(ray);
+            }
+            if li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+                ld += f * li * weight;
             }
         } else {
+            //介质传播
         }
     };
     ld
