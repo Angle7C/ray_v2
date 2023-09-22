@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::pbrt_core::light::LightAble;
 use crate::pbrt_core::primitive::Primitive;
 use crate::pbrt_core::texture::Texture;
-use crate::pbrt_core::tool::{Bound, InteractionCommon, Ray, SurfaceInteraction, Visibility};
+use crate::pbrt_core::tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction, Visibility};
 
 #[derive(Debug)]
 pub struct InfiniteLight {
@@ -43,13 +43,13 @@ impl Primitive for InfiniteLight {
     fn get_light(&self) -> Option<&dyn LightAble> {
         Some(self)
     }
-    fn interacect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
-        let mut surface = SurfaceInteraction::default();
-        let hit_p = self.center + ray.o.dir * 2.0 * self.r;
-        surface.light=self.get_light();
-        surface.common =
-            InteractionCommon::new(ray.o.dir, hit_p, ray.o.dir, f32::INFINITY, Vec2::ZERO);
-        Some(surface)
+    fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
+        return None;
+        // let mut interaction = SurfaceInteraction::default();
+        // interaction.light=self.get_light();
+        // interaction.common.normal=-ray.o.dir+Vec3::ONE*0.002;
+        // interaction.common.time=f32::MAX;
+        // Some(interaction)
     }
 }
 
@@ -67,13 +67,10 @@ impl LightAble for InfiniteLight {
         // let (sin_t, cos_t) = theta.sin_cos();
         // let (sin_phi, cos_phi) = phi.sin_cos();
         // *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
-        let hit_p = surface.common.p + *w_in * 2.0 * self.r + Vec3::ONE;
-        *pdf = 1.0;
-        let common = InteractionCommon::new(*w_in, hit_p, hit_p.normalize(), f32::INFINITY, u);
-        *vis = Visibility {
-            a: surface.common,
-            b: common,
-        };
+        let hit_p = surface.common.p + *w_in * 2.0 * self.r;
+        let common = InteractionCommon::new(*w_in, hit_p, *w_in, 01.0, u);
+        *vis = Visibility { a: surface.common, b: common };
+        *pdf=1.0;
         self.color.evaluate(&common)
     }
 

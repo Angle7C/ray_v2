@@ -2,7 +2,7 @@ name = "image"
 
 [camera]
 mode = "P"
-size = [1024.0, 1024.0]
+size = [512.0, 512.0]
 far = 1000.0
 near = 0.01
 eye = [0.0, 4.0, 4.0]
@@ -37,7 +37,7 @@ r = 100.0
 
 [[shapes]]
 mode = "Rect"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 8.0] }
+trans = { r = [1.0, 0.0, 0.0, 45.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 3.0] }
 material_index = 0
 
 
@@ -62,23 +62,23 @@ value = [0.5, 0.7, 1.0]
 mode = "Constant"
 value = [0.5, 0.3, 0.3]
 
-[[light]]
-mode = "Area"
-lemit = [100.0, 100.0, 100.0]
-shape_index = 0
+ [[light]]
+ mode = "Area"
+ lemit = [100.0, 100.0, 100.0]
+ shape_index = 0
 
-# [[light]]
-# mode = "Infinite"
-# lemit = [10.0, 10.0, 10.0]
-# skybox = 1
-# world_center = [0.0, 0.0, 0.0]
-# world_radius = 10000.0
+#[[light]]
+#mode = "Infinite"
+#lemit = [10.0, 100.0, 100.0]
+#skybox = 1
+#world_center = [0.0, 0.0, 0.0]
+#world_radius = 10000.0
 
 [intergator]
 mode = "Path"
-core_num = 6
-sample_num = 1
-q = 0.3
+core_num = 7
+sample_num = 10
+q = 0.5
 max_depth = 3
 # [intergator]
 # mode = "Direct"

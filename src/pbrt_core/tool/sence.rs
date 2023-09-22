@@ -6,19 +6,19 @@ use log::info;
 use rand::Rng;
 
 use crate::pbrt_core::{
-    bxdf::BxDFType,
     camera::Camera,
-    light::{Light, LightAble},
+    light::{LightAble},
     primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
     sampler::Sampler,
 };
+use crate::pbrt_core::light::Light;
 
 use super::{Bound, SurfaceInteraction, Visibility};
 
 pub struct Sence {
     shape: &'static [Box<dyn Primitive>],
     pub camera: Camera,
-    light: &'static [Light],
+    pub light: &'static [Light],
     env: Vec<&'static Light>,
     bound: Bound<3>,
     // material: Vec<Box<dyn Material>>,
@@ -33,10 +33,10 @@ impl Sence {
         camera: Camera,
         light: Vec<Light>,
     ) -> Self {
-        let light = light.leak();
         let primitive = primitive.leak();
-        //场景集合
 
+        //场景集合
+        let light = light.leak();
         let mut geoemtry = primitive
             .iter()
             .map(|ele| GeometricePrimitive::new(ele.as_ref()))
@@ -50,18 +50,21 @@ impl Sence {
             .iter()
             .map(|ele| ele.world_bound())
             .fold(Bound::<3>::default(), |a, b| a.merage(b));
-        let mut env=vec![];
-        for item in light.iter(){
-            match item {
-                Light::Infinite(_)=>{
-                    env.push(item)
-                },
-                _=>continue
+        let mut env: Vec<&Light> = vec![];
+        let mut t = vec![];
+        light.iter().for_each(|i| {
+            if match i {
+                Light::Infinite( _) => true,
+                _ => false,
+            } {
+                env.push(i);
+            } else {
+                t.push(i);
             }
-        }
+        });
 
         let accel = Box::new(BVH::new(geoemtry));
-
+        // let x = t.leak();
         let sence = Self {
             shape: primitive,
             camera,
@@ -91,26 +94,22 @@ impl Sence {
         let mut ans = Vec3::ZERO;
         let mut pdf = 0.0;
         let mut wi = wi;
-        if self.env.len()==0{
-            return Vec3::ZERO;
-        }
         for light in &self.env {
             let f = if let Some(bsdf) = &surface.bsdf {
-                bsdf.sample_f(&surface.common.w0, &mut wi, u, &mut pdf, 31)
-                    * wi.dot(surface.shading.n).abs()
+                let f = bsdf.sample_f(&surface.common.w0, &mut wi, u, &mut pdf, 31) * wi.dot(surface.shading.n).abs();
+                f
             } else {
                 Vec3::ZERO
             };
             let ld = match light {
-                Light::Infinite(inf) => inf.sample_le(wi, &mut vis, &surface.common),
+                Light::Infinite(inf) => inf.sample_li(surface,u,&mut wi,&mut light_pdf,&mut vis),
                 _ => todo!(),
             };
 
-            ans += ld * f * vis.g_inf(self);
-        }
+            ans += ld * f *vis.g_inf(self);
+        };
         ans
     }
-    ///没有击中任何物体
     pub fn get_hit_env(&self, wi: Vec3) -> Vec3 {
         let mut ans = Vec3::ZERO;
         for light in &self.env {
@@ -201,9 +200,9 @@ pub fn sample_light(
 
     //采样值
     let ld = match light {
-        Light::AreaLight(area) => area.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
-        Light::PointLight(p) => p.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
-        Light::Infinite(inf) => inf.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis),
+        Light::AreaLight(area) => area.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis)*vis.g(sence),
+        Light::PointLight(p) => p.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis)*vis.g(sence),
+        Light::Infinite(inf) =>inf.sample_li(surface, u, &mut wi, &mut light_pdf, &mut vis)*vis.g(sence),
     };
     let f = if let Some(bsdf) = &surface.bsdf {
         let f = bsdf.f(&surface.common.w0, &wi, flag) * wi.dot(surface.shading.n).abs();
@@ -212,9 +211,5 @@ pub fn sample_light(
     } else {
         Vec3::ZERO
     };
-    let ok = vis.g(sence);
-    if f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-        info!("bsdf {:?}", f);
-    }
-    ld * ok * f / light_pdf
+    ld * f / light_pdf
 }

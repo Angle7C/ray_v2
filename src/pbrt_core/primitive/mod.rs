@@ -55,12 +55,12 @@ pub mod shape {
             }
         }
         // 形状采样
-        pub fn sample(&self, smaple_point: Vec2) -> InteractionCommon {
+        pub fn sample(&self, smaple_point: Vec2,common:&InteractionCommon,pdf:&mut f32) -> InteractionCommon {
             match self {
                 Self::Rect(rect) => rect.sample_interaction(smaple_point),
             }
         }
-        //对于在不同点采样的时，会存在不同pdf值
+        //对于在不同点采样的时，会存在不同pdf值。给定指定方向与点，确定是否有交点。
         pub fn pdf(&self, _common: &InteractionCommon, _wi: &Vec3) -> f32 {
             1.0 / self.agt_area()
         }

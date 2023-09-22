@@ -48,8 +48,10 @@ impl MyLoad {
         let texture = self.load_texture().leak();
         let material = self.load_material(texture).leak();
         let primitive = self.load_primitive(material);
+
+
         self.load_shape();
-        let lights = self.load_light(unsafe { &SHAPE },texture);
+        let mut lights = self.load_light(unsafe { &SHAPE },texture);
         let camera = self.load_camera();
         let sence = Sence::new(primitive, camera, lights);
         sence
@@ -124,7 +126,6 @@ impl MyLoad {
         }
         vec
     }
-    //加载光源
     fn load_light<'a>(&'a self, shape: &'static [Shape<'static>],texture: &'static [Arc<dyn Texture>]) -> Vec<Light> {
         let mut vec = vec![];
         for item in &self.light {
@@ -138,7 +139,8 @@ impl MyLoad {
                     DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap()),
                 )),
                 LightToml::Infinite { world_center, world_radius, lemit, skybox } => {
-                    Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))
+                    continue
+                    // Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))
                 }
                 _ => todo!(),
             };
@@ -146,7 +148,6 @@ impl MyLoad {
         }
         vec
     }
-    //面光源的集合
     fn load_shape(&self) {
         // let mut vec = vec![];
         for item in &self.shapes {
@@ -168,7 +169,6 @@ impl MyLoad {
             unsafe { SHAPE.push(shape) }
         }
     }
-    //加载相机
     fn load_camera(&self) -> Camera {
         let mode = self.camera.mode.as_str();
         match mode {
