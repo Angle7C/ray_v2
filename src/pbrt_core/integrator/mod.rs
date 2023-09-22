@@ -213,11 +213,11 @@ pub fn uniform_sample_all_light(
             ld += estimate_direct(
                 common,
                 light,
-                sampler.sample_2d_d(),
+                u_light,
                 sence,
                 sampler.clone(),
                 handle_media,
-                false,
+                true,
             );
         } else {
             for i in 0..n_light_sample[index] {
@@ -228,7 +228,7 @@ pub fn uniform_sample_all_light(
                     sence,
                     sampler.clone(),
                     handle_media,
-                    false,
+                    true,
                 );
             }
             ld /= n_light_sample[index] as f32
@@ -253,10 +253,10 @@ pub fn estimate_direct(
         BxDFType::All as u32 & !BxDFType::Specular
     };
     let mut ld = Vec3::ZERO;
-    let mut wi: Vec3;
+    let mut wi: Vec3= Vec3::ZERO;;
     let mut pdf: f32 = 0.0;
-    let mut vis: Visibility;
-    let mut light_common: InteractionCommon;
+    let mut vis: Visibility=Default::default();
+    let mut light_common: InteractionCommon=Default::default();
     let mut li = light.sample_li(
         &inter.common,
         &mut light_common,
@@ -283,10 +283,11 @@ pub fn estimate_direct(
             }
             if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
                 if LightType::is_delta(light.get_type()) {
-                    ld += f * li / pdf;
+                    ld += f * li*vis.g(sence) / pdf;
                 } else {
                     let weight = power_heuristic(1.0, pdf, 1.0, 1.0);
-                    ld += f * li * weight / pdf;
+                    ld += f * li*vis.g(sence)*weight / pdf;
+
                 }
             }
         }
@@ -304,7 +305,7 @@ pub fn estimate_direct(
                 bxdf_flags,
                 &mut smapled_type,
             );
-            f *= wi.dot(inter.shading.n);
+            f *= wi.dot(inter.shading.n).abs();
             sampled_specular =  BxDFType::Specular as u32 & smapled_type > 0;
             let weight = if !sampled_specular {
                 let light_pdf = light.pdf_li(&inter, &wi);
@@ -332,8 +333,8 @@ pub fn estimate_direct(
             } else {
                 li = light.le(ray);
             }
-            if li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                ld += f * li * weight;
+            if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+                ld += f * li * weight*vis.g(sence);
             }
         } else {
             //介质传播

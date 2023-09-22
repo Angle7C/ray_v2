@@ -54,26 +54,27 @@ impl IntegratorAble for PathIntegrator {
                 }
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
-                    //场景光源采样
-                    ans += beta
-                        * uniform_sample_all_light(
-                            &item,
-                            sence,
-                            sampler.clone(),
-                            n_sample.clone(),
-                            false,
-                        );
-                    // sence.get_hit_env()
-                    //BRDF 采样生成光线
-                    let w_out = -ray.o.dir;
-                    let mut w_in = Vec3::default();
-                    let mut pdf = 0.0;
-                    let flags: u32 = BxDFType::All as u32;
-                    let f =
-                        bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
-                    beta *= f * w_in.dot(item.shading.n).clamp(0.0, 1.0);
+                    // //场景光源采样
+                    // ans += beta
+                    //     * uniform_sample_all_light(
+                    //         &item,
+                    //         sence,
+                    //         sampler.clone(),
+                    //         n_sample.clone(),
+                    //         false,
+                        
+                    //     );
+                    // // sence.get_hit_env()
+                    // //BRDF 采样生成光线
+                    // let w_out = -ray.o.dir;
+                    // let mut w_in = Vec3::default();
+                    // let mut pdf = 0.0;
+                    // let flags: u32 = BxDFType::All as u32;
+                    // let f =
+                    //     bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
+                    // beta *= f * w_in.dot(item.shading.n).clamp(0.0, 1.0);
 
-                    ray = item.spawn_ray(&w_in);
+                    // ray = item.spawn_ray(&w_in);
                 }
 
                 beta = beta / p;

@@ -1,9 +1,6 @@
 use std::fmt::Debug;
 
 use glam::{Vec3, Vec2};
-use image::codecs::png::CompressionType::Default;
-use image::imageops::dither;
-use rand::Rng;
 use crate::pbrt_core::bxdf::BxDFType;
 
 use super::{
@@ -58,16 +55,17 @@ impl BSDF {
         //随机采样到一个符合条件BxDF
         let comp = u32::min((num as f32 * u.x).floor() as u32, num - 1);
         let mut bxdf: Option<&BxDF> = None;
-        let mut count = comp;
+        let mut count = 0;
+        count=comp;
         let mut i = 0;
         for (index, item) in self.bxdfs.iter().enumerate() {
             let matches = item.match_type(flag);
-            if matches && count == 0 {
-                count -= 1;
+            if  count == 0 && matches  {
                 bxdf = Some(item);
                 i = index;
+                break;
             } else if matches {
-                count - 1;
+                count -= 1;
             }
         }
         if let Some(bxdf) = bxdf {
@@ -86,15 +84,14 @@ impl BSDF {
             }
             let mut f = bxdf.sample_f(&w_out, &mut wi, u_re, pdf);
             if pdf.abs() < f32::EPSILON {
-                if sampled_type != 0 {
+                if *sampled_type != 0 {
                     *sampled_type = 0;
                 }
-                Vec3::ZERO
+                return Vec3::ZERO
             }
-            *w_in = self.local_to_world(*wi);
+            *w_in = self.local_to_world(wi);
 
             if bxdf.get_type() & BxDFType::Specular as u32 == 0 && num > 1 {
-                let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
                 f = Vec3::ZERO;
                 for (index, item) in self.bxdfs.iter().enumerate() {
                     if i != index && item.match_type(flag) {
@@ -103,9 +100,9 @@ impl BSDF {
                 }
             };
             if num > 1 {
-                *pdf /= num;
+                *pdf /= num as f32; 
             }
-            if bxdf.get_type() & BxDFType::Specular as u8 == 0 {
+            if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
                 let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
                 for item in self.bxdfs.iter() {
                     if item.match_type(flag)
@@ -142,14 +139,14 @@ impl BSDF {
             }
             let mut pdf=0.0;
             let mut num=0;
-            for item in self.bxdfs{
+            for  item in &self.bxdfs{
                 if item.match_type(flag){
                     num+=1;
                     pdf+=item.pdf(&wo,&wi);
                 }
             }
             return if num>0{
-                pdf/num
+                pdf/num as f32
             }else{
                 0.0
             }
@@ -172,7 +169,7 @@ impl BSDF {
     }
     pub fn num_components(&self, flag: u32) -> u32 {
         let mut num = 0;
-        for ref item in self.bxdfs {
+        for  item in &self.bxdfs {
             if item.match_type(flag) {
                 num += 1;
             }

@@ -48,7 +48,7 @@ pub trait BxDFAble {
         }
     }
     fn get_type(&self)->u32{
-        0
+        (BxDFType::Specular & BxDFType::Reflection) as u32
     }
 }
 
@@ -113,7 +113,14 @@ impl BxDF {
         }
     }
     pub fn get_type(&self)->u32{
-        0
+        match &self {
+            Self::LambertianReflection(lambert) => lambert.get_type(),
+            Self::OrenNayar(oren)=>oren.get_type(),
+            Self::PbrDiff(diff)=>diff.get_type(),
+            Self::PbrReflection(reflection)=>reflection.get_type(),
+            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.get_type(),
+            Self::SpecularReflection(specular)=>specular.get_type(),
+        }
     }
     pub fn pdf(&self,wo:&Vec3,wi:&Vec3)->f32{
         1.0

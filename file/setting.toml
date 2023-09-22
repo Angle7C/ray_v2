@@ -14,7 +14,7 @@ fov = 110.0
 mode = "Shpere"
 trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.0, 0.0, 1.0] }
 r = 1.0
-material_index = 0
+material_index = 1
 
 [[primitive]]
 mode = "Shpere"
@@ -37,7 +37,7 @@ r = 100.0
 
 [[shapes]]
 mode = "Rect"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 10.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 3.0] }
 material_index = 0
 
 
@@ -62,10 +62,10 @@ value = [0.5, 0.7, 1.0]
 mode = "Constant"
 value = [0.5, 0.3, 0.3]
 
- [[light]]
- mode = "Area"
- lemit = [100.0, 100.0, 100.0]
- shape_index = 0
+[[light]]
+mode = "Area"
+lemit = [100.0, 100.0, 100.0]
+shape_index = 0
 
 #[[light]]
 #mode = "Infinite"
