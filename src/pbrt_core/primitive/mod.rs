@@ -56,6 +56,7 @@ pub mod shape {
         }
         // 形状采样
         pub fn sample(&self, smaple_point: Vec2,common:&InteractionCommon,pdf:&mut f32) -> InteractionCommon {
+            *pdf=1.0/self.agt_area();
             match self {
                 Self::Rect(rect) => rect.sample_interaction(smaple_point),
             }

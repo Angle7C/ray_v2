@@ -248,9 +248,9 @@ impl<'a> SurfaceInteraction<'a> {
         let ray = Ray::new(self.common.p, *wi);
         RayDiff::new(ray)
     }
-    pub fn le(&self, w_in: Vec3) -> Vec3 {
+    pub fn le(&self, ray: RayDiff) -> Vec3 {
         if let Some(light) = self.light {
-            light.le(w_in)
+            light.le(ray)
         } else {
             Vec3::ZERO
         }
@@ -287,25 +287,17 @@ impl Visibility {
         let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.01));
         sence.interacect(ray_diff).is_none()
     }
-    fn g(&self, sence: &Sence) -> f32 {
-        let vis = if self.is_vis(sence){1.0}else{0.0};
+    pub fn g(&self, sence: &Sence) -> f32 {
+        let vis = if self.is_vis(sence) { 1.0 } else { 0.0 };
         let dir = self.a.p - self.b.p;
         let value = vis
             * self.a.normal.dot(dir.normalize()).abs()
             * self.b.normal.dot(dir.normalize()).abs();
         value / dir.length_squared()
     }
-    fn g_inf(&self, sence: &Sence) -> f32 {
-        let vis = self.is_vis(sence);
-        let value = vis;
-        value 
-    }
-    fn g_inf(&self, sence: &Sence) -> f32 {
+    pub fn g_inf(&self, sence: &Sence) -> f32 {
         let vis = self.is_vis(sence);
         if vis {1.0}else{0.0}
-        // * self.a.normal.dot(dir.normalize()).abs()
-        // * self.b.normal.dot(dir.normalize()).abs();
-        // value
     }
     // fn get_dir(&self,sence:&Sence)->f32{}
 }

@@ -137,7 +137,7 @@ impl PartialEq<TransportMode> for TransportMode {
 impl std::ops::Not for BxDFType{
     type Output = u32;
     fn not(self) -> Self::Output {
-        self as u32
+        !(self as u32)
     }
 }
 impl std::ops::BitAnd<BxDFType> for BxDFType {

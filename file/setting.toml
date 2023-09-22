@@ -14,7 +14,7 @@ fov = 110.0
 mode = "Shpere"
 trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.0, 0.0, 1.0] }
 r = 1.0
-material_index = 1
+material_index = 0
 
 [[primitive]]
 mode = "Shpere"
@@ -37,7 +37,7 @@ r = 100.0
 
 [[shapes]]
 mode = "Rect"
-trans = { r = [1.0, 0.0, 0.0, 45.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 3.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 10.0] }
 material_index = 0
 
 
@@ -74,14 +74,14 @@ value = [0.5, 0.3, 0.3]
 #world_center = [0.0, 0.0, 0.0]
 #world_radius = 10000.0
 
-[intergator]
-mode = "Path"
-core_num = 7
-sample_num = 10
-q = 0.5
-max_depth = 3
 # [intergator]
-# mode = "Direct"
-# sample_num = 1
-# core_num = 6
-# startegy = "UniformOne"
+# mode = "Path"
+# core_num = 7
+# sample_num = 10
+# q = 0.5
+# max_depth = 3
+[intergator]
+mode = "Direct"
+sample_num = 1
+core_num = 6
+startegy = "UniformOne"

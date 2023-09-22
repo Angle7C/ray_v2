@@ -7,7 +7,7 @@ use crate::pbrt_core::{
     tool::{color::Color, sence::Sence, RayDiff},
 };
 
-use super::IntegratorAble;
+use super::{uniform_sample_all_light, IntegratorAble};
 
 //路径追踪积分器
 pub struct PathIntegrator {
@@ -44,16 +44,25 @@ impl IntegratorAble for PathIntegrator {
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
+        let n_sample = vec![1, 1, 1, 1];
+
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {
-                    ans += beta * item.le(ray.o.dir);
+                    ans += beta * item.le(ray);
                     return ans;
                 }
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
-                    ans += beta * sence.uniform_sample_one_light(&item, sampler, false);
+                    ans += beta
+                        * uniform_sample_all_light(
+                            &item,
+                            sence,
+                            sampler.clone(),
+                            n_sample.clone(),
+                            false,
+                        );
                     // sence.get_hit_env()
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;

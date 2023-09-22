@@ -7,6 +7,8 @@ use crate::pbrt_core::{
     tool::{sence::Sence, RayDiff, color::Color},
 };
 
+use super::uniform_sample_all_light;
+
 pub struct DirectIntegrator {
     _strategy: LightStartegy,
     _sample: Sampler,
@@ -26,16 +28,17 @@ impl DirectIntegrator {
     pub fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color {
         let mut ans = Vec3::ZERO;
         let beta=Vec3::ONE;
+        let n_sample=vec![1,1,1,1];
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         if let Some(mut item) = sence.interacect(ray) {
             // return (item.common.normal+Vec3::ONE)/2.0;
             if item.light.is_some() {
-                ans += beta * item.le(ray.o.dir);
+                ans += beta * item.le(ray);
                 return ans;
             }
             item.compute_scattering(ray, mode);
             if let Some(_) = &item.bsdf {
-                ans += beta * sence.uniform_sample_one_light(&item, sampler, false);
+                ans += beta * uniform_sample_all_light(&item, sence, sampler.clone(),n_sample,false);
             }
         }
         ans

@@ -54,56 +54,17 @@ impl Primitive for InfiniteLight {
 }
 
 impl LightAble for InfiniteLight {
-    fn sample_li(
-        &self,
-        surface: &SurfaceInteraction,
-        u: Vec2,
-        w_in: &mut Vec3,
-        pdf: &mut f32,
-        vis: &mut Visibility,
-    ) -> Vec3 {
-        let theta = u.x * PI;
-        let phi = u.y * 2.0 * PI;
-        // let (sin_t, cos_t) = theta.sin_cos();
-        // let (sin_phi, cos_phi) = phi.sin_cos();
-        // *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
-        let hit_p = surface.common.p + *w_in * 2.0 * self.r;
-        let common = InteractionCommon::new(*w_in, hit_p, *w_in, 01.0, u);
-        *vis = Visibility { a: surface.common, b: common };
-        *pdf=1.0;
-        self.color.evaluate(&common)
-    }
-
-    fn sample_le(&self, wi: Vec3, vis: &mut Visibility, surface: &InteractionCommon) -> Vec3 {
-        // let theta = u.x * PI;
-        // let phi = u.y * 2.0 * PI;
-
-        let hit_p = surface.p + wi * 2.0 * self.r + Vec3::ONE;
-        let common = InteractionCommon::new(
-            wi,
-            hit_p,
-            hit_p.normalize(),
-            f32::INFINITY,
-            Default::default(),
-        );
-        *vis = Visibility {
-            a: *surface,
-            b: common,
-        };
-        self.color.evaluate(&common)
-    }
-
     fn power(&self) -> Vec3 {
         let common = InteractionCommon::default();
         PI * self.r * self.r * self.color.evaluate(&common)
     }
 
-    fn pdf_li(&self, surface: &InteractionCommon, w_in: &Vec3) -> f32 {
+    fn pdf_li(&self, surface: &SurfaceInteraction<'_>, w_in: &Vec3) -> f32 {
         1.0
     }
 
-    fn le(&self, wi: Vec3) -> Vec3 {
-        let w = self.obj_to_world.transform_vector3(wi);
+    fn le(&self, ray: RayDiff) -> Vec3 {
+        let w = self.obj_to_world.transform_vector3(ray.o.dir);
         let mut phi = (w.y).atan2(w.x);
         //uv计算
         if phi < 0.0 {
@@ -115,7 +76,55 @@ impl LightAble for InfiniteLight {
         let uv = Vec2::new(u, v);
         let mut common = InteractionCommon::default();
         common.uv = uv;
-        self.color.evaluate(&common)*self.lemit
+        self.color.evaluate(&common) * self.lemit
         //dpdu,dpdv计算
+    }
+
+    fn get_type(&self) -> super::LightType {
+        super::LightType::Infinite
+    }
+
+    fn li(&self, inter: &InteractionCommon, wi: &Vec3) -> crate::pbrt_core::tool::color::Color {
+        let mut phi = wi.y.atan2(wi.x);
+        let theta = wi.z;
+        if phi < 0.0 {
+            phi += 2.0 * PI;
+        }
+        let (sin_t, cos_t) = theta.sin_cos();
+        let (sin_phi, cos_phi) = phi.sin_cos();
+        let w_in =
+            self.obj_to_world
+                .transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
+        let hit_p = inter.p + w_in * 2.0 * self.r;
+        let common = InteractionCommon::new(*wi, hit_p, *wi, 01.0, Vec2::new(phi / 2.0 * PI, theta / PI));
+        self.color.evaluate(&common)
+    }
+
+    fn get_n_sample(&self) -> usize {
+        1
+    }
+
+    fn sample_li(
+        &self,
+        surface_common: &InteractionCommon,
+        light_common: &mut InteractionCommon,
+        u: Vec2,
+        wi: &mut Vec3,
+        pdf: &mut f32,
+        vis: &mut Visibility,
+    ) -> Vec3 {
+        let theta = u.x * PI;
+        let phi = u.y * 2.0 * PI;
+        // let (sin_t, cos_t) = theta.sin_cos();
+        // let (sin_phi, cos_phi) = phi.sin_cos();
+        // *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
+        let hit_p = surface_common.p + *wi * 2.0 * self.r;
+        let common = InteractionCommon::new(*wi, hit_p, *wi, 01.0, u);
+        *vis = Visibility {
+            a: *surface_common,
+            b: common,
+        };
+        *pdf = 1.0;
+        self.color.evaluate(&common)
     }
 }
