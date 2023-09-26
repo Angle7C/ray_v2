@@ -1,0 +1,68 @@
+{
+  "setting": {
+    "core_num": 7,
+    "size": {
+      "x": 2048,
+      "y": 2048
+    },
+    "sample_num": 1,
+    "name": "test",
+    "inter_mode": "",
+    "path": "./object/sphere/MetalRoughSpheres.gltf"
+  },
+  "camera": {
+    "eye": {
+      "x": 50.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "center": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "up": {
+      "x": 0.0,
+      "y": 1.0,
+      "z": 1.0
+    },
+    "mode": "P",
+    "near": 0.01,
+    "far": 1000.0,
+    "fov": 90.0,
+    "aspect": 1.0,
+    "button": -1.0,
+    "top": 1.0,
+    "left": -1.0,
+    "right": 1.0
+  },
+  "lights": [
+    {
+      "mode": "diffuse",
+      "shape": {
+        "mode": "rect",
+        "T": {
+          "x": 50.0,
+          "y": 50.0,
+          "z": 0.0
+        },
+        "S": {
+          "x": 3.0,
+          "y": 3.0,
+          "z": 3.0
+        },
+        "R": {
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.0,
+          "w": 90.0
+        }
+      },
+      "lemit": {
+        "x": 1000.0,
+        "y": 1000.0,
+        "z": 1000.0
+      }
+    }
+  ]
+}

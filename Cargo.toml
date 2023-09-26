@@ -1,0 +1,16 @@
+[package]
+name = "ray"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bvh = "0.7.2"
+glam={version = "0.23.0", features = ["serde"]}
+toml="0.8.0"
+crossbeam="0.8.2"
+serde = { version = "1.0"}
+# serde_json="*"
+image="0.23.13"
+rand="0.8.5"
