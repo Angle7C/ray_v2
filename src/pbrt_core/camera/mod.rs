@@ -21,6 +21,7 @@ pub enum CameraMode {
     P,
     O,
 }
+#[derive(Debug,Default,Clone, Copy)]
 //相机采样器
 pub struct  CameraSample{
     pub film_point:Vec2,

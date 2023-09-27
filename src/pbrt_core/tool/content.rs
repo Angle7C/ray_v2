@@ -6,9 +6,9 @@ use super::sence::Sence;
 
 
 pub struct Setting{
-    name:String,
-    num:u32,
-    core_num:u32,
+    pub name:String,
+    pub num:u32,
+    pub core_num:u32,
 }
 
 pub struct Content<'a>{

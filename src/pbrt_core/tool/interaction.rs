@@ -2,7 +2,7 @@ use glam::{Vec2, Vec3A};
 
 use crate::pbrt_core::{light::TransportMode, material::BSDF};
 
-use super::ray::Ray;
+use super::{ray::Ray, color::Color};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct InteractionCommon {
@@ -75,4 +75,8 @@ impl SurfaceInteraction {
     }
 
     pub fn compute_scattering(&mut self, ray: &Ray, mode: TransportMode) {}
+    pub fn le(&self,wi:&Vec3A)->Color{
+        unimplemented!("SurfaceInteraction le")
+    }
+
 }

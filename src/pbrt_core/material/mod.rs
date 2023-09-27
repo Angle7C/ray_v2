@@ -1,4 +1,5 @@
-use glam::{Mat3A, Vec3A};
+use glam::{Mat3A, Vec3A, Vec2};
+use rand::Rng;
 
 use super::{
     bxdf::{BxDFAble, BxDFType},
@@ -55,12 +56,49 @@ impl BSDF {
                 && (reflect && bxdf.get_type() & u32::from(BxDFType::Reflection) > 0)
                 || (!reflect && bxdf.get_type() & u32::from(BxDFType::Transmission) > 0)
             {
-                f += bxdf.f(wo, wi);
+                f += bxdf.f(&wo, &wi);
             }
         }
         f
     }
-    pub fn sample_f(&self,wo: Vec3A, wi: &mut Vec3A, pdf: &mut f32,flag: u32) -> Color {
+    pub fn sample_f(&self,wo: Vec3A, wi: &mut Vec3A,u:&Vec2, pdf: &mut f32,flag: u32,sample_type:&mut u32) -> Color {
+        let w0=self.world_to_local(wo);
+        let bxdfs = self.bxdfs.iter().filter(|item|item.match_type(flag))
+                .collect::<Vec<_>>();
+        if bxdfs.len()==0{
+            return Color::ZERO;
+        }
+
+        let num=rand::thread_rng().gen_range(0..bxdfs.len());
+        let bxdf=bxdfs[num];
+        let mut f=bxdf.sample_f(&w0, wi, u, pdf, Some(sample_type));
+        if *pdf<f32::EPSILON{
+            *sample_type=0;
+            return Color::ZERO;
+        }
+        if bxdf.get_type() &BxDFType::Specular as u32 >0 &&bxdfs.len()>1{
+            for (i,item) in bxdfs.iter().enumerate(){
+                if i!=num{
+                    *pdf+=item.pdf(&w0, wi)
+                }
+            }
+            *pdf/=bxdfs.len() as f32;
+        }
+        *wi=self.local_to_world(*wi);
+
+        if bxdf.get_type() &BxDFType::Specular as u32 ==0{
+            let reflect=wi.dot(self.ng)*wo.dot(self.ng)>0.0;
+            f=Color::ZERO;
+            for item in bxdfs{
+                if(reflect&&item.get_type() & BxDFType::Reflection as u32>0)
+                || (!reflect&&item.get_type()& BxDFType::Transmission as u32>0){
+                    f+=item.f(&w0, wi)
+                }
+            }
+        };
+        f
+    }
+    pub fn pdf(&self,wo:&Vec3A,wi:&Vec3A,flag: u32)->f32{
         unimplemented!()
     }
 

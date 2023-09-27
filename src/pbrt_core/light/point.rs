@@ -14,8 +14,8 @@ impl PointLight{
     }
 }
 impl LightAble for PointLight {
-    fn get_type(&self) -> super::LightType {
-        super::LightType::DeltaPosition
+    fn get_type(&self) -> u32{
+        super::LightType::DeltaPosition as u32
     }
     fn pdf_li(
         &self,
@@ -29,7 +29,7 @@ impl LightAble for PointLight {
         &self,
         common: &crate::pbrt_core::tool::interaction::InteractionCommon,
         light_common: &mut crate::pbrt_core::tool::interaction::InteractionCommon,
-        u: glam::Vec2,
+        u: &glam::Vec2,
         wi: &mut Vec3A,
         pdf: &mut f32,
         vis: &mut crate::pbrt_core::tool::vistest::VisibilityTester,

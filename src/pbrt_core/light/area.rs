@@ -34,8 +34,8 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn get_n_samples(&self) -> usize {
         8
     }
-    fn get_type(&self) -> super::LightType {
-        super::LightType::Area
+    fn get_type(&self) -> u32 {
+        super::LightType::Area as u32
     }
     fn pdf_li(
         &self,
@@ -49,7 +49,7 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         &self,
         common: &crate::pbrt_core::tool::interaction::InteractionCommon,
         light_common: &mut crate::pbrt_core::tool::interaction::InteractionCommon,
-        u: glam::Vec2,
+        u: &glam::Vec2,
         wi: &mut Vec3A,
         pdf: &mut f32,
         vis: &mut crate::pbrt_core::tool::vistest::VisibilityTester,

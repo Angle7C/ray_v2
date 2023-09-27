@@ -13,7 +13,7 @@ impl Film {
             size,
         }
     }
-    pub fn iter(&self) -> FilmIter {
+    pub fn iter(&self) -> Option<FilmIter> {
         let index = self
             .index
             .fetch_add(1, std::sync::atomic::Ordering::Acquire);
@@ -22,6 +22,9 @@ impl Film {
         let left_x = x_index * Self::BLOCK_SIZE.x;
         let left_y = y_index * Self::BLOCK_SIZE.y;
         let x_index = (index + 1) / (self.size.x / Self::BLOCK_SIZE.x);
+        if index>=x_index*y_index{
+           return  None;
+        }
         let y_index = (index + 1) % (self.size.y / Self::BLOCK_SIZE.y);
         let mut right_x = x_index * Self::BLOCK_SIZE.x;
         let mut right_y = y_index * Self::BLOCK_SIZE.y;
@@ -33,7 +36,7 @@ impl Film {
         }
         let left_up = UVec2::new(left_x, left_y).as_vec2();
         let right_bottom = UVec2::new(right_x, right_y).as_vec2();
-        FilmIter { left_up, right_bottom, now: left_up }
+        Some(FilmIter { left_up, right_bottom, now: left_up })
     }
 }
 pub struct FilmIter {
