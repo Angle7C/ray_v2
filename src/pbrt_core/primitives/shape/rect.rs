@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use glam::{Affine3A, Vec3A, Vec2};
 
 use crate::pbrt_core::{material::MaterialAble, tool::{interaction::InteractionCommon, bound::Bound}, primitives::Primitive};
@@ -6,15 +8,17 @@ use super::ShapeAble;
 
 
 
-pub struct Rectangle<'a> {
+pub struct Rectangle {
     pub obj_to_world: Affine3A,
-    material: Option<&'a dyn MaterialAble>,
+    material: Option<Arc<dyn MaterialAble>>,
+    index:usize
 }
-impl<'a> Rectangle<'a> {
-    pub fn new(obj_to_world: Affine3A, material: Option<&'a dyn MaterialAble>) -> Self {
+impl Rectangle {
+    pub fn new(obj_to_world: Affine3A, material: Option<Arc<dyn MaterialAble>>,index:usize) -> Self {
         Self {
             obj_to_world,
             material,
+            index
         }
     }
     pub fn get_area(&self) -> f32 {
@@ -35,7 +39,7 @@ impl<'a> Rectangle<'a> {
         commom
     }
 }
-impl<'a>  ShapeAble for Rectangle<'a> {
+impl  ShapeAble for Rectangle {
     fn world_bound(&self)->Bound<3> {
         todo!()
     }
@@ -45,8 +49,11 @@ impl<'a>  ShapeAble for Rectangle<'a> {
         let p2 = self.obj_to_world.transform_vector3a(Vec3A::Y);
         p1.cross(p2).length()
     }
+    fn get_index(&self)->usize {
+        self.index
+    }
 }
-impl<'a> Primitive for Rectangle<'a> {
+impl Primitive for Rectangle {
     fn intersect(&self,ray:&crate::pbrt_core::tool::ray::Ray) -> Option<crate::pbrt_core::tool::interaction::SurfaceInteraction> {
         let o = self.obj_to_world.inverse().transform_point3a(ray.o);
         let dir = self.obj_to_world.inverse().transform_vector3a(ray.dir);

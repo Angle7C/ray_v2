@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use glam::Vec3A;
 
 use crate::pbrt_core::{
@@ -7,21 +9,24 @@ use crate::pbrt_core::{
 
 use super::LightAble;
 
-pub struct DiffuseAreaLight<'a> {
+pub struct DiffuseAreaLight {
     lemit: Color,
-    shape: &'a dyn ShapeAble,
+    shape: Arc<dyn ShapeAble>,
     area: f32,
+    index:usize
 }
-impl<'a> DiffuseAreaLight<'a> {
-    pub fn new(lemit: Vec3A, shape: &'a dyn ShapeAble) -> Self {
+impl DiffuseAreaLight {
+    pub fn new(lemit: Vec3A, shape:  Arc<dyn ShapeAble>,index:usize) -> Self {
         Self {
             lemit:lemit.into(),
-            shape,
             area: shape.area(),
+            shape,
+            
+            index
         }
     }
 }
-impl<'a> DiffuseAreaLight<'a> {
+impl DiffuseAreaLight {
     fn l(&self, inter: &InteractionCommon, w: &Vec3A) -> Color {
         if inter.n.dot(*w) > 0.0 {
             self.lemit
@@ -30,7 +35,7 @@ impl<'a> DiffuseAreaLight<'a> {
         }
     }
 }
-impl<'a> LightAble for DiffuseAreaLight<'a> {
+impl LightAble for DiffuseAreaLight {
     fn get_n_samples(&self) -> usize {
         8
     }
@@ -55,5 +60,8 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         vis: &mut crate::pbrt_core::tool::vistest::VisibilityTester,
     ) -> crate::pbrt_core::tool::color::Color {
         unimplemented!()
+    }
+    fn get_index(&self)->usize {
+        self.index
     }
 }

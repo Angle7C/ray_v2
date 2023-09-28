@@ -4,15 +4,15 @@ use crate::pbrt_core::texture::Texture;
 
 use super::MaterialAble;
 
-pub struct Mirror {
-    kr: Arc<dyn Texture>,
+pub struct Mirror<'a> {
+    kr: Arc<dyn Texture+'a>,
 }
-impl Mirror {
-    pub fn new(kr: Arc<dyn Texture>) -> Self {
+impl<'a> Mirror<'a> {
+    pub fn new(kr: Arc<dyn Texture+'a>) -> Self {
         Self { kr }
     }
 }
-impl MaterialAble for Mirror {
+impl<'a> MaterialAble for Mirror<'a> {
     fn compute(&self, inter: &mut crate::pbrt_core::tool::interaction::SurfaceInteraction) {
         unimplemented!()
     }

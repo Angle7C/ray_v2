@@ -1,4 +1,3 @@
-
 use std::thread;
 
 use glam::{Vec2, Vec3A};
@@ -10,9 +9,17 @@ use crate::pbrt_core::{bxdf::BxDFType, light::LightType, tool::vistest::Visibili
 use self::path::PathIntegrator;
 
 use super::{
+    camera::{Camera, CameraSample},
     light::LightAble,
-    sampler::{Sampler, self},
-    tool::{color::Color, interaction::SurfaceInteraction, ray::Ray, sence::Sence, content::{Content, Setting}, film::Film}, camera::{Camera, CameraSample},
+    sampler::{self, Sampler},
+    tool::{
+        color::Color,
+        content::{Content, Setting},
+        film::Film,
+        interaction::SurfaceInteraction,
+        ray::Ray,
+        sence::Sence,
+    },
 };
 
 pub mod path;
@@ -23,62 +30,73 @@ pub enum LightStartegy {
     SampleOne,
 }
 pub trait Integrator {
-    fn fi(&self, ray: Ray, sence: &Sence,sampler: Sampler) -> Color;
+    fn fi(&self, ray: Ray, sence: &Sence, sampler: Sampler) -> Color;
     fn is_next(&self, dept: &mut usize) -> Option<f32>;
 }
-pub enum SampleIntegrator{
-    Path(PathIntegrator)
+
+pub enum SampleIntegrator {
+    Path(PathIntegrator),
 }
-impl Integrator for SampleIntegrator{
-    fn fi(&self, ray: Ray, sence: &Sence,mut sampler: Sampler) -> Color {
-        todo!()
+impl SampleIntegrator {
+    pub fn new(path: PathIntegrator) -> Self {
+        SampleIntegrator::Path(path)
+    }
+}
+impl Integrator for SampleIntegrator {
+    fn fi(&self, ray: Ray, sence: &Sence, sampler: Sampler) -> Color {
+        match &self {
+            SampleIntegrator::Path(path) => path.fi(ray, sence, sampler),
+        }
     }
 
     fn is_next(&self, dept: &mut usize) -> Option<f32> {
-        todo!()
+        match &self {
+            SampleIntegrator::Path(path) => path.is_next(dept)
+        }
     }
 }
-impl SampleIntegrator{
-    pub fn render<'a>(self,sence:Sence<'a>,film:Film,setting:Setting){
-        let camera=sence.camera;
-        let sampler=Sampler::new(setting.num as usize);
-        thread::scope(|scope|{
-            for _ in 0..setting.core_num{
+impl SampleIntegrator {
+    pub fn render(self, sence: Sence, film: Film, setting: Setting) {
+        let camera = sence.camera;
+        let sampler = Sampler::new(setting.num as usize);
+        thread::scope(|scope| {
+            for _ in 0..setting.core_num {
                 scope.spawn(self.render_core(&camera, &sence, &film, sampler.clone(), setting.num));
             }
         });
+        println!("渲染结束")
     }
-    pub fn render_core<'a,'b>(&'a self,camera:&'a Camera,sence:&'a Sence,film:&'a Film,sampler:Sampler,num:u32)->impl FnOnce()+'b
-    where 'a:'b{
-        move ||{
-            let mut sampler=sampler.clone();
-            while let Some(item) = film.iter(){
-                let mut ans=Color::ZERO;
-                for point in item{
-                       for _ in 0..num{
-                            let sample=CameraSample::new(point.x, point.y, &mut sampler);
-                            let ray = camera.generate_ray(sample);
-                            ans+=self.fi(ray, sence, sampler.clone());
-                       } 
+    pub fn render_core<'a, 'b>(
+        &'a self,
+        camera: &'a Camera,
+        sence: &'a Sence,
+        film: &'a Film,
+        sampler: Sampler,
+        num: u32,
+    ) -> impl FnOnce() + 'b
+    where
+        'a: 'b,
+    {
+        move || {
+            let mut sampler = sampler.clone();
+            while let Some(item) = film.iter() {
+                let mut ans = Color::ZERO;
+                for point in item {
+                    for _ in 0..num {
+                        let sample = CameraSample::new(point.x, point.y, &mut sampler);
+                        let ray = camera.generate_ray(sample);
+                        ans += self.fi(ray, sence, sampler.clone());
+                    }
                 }
-                ans=ans/num as f32
+                ans = ans / num as f32
             }
         }
     }
 }
 
-
-
-
-
-
-
-
-
-
-fn uniform_sample_one_light<'a>(
-    inter: &'a SurfaceInteraction,
-    sence: &'a Sence<'a>,
+fn uniform_sample_one_light(
+    inter: &SurfaceInteraction,
+    sence: &Sence,
     mut sampler: Sampler,
 ) -> Color {
     if sence.light.len() == 0 {
@@ -86,7 +104,7 @@ fn uniform_sample_one_light<'a>(
     };
     //随机选择一个light
     let num = sampler.rand.gen_range(0..sence.light.len());
-    let light = &sence.light[num];
+    let light = sence.light[num].as_ref();
     estimate_direct(
         inter,
         &sampler.sample_2d(),
@@ -95,15 +113,15 @@ fn uniform_sample_one_light<'a>(
         sence,
         &mut sampler,
         true,
-    )/sence.light.len() as f32
+    ) / sence.light.len() as f32
 }
 
-fn estimate_direct<'a>(
+fn estimate_direct(
     inter: &SurfaceInteraction,
     u_scatter: &Vec2,
-    light: &'a Box<dyn LightAble+'a>,
+    light: &dyn LightAble,
     u_light: &Vec2,
-    sence: &'a Sence<'a>,
+    sence: &Sence,
     sampler: &mut Sampler,
     specular: bool,
 ) -> Color {

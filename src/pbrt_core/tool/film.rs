@@ -4,6 +4,7 @@ use std::sync::atomic::AtomicU32;
 pub struct Film {
     index: AtomicU32,
     size: UVec2,
+    max_index:u32
 }
 impl Film {
     pub const BLOCK_SIZE: UVec2 = UVec2::new(16, 16);
@@ -11,6 +12,7 @@ impl Film {
         Self {
             index: AtomicU32::new(0),
             size,
+            max_index:(size.x / Self::BLOCK_SIZE.x)*(size.y / Self::BLOCK_SIZE.y)
         }
     }
     pub fn iter(&self) -> Option<FilmIter> {
@@ -22,7 +24,7 @@ impl Film {
         let left_x = x_index * Self::BLOCK_SIZE.x;
         let left_y = y_index * Self::BLOCK_SIZE.y;
         let x_index = (index + 1) / (self.size.x / Self::BLOCK_SIZE.x);
-        if index>=x_index*y_index{
+        if self.max_index<=x_index*y_index{
            return  None;
         }
         let y_index = (index + 1) % (self.size.y / Self::BLOCK_SIZE.y);

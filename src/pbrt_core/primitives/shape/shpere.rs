@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, sync::Arc};
 
 use glam::{Affine3A, Vec3A, Vec2, Vec3};
 
@@ -10,19 +10,20 @@ use crate::pbrt_core::{
 
 use super::ShapeAble;
 
-pub struct Shpere<'a> {
+pub struct Shpere {
     obj_to_world: Affine3A,
     r: f32,
-    material: Option<&'a dyn MaterialAble>,
+    material: Option<Arc<dyn MaterialAble>>,
+    index:usize
 }
-impl<'a> Shpere<'a> {
+impl Shpere {
     pub fn new(    obj_to_world: Affine3A,
         r: f32,
-        material: Option<&'a dyn MaterialAble>,)->Self{
-            Self { obj_to_world, r, material }
+        material: Option<Arc<dyn MaterialAble>>,index:usize)->Self{
+            Self { obj_to_world, r, material,index}
         }
 }
-impl<'a> ShapeAble for Shpere<'a>{
+impl ShapeAble for Shpere{
     fn world_bound(&self)->Bound<3> {
         let min = Vec3A::new(-self.r, -self.r, -self.r);
         let max = Vec3A::new(self.r, self.r, self.r);
@@ -32,8 +33,11 @@ impl<'a> ShapeAble for Shpere<'a>{
     fn area(&self)->f32 {
       4.0*PI*self.r
     }
+    fn get_index(&self)->usize {
+        self.index
+    }
 }
-impl<'a> Primitive for Shpere<'a> {
+impl Primitive for Shpere {
     fn world_bound(&self) -> crate::pbrt_core::tool::bound::Bound<3> {
         let min = Vec3A::new(-self.r, -self.r, -self.r);
         let max = Vec3A::new(self.r, self.r, self.r);

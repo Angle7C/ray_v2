@@ -4,16 +4,21 @@ use crate::pbrt_core::tool::{interaction::SurfaceInteraction, ray::Ray};
 
 use super::{GeometricPrimitive, Primitive};
 
-pub struct Accel<'a> {
-    accel: BVH,
-    geometry: Vec<GeometricPrimitive<'a>>,
+pub trait AccelAble {
+    fn interacect(&self, ray: &Ray) -> Option<SurfaceInteraction>;
 }
-impl<'a> Accel<'a> {
-    pub fn new(mut geometry: Vec<GeometricPrimitive<'a>>) -> Self {
+pub struct Accel {
+    accel: BVH,
+    geometry: Vec<GeometricPrimitive>,
+}
+impl Accel {
+    pub fn new(mut geometry: Vec<GeometricPrimitive>) -> Self {
         let accel = BVH::build(&mut geometry);
         Self { accel, geometry }
     }
-    pub fn interacect(&self, ray: &Ray) -> Option<SurfaceInteraction> {
+}
+impl AccelAble for Accel {
+    fn interacect(&self, ray: &Ray) -> Option<SurfaceInteraction> {
         let bvh_ray: bvh::ray::Ray = ray.into();
         let iter = self.accel.traverse_iterator(&bvh_ray, &self.geometry);
         let mut ans: Option<SurfaceInteraction> = None;

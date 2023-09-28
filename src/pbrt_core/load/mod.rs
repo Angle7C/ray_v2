@@ -7,15 +7,19 @@ use glam::{Affine3A, Quat, Vec2, Vec3, Vec3A, Vec4};
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::{
+    light::area::DiffuseAreaLight,
     material::matte::Matte,
-    primitives::shape::{rect::Rectangle, shpere::Shpere}, light::area::DiffuseAreaLight,
+    primitives::shape::{rect::Rectangle, shpere::Shpere},
 };
 
 use super::{
-    light::{LightAble, point::PointLight},
+    camera::{Camera, CameraMode},
+    integrator::{path::PathIntegrator, Integrator, LightStartegy, SampleIntegrator},
+    light::{point::PointLight, LightAble},
     material::{mirror::Mirror, MaterialAble},
-    primitives::shape::ShapeAble,
-    texture::{constant::ConstantTexture, Texture}, integrator::LightStartegy,
+    primitives::{bvh::Accel, shape::ShapeAble, GeometricPrimitive},
+    texture::{constant::ConstantTexture, Texture},
+    tool::{content::Setting, sence::Sence},
 };
 
 #[derive(Deserialize, Debug, Serialize, Default)]
@@ -30,10 +34,104 @@ pub struct TomlLoad {
     pub intergator: IntegratorToml,
     name: String,
 }
+impl TomlLoad {
+    pub fn build(self, sence: &mut Sence) {
+        let texture: Vec<Arc<dyn Texture>> = self.load_texture();
 
-// impl MyLoad {
+        for material in self.material.into_iter() {
+            sence.material.push(material.new(texture.as_slice()))
+        }
 
-// }
+        for (index, primitive) in self.primitive.into_iter().enumerate() {
+            sence.primitive.push(primitive.new(&sence.material, index));
+        }
+
+        for light in self.light.into_iter() {
+            sence.light.push(light.new(&sence.primitive));
+        }
+        let geometry = sence
+            .primitive
+            .iter()
+            .map(|item| GeometricPrimitive::new(item.clone()))
+            .map(|mut item| {
+                let light = sence.light.iter().find_map(|lgiht| {
+                    if lgiht.get_index() == item.shape.get_index() {
+                        Some(lgiht)
+                    } else {
+                        None
+                    }
+                });
+                item.light = if let Some(light) = light {
+                    Some(light.clone())
+                } else {
+                    None
+                };
+                item
+            })
+            .collect::<Vec<_>>();
+        sence.accel = Some(Box::new(Accel::new(geometry)));
+        sence.camera = self.camera.new()
+    }
+    fn load_texture<'a, 'b>(&'a self) -> Vec<Arc<dyn Texture + 'b>>
+    where
+        'b: 'a,
+    {
+        let mut textures = vec![];
+        for texture in self.texture.iter() {
+            textures.push(texture.new())
+        }
+        textures
+    }
+    fn load_camera(self) -> Camera {
+        unimplemented!()
+    }
+    // fn load_light<'a>(
+    //     &'a self,
+    //     shape: &'a [Box<dyn ShapeAble + 'a>],
+    // ) -> Vec<Box<dyn LightAble + 'a>> {
+    //     let mut lights = vec![];
+    //     for light in self.light.into_iter() {
+    //         lights.push(light.new(shape));
+    //     }
+    //     lights
+    // }
+    pub fn crate_setting(&self) -> Setting {
+        let (core_num, sampler_num) = match self.intergator {
+            IntegratorToml::Path {
+                core_num,
+                sample_num,
+                ..
+            } => (core_num, sample_num),
+            IntegratorToml::Direct {
+                core_num,
+                sample_num,
+                ..
+            } => (core_num, sample_num),
+        };
+        let size=self.camera.size.as_uvec2();
+        Setting {
+            name: self.name.to_owned(),
+            num: sampler_num as u32,
+            core_num: core_num as u32,
+            size
+        }
+    }
+    pub fn crate_integrator(&self) -> SampleIntegrator {
+        match self.intergator {
+            IntegratorToml::Path {
+                core_num,
+                sample_num,
+                q,
+                max_depth,
+            } => SampleIntegrator::new(PathIntegrator::new(q, max_depth)),
+            IntegratorToml::Direct {
+                core_num,
+                sample_num,
+                ..
+            } => todo!(),
+        }
+    }
+}
 
 #[derive(Deserialize, Debug, Serialize, Default)]
 pub struct CameraToml {
@@ -46,7 +144,22 @@ pub struct CameraToml {
     pub up: Vec3,
     pub fov: f32,
 }
-
+impl CameraToml {
+    pub fn new(&self) -> Camera {
+        Camera::new(
+            self.eye,
+            self.target,
+            self.up,
+            self.size,
+            if self.mode == "P" {
+                CameraMode::P
+            } else {
+                CameraMode::O
+            },
+            self.fov,
+        )
+    }
+}
 #[derive(Deserialize, Debug, Serialize, Default)]
 pub struct TransformToml {
     r: Vec4,
@@ -76,25 +189,22 @@ pub enum ShapeToml {
     },
 }
 impl ShapeToml {
-    pub fn new<'a, 'b>(self, material: &'a [Box<dyn MaterialAble + 'a>]) -> Box<dyn ShapeAble + 'b>
-    where
-        'a: 'b,
-    {
+    pub fn new(&self, material: &[Arc<dyn MaterialAble>], inedx: usize) -> Arc<dyn ShapeAble> {
         match self {
             ShapeToml::Rect {
                 trans,
                 material_index,
             } => {
-                let material = material[material_index].as_ref();
-                Box::new(Rectangle::new(trans.new(), Some(material)))
+                let material = material[*material_index].clone();
+                Arc::new(Rectangle::new(trans.new(), Some(material), inedx))
             }
             ShapeToml::Shpere {
                 trans,
                 r,
                 material_index,
             } => {
-                let material = material[material_index].as_ref();
-                Box::new(Shpere::new(trans.new(), r, Some(material)))
+                let material = material[*material_index].clone();
+                Arc::new(Shpere::new(trans.new(), *r, Some(material), inedx))
             }
         }
     }
@@ -117,15 +227,15 @@ pub enum MaterialToml {
     },
 }
 impl MaterialToml {
-    pub fn new(&self, texture: Vec<Arc<dyn Texture>>) -> Box<dyn MaterialAble> {
+    pub fn new(&self, texture: &[Arc<dyn Texture>]) -> Arc<dyn MaterialAble> {
         match &self {
             MaterialToml::Matte { kd, sigma } => {
                 let kd = texture[*kd].clone();
-                Box::new(Matte::new(kd, *sigma))
+                Arc::new(Matte::new(kd.clone(), *sigma))
             }
             MaterialToml::Mirror { kr } => {
                 let kr = texture[*kr].clone();
-                Box::new(Mirror::new(kr))
+                Arc::new(Mirror::new(kr.clone()))
             }
             _ => todo!(),
         }
@@ -139,10 +249,10 @@ pub enum TextureToml {
     Constant { value: Vec3A },
 }
 impl TextureToml {
-    pub fn new(self) -> Arc<dyn Texture> {
+    pub fn new(&self) -> Arc<dyn Texture> {
         match self {
             TextureToml::Image { path } => todo!(),
-            TextureToml::Constant { value } => Arc::new(ConstantTexture::new(value)),
+            TextureToml::Constant { value } => Arc::new(ConstantTexture::new(*value)),
         }
     }
 }
@@ -184,22 +294,20 @@ pub enum LightToml {
     },
 }
 impl LightToml {
-    pub fn new<'a, 'b>(self, shape: &'b [Box<dyn ShapeAble>]) -> Box<dyn LightAble + 'b>
-    where
-        'a: 'b,
-    {
-        match self{
-            LightToml::Area { lemit, shape_index } =>{
-                let shape=shape[shape_index].as_ref();
-                Box::new(DiffuseAreaLight::new(lemit, shape))
-            },
-            LightToml::Point { point, lemit } => {
-                Box::new(PointLight::new(point,lemit.into()))
-            },
-            LightToml::Infinite { skybox, lemit, world_center, world_radius } => todo!(),
-            _=>todo!()
-         
-      
+    pub fn new(&self, shape: &[Arc<dyn ShapeAble>]) -> Arc<dyn LightAble> {
+        match self {
+            LightToml::Area { lemit, shape_index } => {
+                let shape = shape[*shape_index].clone();
+                Arc::new(DiffuseAreaLight::new(*lemit, shape, *shape_index))
+            }
+            LightToml::Point { point, lemit } => Arc::new(PointLight::new(*point, (*lemit).into())),
+            LightToml::Infinite {
+                skybox,
+                lemit,
+                world_center,
+                world_radius,
+            } => todo!(),
+            _ => todo!(),
         }
     }
 }

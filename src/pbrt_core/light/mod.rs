@@ -29,6 +29,7 @@ pub trait LightAble {
     fn le(&self,ray:&Ray)->Color{
         Color::ZERO
     }
+    fn get_index(&self)->usize{0}
 }
 
 pub enum LightType {

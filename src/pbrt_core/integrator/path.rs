@@ -10,6 +10,11 @@ pub struct PathIntegrator {
     q: f32,
     dept: usize,
 }
+impl PathIntegrator {
+    pub fn new(q:f32,dept:usize)->PathIntegrator{
+        Self { q, dept }
+    }
+}
 impl Integrator for PathIntegrator {
     fn is_next(&self, dept: &mut usize) -> Option<f32> {
         *dept += 1;

@@ -76,12 +76,12 @@ value = [0.5, 0.3, 0.3]
 
 [intergator]
 mode = "Path"
-core_num = 6
+core_num = 1
 sample_num = 1
 q = 0.5
 max_depth = 3
 # [intergator]
 # mode = "Direct"
 # sample_num = 1
-# core_num = 6
+# core_num = 1
 # startegy = "UniformOne"

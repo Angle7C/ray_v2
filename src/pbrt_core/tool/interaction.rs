@@ -1,6 +1,8 @@
+use std::sync::Arc;
+
 use glam::{Vec2, Vec3A};
 
-use crate::pbrt_core::{light::TransportMode, material::BSDF};
+use crate::pbrt_core::{light::{TransportMode, LightAble}, material::BSDF};
 
 use super::{ray::Ray, color::Color};
 
@@ -46,6 +48,7 @@ pub struct SurfaceInteraction {
     pub dvdy: Vec3A,
     pub shading: Shading,
     pub bsdf: Option<BSDF>,
+    pub light:Option<Arc<dyn LightAble>>
 }
 impl SurfaceInteraction {
     pub fn new(
@@ -71,6 +74,7 @@ impl SurfaceInteraction {
             dvdy,
             shading,
             bsdf,
+            light:None
         }
     }
 

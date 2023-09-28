@@ -11,7 +11,7 @@ impl Color {
     pub fn new(x: f32, y: f32, z: f32) -> Color {
         Self(x, y, z)
     }
-    pub fn is_black(&self)->bool {
+    pub fn is_black(&self) -> bool {
         self.0 < f32::EPSILON && self.1 < f32::EPSILON && self.2 < f32::EPSILON
     }
 }

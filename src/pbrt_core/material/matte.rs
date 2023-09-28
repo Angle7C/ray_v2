@@ -4,16 +4,16 @@ use crate::pbrt_core::texture::Texture;
 
 use super::MaterialAble;
 
-pub struct Matte{
-    kd: Arc<dyn Texture>,
+pub struct Matte<'a>{
+    kd: Arc<dyn Texture+'a>,
     simga:f32,
 }
-impl Matte{
-    pub fn new(kd:Arc<dyn Texture>,simga:f32)->Self{
+impl<'a> Matte<'a>{
+    pub fn new(kd:Arc<dyn Texture+'a>,simga:f32)->Self{
         Self{kd,simga}
     }
 }
-impl MaterialAble for Matte{
+impl<'a> MaterialAble for Matte<'a>{
     fn compute(&self, inter: &mut crate::pbrt_core::tool::interaction::SurfaceInteraction) {
         unimplemented!()
     }
