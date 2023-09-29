@@ -116,6 +116,11 @@ pub fn trowbridge_reitz_sample_11(
     assert!(!(*slope_y).is_nan());
 }
 
+
+pub fn same_hemisphere(wo:Vec3,wi:Vec3)->bool{
+    wo.z*wi.z>0.0
+}
+
 pub fn quadratic(a:f32,b:f32,c:f32)->Option<(f32,f32)>{
     let det=b*b-4.0*a*c;
     if det<0.0{

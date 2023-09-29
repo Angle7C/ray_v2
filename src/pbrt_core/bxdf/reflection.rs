@@ -2,7 +2,7 @@ use std::f32::consts::*;
 
 use glam::f32::Vec3;
 
-use crate::pbrt_core::tool::color::Color;
+use crate::pbrt_core::tool::{color::Color, func::same_hemisphere};
 
 use super::{BxDFAble, BxDFType, func::{self, cos_theta}, MicrofacetDistribution, frensnel::Fresnel};
 
@@ -10,12 +10,18 @@ pub struct LambertianReflection{
     r: Vec3
 }
 impl BxDFAble for LambertianReflection{
-    fn fi(&self, _w_in: &glam::Vec3, _w_out: &glam::Vec3) -> glam::Vec3 {
+    fn f(&self, _w_in: &glam::Vec3, _w_out: &glam::Vec3) -> glam::Vec3 {
         self.r*FRAC_1_PI
     }
     fn match_type(&self, flag: u32) -> bool {
         ((BxDFType::Reflection | BxDFType::Diffuse) & flag as u32) != 0
 
+    }
+    fn get_type(&self)->u32 {
+        BxDFType::Reflection | BxDFType::Diffuse
+    }
+    fn pdf(&self,w_out: Vec3, w_in: Vec3) -> f32 {
+        if same_hemisphere(w_out,w_in){cos_theta(&w_in).abs()}else{0.0}
     }
 }
 impl LambertianReflection{
@@ -43,7 +49,7 @@ impl BxDFAble for OrenNayar{
         ((BxDFType::Reflection | BxDFType::Diffuse) & flag as u32) != 0
     }
     #[inline]
-    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let sin_i=func::sin_theta(w_in);
         let sin_o=func::sin_theta(w_out);
         let mut max_cos:f32=0.0;
@@ -60,6 +66,9 @@ impl BxDFAble for OrenNayar{
             (sin_i,sin_o/cos_o.abs())
         };
         self.r-FRAC_1_PI*(self.a+self.b*max_cos*sin_alpha*tan_beta)
+    }
+    fn get_type(&self)->u32 {
+        BxDFType::Reflection | BxDFType::Diffuse
     }
 }
 
@@ -79,7 +88,7 @@ impl BxDFAble for MicrofacetReflection{
         (BxDFType::Reflection | BxDFType::Glossy) &flag >0
     }
 
-    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let cos_o=cos_theta(w_out).abs();
         let cos_i=cos_theta(w_in).abs();
         let mut wh=*w_in+*w_out;
@@ -120,6 +129,6 @@ impl BxDFAble for MicrofacetReflection{
             return Color::ZERO
         }
         *pdf=self.distribution.pdf(w_out, &wh)/(4.0*w_out.dot(wh));
-        self.fi(w_in, w_out)
+        self.f(w_in, w_out)
     }
 }

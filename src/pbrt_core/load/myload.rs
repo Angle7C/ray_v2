@@ -3,6 +3,8 @@ use std::sync::Arc;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
 
+use crate::pbrt_core::light::infinite::InfiniteLight;
+use crate::pbrt_core::material::mirror::Mirror;
 use crate::pbrt_core::{
     camera::{Camera, CameraMode},
     integrator::{
@@ -24,8 +26,6 @@ use crate::pbrt_core::{
         setting::Setting,
     },
 };
-use crate::pbrt_core::light::infinite::InfiniteLight;
-use crate::pbrt_core::material::mirror::Mirror;
 
 static mut SHAPE: Vec<Shape> = vec![];
 
@@ -49,9 +49,8 @@ impl MyLoad {
         let material = self.load_material(texture).leak();
         let primitive = self.load_primitive(material);
 
-
         self.load_shape();
-        let mut lights = self.load_light(unsafe { &SHAPE },texture);
+        let mut lights = self.load_light(unsafe { &SHAPE }, texture);
         let camera = self.load_camera();
         let sence = Sence::new(primitive, camera, lights);
         sence
@@ -72,8 +71,8 @@ impl MyLoad {
                     let roughness = texture.get(*roughness).unwrap();
                     Box::new(Plastic::new(kd.clone(), ks.clone(), roughness.clone()))
                 }
-                MaterialToml::Mirror {kr}=>{
-                    let kr=texture.get(*kr).unwrap();
+                MaterialToml::Mirror { kr } => {
+                    let kr = texture.get(*kr).unwrap();
                     Box::new(Mirror::new(kr.clone()))
                 }
                 //    MaterialToml::Fourier {  } => todo!(),
@@ -126,20 +125,31 @@ impl MyLoad {
         }
         vec
     }
-    fn load_light<'a>(&'a self, shape: &'static [Shape<'static>],texture: &'static [Arc<dyn Texture>]) -> Vec<Light> {
+    fn load_light<'a>(
+        &'a self,
+        shape: &'static [Shape<'static>],
+        texture: &'static [Arc<dyn Texture>],
+    ) -> Vec<Light> {
         let mut vec = vec![];
-        for item in &self.light {
+        for (index, item) in self.light.iter().enumerate() {
             let light: Light = match item {
                 LightToml::Point {
                     trans,
                     point,
                     lemit,
-                } => Light::PointLight(Box::new(Point::new(*lemit, *point, trans.get_mat()))),
+                } => {
+                    Light::PointLight(Box::new(Point::new(*lemit, *point, trans.get_mat(), index)))
+                }
                 LightToml::Area { lemit, shape_index } => Light::AreaLight(Box::new(
-                    DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap()),
+                    DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap(), index),
                 )),
-                LightToml::Infinite { world_center, world_radius, lemit, skybox } => {
-                    continue
+                LightToml::Infinite {
+                    world_center,
+                    world_radius,
+                    lemit,
+                    skybox,
+                } => {
+                    continue;
                     // Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))
                 }
                 _ => todo!(),
@@ -295,8 +305,8 @@ pub enum MaterialToml {
         ks: usize,
         roughness: usize,
     },
-    Mirror{
-        kr:usize,
+    Mirror {
+        kr: usize,
     },
     Fourier {},
 }

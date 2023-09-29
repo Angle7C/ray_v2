@@ -16,12 +16,12 @@ use super::LightAble;
 pub struct Point {
     p: Vec3,
     lemit: Vec3,
-    // object_to_wworld:Mat4
+    index:usize
 }
 
 impl Point {
-    pub fn new(lemit: Vec3, p: Vec3, _object_to_wworld: Mat4) -> Self {
-        Self { p, lemit }
+    pub fn new(lemit: Vec3, p: Vec3, _object_to_wworld: Mat4,index:usize) -> Self {
+        Self { p, lemit,index }
     }
 }
 
@@ -33,10 +33,6 @@ impl LightAble for Point {
     #[inline]
     fn pdf_li(&self, surface: &crate::pbrt_core::tool::SurfaceInteraction, wi: &Vec3) -> f32 {
         0.0
-    }
-    #[inline]
-    fn power(&self) -> Vec3 {
-        self.lemit * 4.0 * PI
     }
     #[inline]
     fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
@@ -59,8 +55,10 @@ impl LightAble for Point {
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
         self.lemit*(inter.p-self.p).length_recip()
     }
+    fn get_index(&self)->usize {
+        self.index   
+    }
 }
-
 impl Primitive for Point {
     fn get_area(&self) -> f32 {
         1.0
@@ -78,4 +76,5 @@ impl Primitive for Point {
         let bound = Bound::<3>::new(Vec3::splat(-0.0003) + self.p, Vec3::splat(0.0003) + self.p);
         bound
     }
+    
 }

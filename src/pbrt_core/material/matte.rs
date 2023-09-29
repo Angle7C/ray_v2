@@ -46,11 +46,4 @@ impl Material for Matte {
         }
     }
 
-    fn bump(
-        &self,
-        _suface: &crate::pbrt_core::tool::SurfaceInteraction,
-        _texture: &dyn Texture,
-    ) {
-        todo!()
-    }
 }

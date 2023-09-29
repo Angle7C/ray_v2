@@ -31,7 +31,6 @@ impl DirectIntegrator {
         let n_sample=vec![1,1,1,1];
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         if let Some(mut item) = sence.interacect(ray) {
-            // return (item.common.normal+Vec3::ONE)/2.0;
             if item.light.is_some() {
                 ans += beta * item.le(ray);
                 return ans;

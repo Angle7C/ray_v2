@@ -24,7 +24,7 @@ pub trait BxDFAble {
     //匹配BxDF类型
     fn match_type(&self, flag: u32) -> bool;
     //计算，从wi射入，到wo射出时，光线被反射了多少回去[Vec3::ZERO,Vec3::ONE]
-    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3;
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3;
     //根据采样点sample_point计算，从wi射入，到wo射出时，的双向分布函数值。
     fn sample_f(
         &self,
@@ -38,7 +38,7 @@ pub trait BxDFAble {
             w_in.z *= -1.0
         }
         *pdf = self.pdf(*w_out, *w_in);
-        return self.fi(w_in, &w_out);
+        return self.f(w_in, &w_out);
     }
     fn pdf(&self,w_out: Vec3, w_in: Vec3) -> f32 {
         if w_out.z * w_in.z > 0.0 {
@@ -47,6 +47,7 @@ pub trait BxDFAble {
             0.0
         }
     }
+    
     fn get_type(&self)->u32{
         (BxDFType::Specular & BxDFType::Reflection) as u32
     }
@@ -92,12 +93,12 @@ impl BxDF {
     }
     pub fn f(&self, w_out: &Vec3, w_in: &mut Vec3) -> Vec3 {
         match &self {
-            BxDF::LambertianReflection(lam) => lam.fi(w_in, w_out),
-            BxDF::SpecularReflection(spec_ref)=>spec_ref.fi(w_in, w_out),
-            Self::OrenNayar(oren)=>oren.fi(w_in, w_out),
-            Self::PbrDiff(diff)=>diff.fi(w_in, w_out),
-            Self::PbrReflection(reflection)=>reflection.fi(w_in, w_out),
-            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.fi(w_in, w_out),
+            BxDF::LambertianReflection(lam) => lam.f(w_in, w_out),
+            BxDF::SpecularReflection(spec_ref)=>spec_ref.f(w_in, w_out),
+            Self::OrenNayar(oren)=>oren.f(w_in, w_out),
+            Self::PbrDiff(diff)=>diff.f(w_in, w_out),
+            Self::PbrReflection(reflection)=>reflection.f(w_in, w_out),
+            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.f(w_in, w_out),
             _=>todo!()
         }
     }

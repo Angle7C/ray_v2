@@ -16,7 +16,7 @@ impl SpecularReflection {
 }
 impl BxDFAble for SpecularReflection {
     //对于任意一对（w_in,w_out）都是0
-    fn fi(&self, _w_in: &glam::Vec3, _w_out: &glam::Vec3) -> glam::Vec3 {
+    fn f(&self, _w_in: &glam::Vec3, _w_out: &glam::Vec3) -> glam::Vec3 {
         Vec3::ZERO
     }
     //反射与高光
@@ -35,6 +35,9 @@ impl BxDFAble for SpecularReflection {
         let cos_i = cos_theta(&w_in);
         self.frensnel.evaluate(cos_i) * self.r / cos_theta(&w_in).abs()
     }
+    fn get_type(&self)->u32 {
+        BxDFType::Specular | BxDFType::Reflection
+    }
 }
 //镜面透射
 pub struct SpecularTransmission {
@@ -47,10 +50,13 @@ pub struct SpecularTransmission {
     _t: Vec3,
 }
 impl BxDFAble for SpecularTransmission {
-    fn fi(&self, _w_in: &Vec3, _w_out: &Vec3) -> Vec3 {
+    fn f(&self, _w_in: &Vec3, _w_out: &Vec3) -> Vec3 {
         Vec3::ZERO
     }
     fn match_type(&self, flag: u32) -> bool {
         ((BxDFType::Specular | BxDFType::Transmission) & flag as u32) != 0
+    }
+    fn get_type(&self)->u32 {
+        BxDFType::Specular | BxDFType::Transmission
     }
 }

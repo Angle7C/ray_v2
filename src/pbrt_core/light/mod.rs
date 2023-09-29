@@ -1,8 +1,12 @@
-use std::{fmt::Debug, ops::{BitAnd, BitOr}, todo};
+use std::{
+    fmt::Debug,
+    ops::{BitAnd, BitOr},
+    todo,
+};
 
-use glam::{Vec2, Vec3};
 use crate::pbrt_core::tool::color::Color;
 use crate::pbrt_core::tool::RayDiff;
+use glam::{Vec2, Vec3};
 
 use self::{area::AreaLight, infinite::InfiniteLight, point::Point};
 
@@ -35,7 +39,7 @@ impl Primitive for Light {
         match &self {
             Light::AreaLight(area) => area.compute_scattering(isct, mode),
             Light::PointLight(point) => point.compute_scattering(isct, mode),
-            Light::Infinite(ref infinite) => infinite.compute_scattering(isct, mode)
+            Light::Infinite(ref infinite) => infinite.compute_scattering(isct, mode),
         }
     }
     fn interacect(&self, ray: super::tool::RayDiff) -> Option<SurfaceInteraction> {
@@ -66,7 +70,7 @@ impl LightAble for Light {
     fn sample_li(
         &self,
         surface_common: &InteractionCommon,
-        light_common:&mut InteractionCommon,
+        light_common: &mut InteractionCommon,
         u: Vec2,
         wi: &mut Vec3,
         pdf: &mut f32,
@@ -75,18 +79,9 @@ impl LightAble for Light {
         match self {
             Light::AreaLight(area) => area.sample_li(surface_common, light_common, u, wi, pdf, vis),
             Light::PointLight(p) => p.sample_li(surface_common, light_common, u, wi, pdf, vis),
-            Light::Infinite(inf) => inf.sample_li(surface_common, light_common, u, wi, pdf, vis)
+            Light::Infinite(inf) => inf.sample_li(surface_common, light_common, u, wi, pdf, vis),
         }
     }
-
-    fn power(&self) -> Vec3 {
-        match self {
-            Light::AreaLight(area) => area.power(),
-            Light::PointLight(p) => p.power(),
-            Light::Infinite(inf) => inf.power(),
-        }
-    }
-
     fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32 {
         match self {
             Light::AreaLight(area) => area.pdf_li(surface, wi),
@@ -95,29 +90,30 @@ impl LightAble for Light {
         }
     }
 
-    fn le(&self, ray:RayDiff) -> Vec3 {
+    fn get_type(&self) -> LightType {
         match self {
-            Light::AreaLight(area) => area.le(ray),
-            Light::PointLight(p) => p.le(ray),
-            Light::Infinite(inf) => inf.le(ray),
+            Light::AreaLight(_) => LightType::Area,
+            Light::PointLight(_) => LightType::DeltaPosition,
+            Light::Infinite(_) => LightType::Infinite,
         }
     }
 
-    fn get_type(&self)->LightType {
-        match self {
-            Light::AreaLight(area) => area.get_type(),
-            Light::PointLight(p) => p.get_type(),
-            Light::Infinite(inf) => inf.get_type(),
-        }
-    }
-
-    fn li(&self,inter:&InteractionCommon,w:&Vec3)->Color {
+    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
         todo!()
     }
 
-    fn get_n_sample(&self)->usize {
+    fn get_n_sample(&self) -> usize {
         1
     }
+
+    fn get_index(&self)->usize {
+        match self {
+            Light::AreaLight(area) => area.get_index(),
+            Light::PointLight(p) => p.get_index(),
+            Light::Infinite(inf) => inf.get_index(),
+        }
+    }
+
 }
 
 pub trait LightAble: Debug + Primitive {
@@ -131,15 +127,15 @@ pub trait LightAble: Debug + Primitive {
         pdf: &mut f32,
         vis: &mut Visibility,
     ) -> Vec3;
-    // 光源强度
-    fn power(&self) -> Vec3;
     //pdf采样
     fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32;
-    fn le(&self, ray:RayDiff) -> Vec3;
-    fn get_type(&self)->LightType;
-    fn li(&self,inter:&InteractionCommon,w:&Vec3)->Color;
-
+    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color;
+    fn le(&self,ray:RayDiff)->Color{
+        Color::ZERO
+    }
+    fn get_type(&self) -> LightType;
     fn get_n_sample(&self) -> usize;
+    fn get_index(&self)->usize;
 }
 
 pub enum LightType {
@@ -154,7 +150,7 @@ impl LightType {
         match flag {
             LightType::DeltaDirection => true,
             LightType::DeltaPosition => true,
-            _ => false
+            _ => false,
         }
     }
 }

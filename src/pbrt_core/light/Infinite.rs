@@ -14,6 +14,7 @@ pub struct InfiniteLight {
     color: Arc<dyn Texture>,
     obj_to_world: Mat4,
     lemit: Vec3,
+    index:usize
 }
 
 impl InfiniteLight {
@@ -23,6 +24,7 @@ impl InfiniteLight {
         color: Arc<dyn Texture>,
         obj_to_world: Mat4,
         lemit: Vec3,
+        index:usize
     ) -> Self {
         Self {
             r,
@@ -30,6 +32,7 @@ impl InfiniteLight {
             center,
             obj_to_world,
             lemit,
+            index
         }
     }
 }
@@ -54,11 +57,6 @@ impl Primitive for InfiniteLight {
 }
 
 impl LightAble for InfiniteLight {
-    fn power(&self) -> Vec3 {
-        let mut common = InteractionCommon::default();
-        common.uv=Vec2::splat(0.5);
-        PI * self.r * self.r * self.color.evaluate(&common)
-    }
 
     fn pdf_li(&self, surface: &SurfaceInteraction<'_>, w_in: &Vec3) -> f32 {
         1.0
@@ -128,4 +126,8 @@ impl LightAble for InfiniteLight {
         *pdf = 1.0;
         self.color.evaluate(&common)
     }
+    fn get_index(&self)->usize {
+        self.index   
+    }
+
 }

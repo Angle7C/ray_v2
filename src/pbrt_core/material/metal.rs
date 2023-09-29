@@ -35,7 +35,4 @@ impl Material for MetalMaterial{
         surface.bsdf=Some(bsdf)
     }
 
-    fn bump(&self, suface: &crate::pbrt_core::tool::SurfaceInteraction, texture: &dyn Texture) {
-        todo!()
-    }
 }

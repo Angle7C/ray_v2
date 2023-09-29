@@ -20,26 +20,27 @@ pub struct DiffuseAreaLight<'a> {
     lemit: Vec3,
     shape: &'a Shape<'a>,
     area: f32,
+    index:usize
 }
 
 impl<'a> DiffuseAreaLight<'a> {
-    pub fn new(lemit: Vec3, shape: &'a Shape<'a>) -> Self {
+    pub fn new(lemit: Vec3, shape: &'a Shape<'a>,index:usize) -> Self {
         Self {
             lemit,
             area: shape.agt_area(),
             shape,
+            index
         }
     }
 }
 
 impl<'a> AreaLight for DiffuseAreaLight<'a> {
     fn l(&self, surface: &InteractionCommon, w: &Vec3) -> Vec3 {
-        // if surface.normal.dot(*w) > 0.0 {
-        //     self.lemit
-        // } else {
-        //     Vec3::ZERO
-        // }
-        self.lemit
+        if surface.normal.dot(*w) > 0.0 {
+            self.lemit
+        } else {
+            Vec3::ZERO
+        }
     }
     fn get_shape(&self) -> &Shape {
         &self.shape
@@ -47,11 +48,8 @@ impl<'a> AreaLight for DiffuseAreaLight<'a> {
 }
 
 impl<'a> LightAble for DiffuseAreaLight<'a> {
-    fn power(&self) -> Vec3 {
-        return self.area * PI * self.lemit;
-    }
     fn get_n_sample(&self) -> usize {
-        8
+        1
     }
     fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
         *light_common = self.shape.sample(u,surface_common,pdf);
@@ -59,21 +57,11 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
             *pdf=0.0;
             Vec3::ZERO
         }else{
-            *wi=(light_common.p-surface_common.p).normalize();
-            *vis=Visibility{a:*surface_common,b:*light_common};
+            *wi=(surface_common.p-light_common.p).normalize();
+            *vis=Visibility{a:*light_common,b:*surface_common};
             self.l(light_common,&-*wi)
         }
 
-    }
-    fn le(&self, ray:RayDiff) -> Vec3 {
-        // let wi=self.shape.get_mat().inverse().transform_vector3(ray.o.dir).normalize();
-        // if wi.dot(Vec3::Z)>0.0{
-        //     self.lemit
-        // }else{
-        //     Vec3::ZERO
-        // }
-        self.lemit
-      
     }
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
         if inter.normal.dot(*w)>0.0 {
@@ -88,6 +76,17 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn get_type(&self) -> LightType {
         LightType::Area
     }
+    fn get_index(&self)->usize {
+        self.index   
+    }
+    fn le(&self,ray:RayDiff)->Color {
+        if Vec3::Z.dot(ray.o.dir)>0.0{
+            self.lemit
+        }else{
+            Color::ZERO
+        }
+    }
+
 }
 
 impl<'a> Primitive for DiffuseAreaLight<'a> {

@@ -18,7 +18,7 @@ impl DisneyDiffuse {
     }
 }
 impl BxDFAble for DisneyDiffuse {
-    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let fo = func::schlick_weight(cos_theta(w_out).abs());
         let fi = func::schlick_weight(cos_theta(w_in).abs());
 
@@ -26,6 +26,9 @@ impl BxDFAble for DisneyDiffuse {
     }
     fn match_type(&self, flag: u32) -> bool {
         (BxDFType::Reflection | BxDFType::Diffuse) & flag > 0
+    }
+    fn get_type(&self)->u32 {
+        BxDFType::Reflection | BxDFType::Diffuse
     }
 }
 //电介质diff
@@ -40,7 +43,7 @@ impl DisneyRetro {
 }
 
 impl BxDFAble for DisneyRetro{
-    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let mut wh=*w_in+*w_out;
         if wh==Vec3::ZERO{
             return Vec3::ZERO;
@@ -56,5 +59,8 @@ impl BxDFAble for DisneyRetro{
     fn match_type(&self, flag: u32) -> bool {
         (BxDFType::Reflection | BxDFType::Diffuse) & flag > 0
 
+    }
+    fn get_type(&self)->u32 {
+        BxDFType::Reflection | BxDFType::Diffuse
     }
 }

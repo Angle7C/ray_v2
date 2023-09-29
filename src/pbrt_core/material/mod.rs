@@ -1,24 +1,22 @@
 use std::fmt::Debug;
 
-use glam::{Vec3, Vec2};
 use crate::pbrt_core::bxdf::BxDFType;
+use glam::{Vec2, Vec3};
 
 use super::{
     bxdf::{BxDF, TransportMode},
-    texture::Texture,
     tool::SurfaceInteraction,
 };
 
 pub mod disney;
 pub mod matte;
+pub mod metal;
 pub mod mirror;
 pub mod pbr;
-pub mod metal;
 pub mod plastic;
 
 pub trait Material: Debug {
     fn compute_scattering_functions(&self, suface: &mut SurfaceInteraction, mode: TransportMode);
-    fn bump(&self, suface: &SurfaceInteraction, texture: &dyn Texture) {}
 }
 
 // BSDF使用局部坐标系。
@@ -46,77 +44,52 @@ impl BSDF {
         flag: u32,
         sampled_type: &mut u32,
     ) -> Vec3 {
-        let num = self.num_components(flag);
-        if flag == 0 || num == 0 {
-            *pdf = 0.0;
+        let bxdfs = self
+            .bxdfs
+            .iter()
+            .filter(|item| item.match_type(flag))
+            .collect::<Vec<_>>();
+        if bxdfs.len() == 0 {
+            return Vec3::ZERO;
+        }
+        let num = (u.x * bxdfs.len() as f32).clamp(0.0, bxdfs.len() as f32) as usize;
+
+        let bxdf = bxdfs[num];
+        let mut wi = Vec3::ZERO;
+        let w_out = self.world_to_local(*w_out);
+        if w_out.z == 0.0 {
+            return Vec3::ZERO;
+        }
+        *pdf = 0.0;
+        *sampled_type = bxdf.get_type();
+        let mut f = bxdf.sample_f(&w_out, &mut wi, u, pdf);
+        if pdf.abs() < f32::EPSILON {
             *sampled_type = 0;
             return Vec3::ZERO;
         }
-        //随机采样到一个符合条件BxDF
-        let comp = u32::min((num as f32 * u.x).floor() as u32, num - 1);
-        let mut bxdf: Option<&BxDF> = None;
-        let mut count = 0;
-        count=comp;
-        let mut i = 0;
-        for (index, item) in self.bxdfs.iter().enumerate() {
-            let matches = item.match_type(flag);
-            if  count == 0 && matches  {
-                bxdf = Some(item);
-                i = index;
-                break;
-            } else if matches {
-                count -= 1;
-            }
-        }
-        if let Some(bxdf) = bxdf {
-            //采样
-            let x = (u.x * num as f32 - comp as f32).min(1.0);
-            let y = u.y;
-            let u_re = Vec2::new(x, y);
-            let mut wi = Vec3::ZERO;
-            let w_out = self.world_to_local(*w_out);
-            if w_out.z == 0.0 {
-                return Vec3::ZERO;
-            }
-            *pdf = 0.0;
-            if *sampled_type != 0 {
-                *sampled_type = bxdf.get_type();
-            }
-            let mut f = bxdf.sample_f(&w_out, &mut wi, u_re, pdf);
-            if pdf.abs() < f32::EPSILON {
-                if *sampled_type != 0 {
-                    *sampled_type = 0;
-                }
-                return Vec3::ZERO
-            }
-            *w_in = self.local_to_world(wi);
+        *w_in = self.local_to_world(wi);
 
-            if bxdf.get_type() & BxDFType::Specular as u32 == 0 && num > 1 {
-                f = Vec3::ZERO;
-                for (index, item) in self.bxdfs.iter().enumerate() {
-                    if i != index && item.match_type(flag) {
-                        *pdf += item.pdf(&w_out,&w_in)
-                    }
-                }
-            };
-            if num > 1 {
-                *pdf /= num as f32; 
-            }
-            if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
-                let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
-                for item in self.bxdfs.iter() {
-                    if item.match_type(flag)
-                        && (reflect && item.match_type(BxDFType::Reflection.into()))
-                        || (!reflect && item.match_type(BxDFType::Transmission.into())) {
-                        f += item.f(&w_out, w_in)
-                    }
+        if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
+            f = Vec3::ZERO;
+            for (index, item) in bxdfs.iter().enumerate() {
+                if index != num && item.match_type(flag) {
+                    *pdf += item.pdf(&w_out, &w_in)
                 }
             }
-            //*****8adasdas */
-            f
-        } else {
-            Vec3::ZERO
+        };
+        *pdf /= bxdfs.len() as f32;
+        if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
+            let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
+            for item in self.bxdfs.iter() {
+                if item.match_type(flag)
+                    && (reflect && item.match_type(BxDFType::Reflection.into()))
+                    || (!reflect && item.match_type(BxDFType::Transmission.into()))
+                {
+                    f += item.f(&w_out, w_in)
+                }
+            }
         }
+        f
     }
     pub fn new(si: &SurfaceInteraction, eta: f32) -> Self {
         let ss = si.shading.dpdu.normalize();
@@ -138,19 +111,15 @@ impl BSDF {
             if wo.z == 0.0 {
                 return 0.0;
             }
-            let mut pdf=0.0;
-            let mut num=0;
-            for  item in &self.bxdfs{
-                if item.match_type(flag){
-                    num+=1;
-                    pdf+=item.pdf(&wo,&wi);
+            let mut pdf = 0.0;
+            let mut num = 0;
+            for item in &self.bxdfs {
+                if item.match_type(flag) {
+                    num += 1;
+                    pdf += item.pdf(&wo, &wi);
                 }
             }
-            return if num>0{
-                pdf/num as f32
-            }else{
-                0.0
-            }
+            return if num > 0 { pdf / num as f32 } else { 0.0 };
         };
     }
     pub fn f(&self, w_out: &Vec3, w_in: &Vec3, flag: u32) -> Vec3 {
@@ -170,7 +139,7 @@ impl BSDF {
     }
     pub fn num_components(&self, flag: u32) -> u32 {
         let mut num = 0;
-        for  item in &self.bxdfs {
+        for item in &self.bxdfs {
             if item.match_type(flag) {
                 num += 1;
             }

@@ -5,15 +5,14 @@ use std::{
     thread,
     time::Instant,
 };
-
 use glam::{UVec2, Vec2, Vec3};
 use image::{Rgb, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::info;
+use rand::Rng;
 
 use crate::pbrt_core::bxdf::BxDFType;
 use crate::pbrt_core::light::{Light, LightAble, LightType};
-use crate::pbrt_core::primitive::Primitive;
 use crate::pbrt_core::tool::tile::merage_tile;
 use crate::pbrt_core::tool::{InteractionCommon, SurfaceInteraction, Visibility};
 
@@ -22,7 +21,7 @@ use self::{direct::DirectIntegrator, path::PathIntegrator};
 use super::{
     camera::{Camera, CameraSample},
     sampler::Sampler,
-    tool::{color::Color, film::Film, sence::Sence, tile::Tile, RayDiff},
+    tool::{color::Color, film::Film, sence::Sence, tile::Tile, RayDiff, Ray}, primitive::Primitive,
 };
 
 pub mod direct;
@@ -217,7 +216,7 @@ pub fn uniform_sample_all_light(
                 sence,
                 sampler.clone(),
                 handle_media,
-                true,
+                false,
             );
         } else {
             for i in 0..n_light_sample[index] {
@@ -228,7 +227,7 @@ pub fn uniform_sample_all_light(
                     sence,
                     sampler.clone(),
                     handle_media,
-                    true,
+                    false,
                 );
             }
             ld /= n_light_sample[index] as f32
@@ -237,6 +236,26 @@ pub fn uniform_sample_all_light(
     }
     l
 }
+
+pub fn unifrom_sample_one_light(
+    common: &SurfaceInteraction,
+    sence: &Sence,
+    mut sampler: Sampler,
+    handle_media: bool,
+)->Color{
+    let num = sampler.rand.gen_range(0..sence.light.len());
+    let light=&sence.light[num];
+    estimate_direct(
+        common,
+        light,
+        sampler.sample_2d(),
+        sence,
+        sampler.clone(),
+        handle_media,
+        false,
+    )/sence.light.len() as f32
+}
+
 
 pub fn estimate_direct(
     inter: &SurfaceInteraction,
@@ -253,8 +272,8 @@ pub fn estimate_direct(
         BxDFType::All as u32 & !BxDFType::Specular
     };
     let mut ld = Vec3::ZERO;
-    let mut wi: Vec3= Vec3::ZERO;;
-    let mut pdf: f32 = 0.0;
+    let mut wi: Vec3= Vec3::ZERO;
+    let mut light_pdf: f32 = 0.0;
     let mut vis: Visibility=Default::default();
     let mut light_common: InteractionCommon=Default::default();
     let mut li = light.sample_li(
@@ -262,33 +281,29 @@ pub fn estimate_direct(
         &mut light_common,
         sampler.sample_2d_d(),
         &mut wi,
-        &mut pdf,
+        &mut light_pdf,
         &mut vis,
     );
     //合理的pdf和采样出光线
-    if pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+    if light_pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         //计算BSDF
         let mut f = if let Some(ref bsdf) = inter.bsdf {
             bsdf.f(&inter.common.w0, &wi, bxdf_flags) * wi.dot(inter.shading.n).abs()
         } else {
-            //介质传播
             Vec3::ZERO
         };
         //计算光贡献
         if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-            if handle_media {
-                todo!()
-            } else if !vis.is_vis(sence) {
+            if !vis.is_vis(sence) {
                 li = Color::ZERO;
             }
-            if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                if LightType::is_delta(light.get_type()) {
-                    ld += f * li*vis.g(sence) / pdf;
-                } else {
-                    let weight = power_heuristic(1.0, pdf, 1.0, 1.0);
-                    ld += f * li*vis.g(sence)*weight / pdf;
-
-                }
+        }
+        if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+            if LightType::is_delta(light.get_type()) {
+                ld += f * li *vis.g(sence)/ light_pdf;
+            } else {
+                let weight = power_heuristic(1.0, light_pdf, 1.0, 1.0);
+                ld += f * li *weight*vis.g(sence) / light_pdf;
             }
         }
     }
@@ -296,48 +311,39 @@ pub fn estimate_direct(
     if !LightType::is_delta(light.get_type()) {
         let mut sampled_specular = false;
         let mut smapled_type = BxDFType::None as u32;
+        let mut bsdf_pdf=0.0;
         if let Some(ref bsdf) = inter.bsdf {
-            let mut f = bsdf.sample_f(
+            let f = bsdf.sample_f(
                 &inter.common.w0,
                 &mut wi,
                 sampler.sample_2d_d(),
-                &mut pdf,
+                &mut bsdf_pdf,
                 bxdf_flags,
                 &mut smapled_type,
-            );
-            f *= wi.dot(inter.shading.n).abs();
+            )*wi.dot(inter.shading.n).abs();
             sampled_specular =  BxDFType::Specular as u32 & smapled_type > 0;
-            let weight = if !sampled_specular {
-                let light_pdf = light.pdf_li(&inter, &wi);
-                if light_pdf.abs() < f32::EPSILON {
-                    return ld;
+            if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON)&&bsdf_pdf>0.0{
+                let weight = if !sampled_specular {
+                    let light_pdf = light.pdf_li(&inter, &wi);
+                    if light_pdf.abs() < f32::EPSILON {
+                        return ld;
+                    }
+                    power_heuristic(1.0, 1.0, 1.0, light_pdf)
+                } else {
+                    1.0
+                };
+                let ray=RayDiff::new(Ray::new(inter.common.p,wi));
+                let mut li=Vec3::ZERO;
+                if let Some(ref light_inter)=sence.interacect(ray){
+                    li=light_inter.le(ray);
+                }else{
+                    li=light.le(ray);
+                   
                 }
-                power_heuristic(1.0, 1.0, 1.0, light_pdf)
-            } else {
-                1.0
-            };
-            //计算透射率
-            let ray = inter.spawn_ray(&wi);
-            let tr = Vec3::ONE;
-            let mut found_surface_inter = false;
-            //handle_media? sence.intersct_tr():scene.intersect
-            if handle_media {
-            } else if let Some(light_isect) = sence.interacect(ray) {
-                found_surface_inter = true;
-                if let Some(area_light) = light_isect.light {
-                    li = area_light.le(ray)
+                if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON){
+                    ld+=li*f*weight/bsdf_pdf;
                 }
             }
-            let mut li = Vec3::ZERO;
-            if found_surface_inter {
-            } else {
-                li = light.le(ray);
-            }
-            if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                ld += f * li * weight*vis.g(sence);
-            }
-        } else {
-            //介质传播
         }
     };
     ld

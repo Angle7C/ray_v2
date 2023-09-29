@@ -7,7 +7,7 @@ use crate::pbrt_core::{
     tool::{color::Color, sence::Sence, RayDiff},
 };
 
-use super::{uniform_sample_all_light, IntegratorAble};
+use super::{uniform_sample_all_light, unifrom_sample_one_light, IntegratorAble};
 
 //路径追踪积分器
 pub struct PathIntegrator {
@@ -45,40 +45,40 @@ impl IntegratorAble for PathIntegrator {
         let mut ray = ray.clone();
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         let n_sample = vec![1, 1, 1, 1];
-
+        let mut specular = false;
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {
                     ans += beta * item.le(ray);
                     return ans;
                 }
+                if dept == 1 || specular {}
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
-                    // //场景光源采样
-                    // ans += beta
-                    //     * uniform_sample_all_light(
-                    //         &item,
-                    //         sence,
-                    //         sampler.clone(),
-                    //         n_sample.clone(),
-                    //         false,
-                        
-                    //     );
-                    // // sence.get_hit_env()
-                    // //BRDF 采样生成光线
-                    // let w_out = -ray.o.dir;
-                    // let mut w_in = Vec3::default();
-                    // let mut pdf = 0.0;
-                    // let flags: u32 = BxDFType::All as u32;
-                    // let f =
-                    //     bsdf.sample_f(&w_out, &mut w_in, sampler.sample_2d_d(), &mut pdf, flags);
-                    // beta *= f * w_in.dot(item.shading.n).clamp(0.0, 1.0);
+                    //场景光源采样
+                    ans += beta * unifrom_sample_one_light(&item, sence, sampler.clone(), false);
+                    //BRDF 采样生成光线
+                    let w_out = -ray.o.dir;
+                    let mut w_in = Vec3::default();
+                    let mut pdf = 0.0;
+                    let mut samped_type: u32 = 0;
+                    let f = bsdf.sample_f(
+                        &w_out,
+                        &mut w_in,
+                        sampler.sample_2d_d(),
+                        &mut pdf,
+                        BxDFType::All.into(),
+                        &mut samped_type,
+                    );
+                    beta *= f * w_in.dot(item.shading.n).abs() / pdf;
 
-                    // ray = item.spawn_ray(&w_in);
+                    ray = item.spawn_ray(&w_in);
                 }
 
                 beta = beta / p;
             } else {
+                //环境光采样
+                if dept == 1 || specular {}
                 return ans;
             }
         }

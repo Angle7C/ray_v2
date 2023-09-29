@@ -54,8 +54,7 @@ impl PbrMaterial {
     }
 }
 impl Material for PbrMaterial {
-    fn bump(&self, _suface: &SurfaceInteraction, _texture: &dyn Texture) {}
-    fn compute_scattering_functions(
+   fn compute_scattering_functions(
         &self,
         suface: &mut crate::pbrt_core::tool::SurfaceInteraction,
         _mode: crate::pbrt_core::bxdf::TransportMode,

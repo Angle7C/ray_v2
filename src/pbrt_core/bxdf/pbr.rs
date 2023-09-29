@@ -16,7 +16,7 @@ impl PbrDiff {
     }
 }
 impl BxDFAble for PbrDiff {
-    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let fo = func::schlick_weight(cos_theta(w_out).abs());
         let fi = func::schlick_weight(cos_theta(w_in).abs());
 
@@ -24,6 +24,9 @@ impl BxDFAble for PbrDiff {
     }
     fn match_type(&self, flag: u32) -> bool {
         (BxDFType::Reflection | BxDFType::Diffuse) & flag > 0
+    }
+    fn get_type(&self)->u32 {
+        BxDFType::Reflection | BxDFType::Diffuse
     }
 }
 pub struct PbrReflection{
@@ -41,7 +44,7 @@ impl BxDFAble for PbrReflection{
         (BxDFType::Reflection | BxDFType::Glossy) &flag >0
     }
 
-    fn fi(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
         let cos_o=cos_theta(w_out).abs();
         let cos_i=cos_theta(w_in).abs();
         let mut wh=*w_in+*w_out;
@@ -82,6 +85,9 @@ impl BxDFAble for PbrReflection{
             return Color::ZERO
         }
         *pdf=self.distribution.pdf(w_out, &wh)/(4.0*w_out.dot(wh));
-        self.fi(w_in, w_out)
+        self.f(w_in, w_out)
+    }
+    fn get_type(&self)->u32 {
+        BxDFType::Reflection | BxDFType::Glossy
     }
 }
