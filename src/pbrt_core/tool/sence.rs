@@ -1,19 +1,17 @@
 use std::default::Default;
 use std::fmt::Debug;
 
-use glam::{Vec2, Vec3};
-use log::info;
-use rand::Rng;
+
+
+
 
 use crate::pbrt_core::{
     camera::Camera,
-    light::{LightAble},
     primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
-    sampler::Sampler,
 };
 use crate::pbrt_core::light::Light;
 
-use super::{Bound, SurfaceInteraction, Visibility};
+use super::{Bound};
 
 pub struct Sence {
     shape: &'static [Box<dyn Primitive>],

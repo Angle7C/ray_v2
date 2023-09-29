@@ -46,7 +46,7 @@ impl Primitive for InfiniteLight {
     fn get_light(&self) -> Option<&dyn LightAble> {
         Some(self)
     }
-    fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
+    fn interacect(&self, _ray: RayDiff) -> Option<SurfaceInteraction> {
         return None;
         // let mut interaction = SurfaceInteraction::default();
         // interaction.light=self.get_light();
@@ -58,7 +58,7 @@ impl Primitive for InfiniteLight {
 
 impl LightAble for InfiniteLight {
 
-    fn pdf_li(&self, surface: &SurfaceInteraction<'_>, w_in: &Vec3) -> f32 {
+    fn pdf_li(&self, _surface: &SurfaceInteraction<'_>, _w_in: &Vec3) -> f32 {
         1.0
     }
 
@@ -106,14 +106,14 @@ impl LightAble for InfiniteLight {
     fn sample_li(
         &self,
         surface_common: &InteractionCommon,
-        light_common: &mut InteractionCommon,
+        _light_common: &mut InteractionCommon,
         u: Vec2,
         wi: &mut Vec3,
         pdf: &mut f32,
         vis: &mut Visibility,
     ) -> Vec3 {
-        let theta = u.x * PI;
-        let phi = u.y * 2.0 * PI;
+        let _theta = u.x * PI;
+        let _phi = u.y * 2.0 * PI;
         // let (sin_t, cos_t) = theta.sin_cos();
         // let (sin_phi, cos_phi) = phi.sin_cos();
         // *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));

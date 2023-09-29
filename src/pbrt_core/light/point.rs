@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+
 
 use glam::{Mat4, Vec2, Vec3};
 
@@ -27,15 +27,15 @@ impl Point {
 
 impl LightAble for Point {
     #[inline]
-    fn le(&self, ray: RayDiff) -> Vec3 {
+    fn le(&self, _ray: RayDiff) -> Vec3 {
         Vec3::ZERO
     }
     #[inline]
-    fn pdf_li(&self, surface: &crate::pbrt_core::tool::SurfaceInteraction, wi: &Vec3) -> f32 {
+    fn pdf_li(&self, _surface: &crate::pbrt_core::tool::SurfaceInteraction, _wi: &Vec3) -> f32 {
         0.0
     }
     #[inline]
-    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
+    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, _u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
         *wi = (surface_common.p - self.p).normalize();
         *pdf = 1.0;
         light_common.p = self.p;
@@ -52,7 +52,7 @@ impl LightAble for Point {
         1
     }
     #[inline]
-    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
+    fn li(&self, inter: &InteractionCommon, _w: &Vec3) -> Color {
         self.lemit*(inter.p-self.p).length_recip()
     }
     fn get_index(&self)->usize {

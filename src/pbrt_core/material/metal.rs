@@ -21,7 +21,7 @@ impl Material for MetalMaterial{
     
     
 
-    fn compute_scattering_functions(&self, surface: &mut crate::pbrt_core::tool::SurfaceInteraction, mode: crate::pbrt_core::bxdf::TransportMode) {
+    fn compute_scattering_functions(&self, surface: &mut crate::pbrt_core::tool::SurfaceInteraction, _mode: crate::pbrt_core::bxdf::TransportMode) {
 
         let mut bsdf=BSDF::new(&surface, 1.0);
         let roughness=self.roughness.evaluate(&surface.common);

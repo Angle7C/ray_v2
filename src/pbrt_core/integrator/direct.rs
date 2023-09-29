@@ -19,7 +19,7 @@ pub enum LightStartegy {
     UniformOne,
 }
 impl DirectIntegrator {
-    pub fn new(max_depth: u32, strategy: LightStartegy, sample: Sampler) -> Self {
+    pub fn new(_max_depth: u32, strategy: LightStartegy, sample: Sampler) -> Self {
         Self {
             _strategy:strategy,
             _sample:sample,

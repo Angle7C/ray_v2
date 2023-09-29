@@ -33,7 +33,7 @@ impl Distribution1D {
         self.func.len()
     }
     //二分查找
-    pub fn sample_continuous(&self, u: f32, pdf: &[f32], off: Option<&mut i32>) -> f32 {
+    pub fn sample_continuous(&self, u: f32, _pdf: &[f32], off: Option<&mut i32>) -> f32 {
         let ans = self.cdf.binary_search_by(|x| {
             if *x <= u {
                 Ordering::Less

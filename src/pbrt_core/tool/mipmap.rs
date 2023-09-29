@@ -37,7 +37,7 @@ impl ImageData {
                     pixels.push(Pixel::from_sclie(pixel))
                 }
             }
-            DynamicImage::ImageRgba8(image) => {}
+            DynamicImage::ImageRgba8(_image) => {}
             _ => todo!(),
         }
         image_data.pixels = pixels;

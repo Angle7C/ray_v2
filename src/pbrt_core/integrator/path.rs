@@ -7,7 +7,7 @@ use crate::pbrt_core::{
     tool::{color::Color, sence::Sence, RayDiff},
 };
 
-use super::{uniform_sample_all_light, unifrom_sample_one_light, IntegratorAble};
+use super::{unifrom_sample_one_light, IntegratorAble};
 
 //路径追踪积分器
 pub struct PathIntegrator {
@@ -44,8 +44,8 @@ impl IntegratorAble for PathIntegrator {
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
-        let n_sample = vec![1, 1, 1, 1];
-        let mut specular = false;
+        let _n_sample = vec![1, 1, 1, 1];
+        let specular = false;
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {

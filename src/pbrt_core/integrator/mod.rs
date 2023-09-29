@@ -208,7 +208,7 @@ pub fn uniform_sample_all_light(
         let mut ld = Vec3::ZERO;
         if n_light_sample[index] == 1 {
             let u_light = sampler.sample_2d_d();
-            let u_scattering = sampler.sample_2d_d();
+            let _u_scattering = sampler.sample_2d_d();
             ld += estimate_direct(
                 common,
                 light,
@@ -219,7 +219,7 @@ pub fn uniform_sample_all_light(
                 false,
             );
         } else {
-            for i in 0..n_light_sample[index] {
+            for _i in 0..n_light_sample[index] {
                 ld += estimate_direct(
                     common,
                     light,
@@ -260,10 +260,10 @@ pub fn unifrom_sample_one_light(
 pub fn estimate_direct(
     inter: &SurfaceInteraction,
     light: &Light,
-    u_light: Vec2,
+    _u_light: Vec2,
     sence: &Sence,
     mut sampler: Sampler,
-    handle_media: bool,
+    _handle_media: bool,
     specular: bool,
 ) -> Color {
     let bxdf_flags = if specular {
@@ -287,7 +287,7 @@ pub fn estimate_direct(
     //合理的pdf和采样出光线
     if light_pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         //计算BSDF
-        let mut f = if let Some(ref bsdf) = inter.bsdf {
+        let f = if let Some(ref bsdf) = inter.bsdf {
             bsdf.f(&inter.common.w0, &wi, bxdf_flags) * wi.dot(inter.shading.n).abs()
         } else {
             Vec3::ZERO

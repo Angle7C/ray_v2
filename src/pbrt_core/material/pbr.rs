@@ -10,7 +10,6 @@ use crate::pbrt_core::{
         BxDF,
     },
     texture::Texture,
-    tool::SurfaceInteraction,
 };
 
 use super::{Material, BSDF};

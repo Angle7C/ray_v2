@@ -3,7 +3,7 @@ use std::sync::Arc;
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
 
-use crate::pbrt_core::light::infinite::InfiniteLight;
+
 use crate::pbrt_core::material::mirror::Mirror;
 use crate::pbrt_core::{
     camera::{Camera, CameraMode},
@@ -50,7 +50,7 @@ impl MyLoad {
         let primitive = self.load_primitive(material);
 
         self.load_shape();
-        let mut lights = self.load_light(unsafe { &SHAPE }, texture);
+        let lights = self.load_light(unsafe { &SHAPE }, texture);
         let camera = self.load_camera();
         let sence = Sence::new(primitive, camera, lights);
         sence
@@ -128,7 +128,7 @@ impl MyLoad {
     fn load_light<'a>(
         &'a self,
         shape: &'static [Shape<'static>],
-        texture: &'static [Arc<dyn Texture>],
+        _texture: &'static [Arc<dyn Texture>],
     ) -> Vec<Light> {
         let mut vec = vec![];
         for (index, item) in self.light.iter().enumerate() {
@@ -144,10 +144,10 @@ impl MyLoad {
                     DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap(), index),
                 )),
                 LightToml::Infinite {
-                    world_center,
-                    world_radius,
-                    lemit,
-                    skybox,
+                    world_center: _,
+                    world_radius: _,
+                    lemit: _,
+                    skybox: _,
                 } => {
                     continue;
                     // Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))

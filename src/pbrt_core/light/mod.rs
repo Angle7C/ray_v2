@@ -98,7 +98,7 @@ impl LightAble for Light {
         }
     }
 
-    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
+    fn li(&self, _inter: &InteractionCommon, _w: &Vec3) -> Color {
         todo!()
     }
 
@@ -130,7 +130,7 @@ pub trait LightAble: Debug + Primitive {
     //pdf采样
     fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32;
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color;
-    fn le(&self,ray:RayDiff)->Color{
+    fn le(&self,_ray:RayDiff)->Color{
         Color::ZERO
     }
     fn get_type(&self) -> LightType;

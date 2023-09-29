@@ -26,7 +26,7 @@ impl Plastic {
 }
 
 impl Material for Plastic {
-    fn compute_scattering_functions(&self, suface: &mut crate::pbrt_core::tool::SurfaceInteraction, mode: crate::pbrt_core::bxdf::TransportMode) {
+    fn compute_scattering_functions(&self, suface: &mut crate::pbrt_core::tool::SurfaceInteraction, _mode: crate::pbrt_core::bxdf::TransportMode) {
         let kd = self.kd.evaluate(&suface.common);
         let mut bsdf = BSDF::new(suface, 1.0);
         if kd != Vec3::ZERO {

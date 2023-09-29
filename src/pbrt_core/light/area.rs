@@ -1,8 +1,8 @@
-use std::f32::consts::PI;
+
 
 use glam::{Vec2, Vec3};
 
-use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, Visibility, Bound, Ray, RayDiff}};
+use crate::pbrt_core::{primitive::{shape::Shape, Primitive}, tool::{SurfaceInteraction, InteractionCommon, Visibility, Bound, RayDiff}};
 use crate::pbrt_core::light::LightType;
 use crate::pbrt_core::tool::color::Color;
 

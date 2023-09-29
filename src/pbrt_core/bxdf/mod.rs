@@ -123,7 +123,7 @@ impl BxDF {
             Self::SpecularReflection(specular)=>specular.get_type(),
         }
     }
-    pub fn pdf(&self,wo:&Vec3,wi:&Vec3)->f32{
+    pub fn pdf(&self,_wo:&Vec3,_wi:&Vec3)->f32{
         1.0
     }
 }

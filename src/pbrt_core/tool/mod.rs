@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-use ::log::info;
+
 use bvh::aabb::AABB;
 use glam::{Vec2, Vec3};
 
