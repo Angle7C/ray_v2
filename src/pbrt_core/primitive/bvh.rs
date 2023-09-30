@@ -1,5 +1,3 @@
-
-
 use crate::pbrt_core::tool::SurfaceInteraction;
 
 use super::{Aggregate, GeometricePrimitive, Primitive};
@@ -29,21 +27,11 @@ impl<'b> Aggregate for BVH<'b> {
         let t_min = o_ray.o.t_min;
         let mut t = f32::INFINITY;
         for shape in iter {
-            match (shape.interacect(o_ray), &ans) {
-                (Some(v), None)
-                if v.common.time >= t_min && v.common.time <= t_max && v.common.time <= t =>
-                    {
-                        t = v.common.time;
-                        ans = Some(v);
-                    }
-                (Some(v), Some(item))
-                if v.common.time >= t_min
-                    && v.common.time <= item.common.time
-                    && v.common.time <= t =>
-                    {
-                        t = v.common.time;
-                        ans = Some(v)
-                    }
+            match shape.interacect(o_ray) {
+                Some(v) if v.common.time > t_min && v.common.time < t_max && t > v.common.time => {
+                    t = v.common.time;
+                    ans = Some(v);
+                }
                 _ => continue,
             }
         }

@@ -23,16 +23,13 @@ impl<'a> Rectangle<'a> {
         p1.cross(p2).length()
         // DMat2::from_cols(self.obj_to_world.x_axis.xy(), self.obj_to_world.y_axis.xy()).determinant()
     }
-    pub fn sample_interaction(&self, sampler_point: Vec2) -> InteractionCommon {
+    pub fn sample_interaction(&self,commom:&mut InteractionCommon, sampler_point: Vec2) {
         let p = self
             .obj_to_world
             .transform_point3(sampler_point.extend(0.0));
-        let mut commom = InteractionCommon {
-            ..Default::default()
-        };
         commom.p = p;
         commom.normal = self.obj_to_world.transform_vector3(Vec3::Z);
-        commom
+        
     }
 }
 impl<'a> Primitive for Rectangle<'a> {
@@ -53,13 +50,13 @@ impl<'a> Primitive for Rectangle<'a> {
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let t = -o.z / dir.z;
         let p = o + dir * t;
-        if p.x < 0.0 || p.x > 1.0 {
+        if p.x <= 0.0 || p.x >= 1.0 || t <= 0.0{
             return None;
         }
-        if p.y < 0.0 || p.y > 1.0 {
+        if p.y <= 0.0 || p.y >= 1.0 || t<= 0.0 {
             return None;
         }
-        let p = self.obj_to_world.transform_point3(p).normalize();
+        let p = self.obj_to_world.transform_point3(p);
         let n = self.obj_to_world.transform_vector3(Vec3::Z).normalize();
         let dpdu = self.obj_to_world.transform_point3(Vec3::X).normalize();
         let dpdv = self.obj_to_world.transform_point3(Vec3::Y).normalize();

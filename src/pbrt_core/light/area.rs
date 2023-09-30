@@ -49,10 +49,10 @@ impl<'a> AreaLight for DiffuseAreaLight<'a> {
 
 impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn get_n_sample(&self) -> usize {
-        1
+        8
     }
     fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
-        *light_common = self.shape.sample(u,surface_common,pdf);
+        self.shape.sample(u,light_common,pdf);
         if pdf.abs()<f32::EPSILON || (light_common.p-surface_common.p).length_squared().abs()<f32::EPSILON{
             *pdf=0.0;
             Vec3::ZERO

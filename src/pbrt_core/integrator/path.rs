@@ -75,12 +75,15 @@ impl IntegratorAble for PathIntegrator {
                     ray = item.spawn_ray(&w_in);
                 }
 
-                beta = beta / p;
+               
             } else {
                 //环境光采样
-                if dept == 1 || specular {}
+                if dept == 1 || specular {
+                    ans=Vec3::X;
+                }
                 return ans;
             }
+            beta = beta / p;
         }
         ans
     }

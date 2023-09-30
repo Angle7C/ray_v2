@@ -1,0 +1,100 @@
+name = "image"
+
+[camera]
+mode = "P"
+size = [512.0, 512.0]
+far = 1000.0
+near = 0.01
+eye = [0.0, 8.0, 4.0]
+target = [0.0, -8.0, 0.0]
+up = [0.0, 1.0, 0.0]
+fov = 110.0
+
+#bottom
+[[primitive]]
+mode = "Rect"
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 0.0] }
+material_index = 0
+# right
+[[primitive]]
+mode = "Rect"
+trans = { r = [0.0, 1.0, 0.0, -90.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 0.0] }
+material_index = 0
+[[primitive]]
+# left
+mode = "Rect"
+trans = { r = [0.0, 1.0, 0.0, -90.0], s = [6.0, 6.0, 1.0], t = [3.0, 0.0, 0.0] }
+material_index = 0
+# top
+[[primitive]]
+mode = "Rect"
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 6.0] }
+material_index = 0
+# back
+[[primitive]]
+mode = "Rect"
+trans = { r = [1.0, 0.0, 0.0, 90.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 0.0] }
+material_index = 0
+
+[[primitive]]
+mode = "Shpere"
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-1.0, 3.0, 1.0] }
+r=1
+material_index = 2
+
+[[primitive]]
+mode = "Shpere"
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.5, 3.0, 2.0] }
+r=1
+material_index = 1
+
+
+[[shapes]]
+mode = "Rect"
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-0.5, 3.0, 5.5] }
+material_index = 0
+
+[[light]]
+mode = "Area"
+lemit = [100.0, 100.0, 100.0]
+shape_index = 0
+
+[[material]]
+mode = "Matte"
+kd = 0
+sigma = 0.0
+
+[[material]]
+mode = "Mirror"
+kr = 1
+
+[[material]]
+mode = "Mirror"
+kr = 2
+
+[[texture]]
+mode = "Constant"
+value = [0.7, 0.7, 0.7]
+
+[[texture]]
+mode = "Constant"
+value = [1.0, 0.1, 0.1]
+
+[[texture]]
+mode = "Constant"
+value = [0.5, 0.7, 0.9]
+
+
+[intergator]
+mode = "Path"
+core_num = 14
+sample_num = 10
+q = 0.9
+max_depth = 5
+
+# [intergator]
+# mode = "Direct"
+# sample_num = 1
+# core_num = 14
+# startegy = "UniformOne"
+

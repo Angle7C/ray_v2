@@ -284,7 +284,8 @@ impl Visibility {
     //是否可视
     pub fn is_vis(&self, sence: &Sence) -> bool {
         let dir = self.a.p - self.b.p;
-        let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.01, dir.length() - 0.01));
+        let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.001, dir.length()-0.001));
+
         sence.interacect(ray_diff).is_none()
     }
     pub fn g(&self, sence: &Sence) -> f32 {
@@ -299,5 +300,4 @@ impl Visibility {
         let vis = self.is_vis(sence);
         if vis {1.0}else{0.0}
     }
-    // fn get_dir(&self,sence:&Sence)->f32{}
 }

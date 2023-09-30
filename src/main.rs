@@ -9,7 +9,7 @@ mod test;
 pub fn main() {
     log_init();
 
-    let context= Context::new("./file/setting.toml");
+    let context= Context::new("./file/box.toml");
     context.render();
 
 }

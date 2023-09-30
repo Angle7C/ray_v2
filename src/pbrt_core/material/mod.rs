@@ -70,7 +70,6 @@ impl BSDF {
         *w_in = self.local_to_world(wi);
 
         if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
-            f = Vec3::ZERO;
             for (index, item) in bxdfs.iter().enumerate() {
                 if index != num && item.match_type(flag) {
                     *pdf += item.pdf(&w_out, &w_in)
@@ -79,11 +78,12 @@ impl BSDF {
         };
         *pdf /= bxdfs.len() as f32;
         if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
+            f = Vec3::ZERO;
             let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
-            for item in self.bxdfs.iter() {
+            for item in bxdfs.iter() {
                 if item.match_type(flag)
-                    && (reflect && item.match_type(BxDFType::Reflection.into()))
-                    || (!reflect && item.match_type(BxDFType::Transmission.into()))
+                   // && ((reflect && item.match_type(BxDFType::Reflection.into()))
+                    //|| (!reflect && item.match_type(BxDFType::Transmission.into())))
                 {
                     f += item.f(&w_out, w_in)
                 }
@@ -102,9 +102,9 @@ impl BSDF {
             bxdfs: vec![],
         }
     }
-    pub fn pdf(&self, w_out: &Vec3, w_in: &mut Vec3, flag: u32) -> f32 {
+    pub fn pdf(&self, w_out: &Vec3, w_in: &Vec3, flag: u32) -> f32 {
         if self.bxdfs.len() == 0 {
-            return 0.0;
+            0.0
         } else {
             let wo = self.world_to_local(*w_out);
             let wi = self.world_to_local(*w_in);
@@ -119,20 +119,24 @@ impl BSDF {
                     pdf += item.pdf(&wo, &wi);
                 }
             }
-            return if num > 0 { pdf / num as f32 } else { 0.0 };
-        };
+            if num > 0 {
+                pdf / num as f32
+            } else {
+                0.0
+            }
+        }
     }
     pub fn f(&self, w_out: &Vec3, w_in: &Vec3, flag: u32) -> Vec3 {
         let w_in = &mut self.world_to_local(*w_in);
         let w_out = &mut self.world_to_local(*w_out);
-        let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
+        let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
         let mut f = Vec3::ZERO;
         for bxdf in &self.bxdfs {
             if bxdf.match_type(flag)
-            //&& (reflect&&self.bxdfs[i].match_type(BxDFType::Reflection as u32))
-            // && (!reflect&&self.bxdfs[i].match_type(BxDFType::Transmission as u32))
+           // && ((reflect&&bxdf.match_type(BxDFType::Reflection as u32))
+             //   || (!reflect&&bxdf.match_type(BxDFType::Transmission as u32)))
             {
-                f += bxdf.f(&w_out, w_in);
+                f += bxdf.f(&w_out, &w_in);
             }
         }
         f

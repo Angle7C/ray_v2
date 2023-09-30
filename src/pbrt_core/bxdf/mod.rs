@@ -91,7 +91,7 @@ impl BxDF {
             _=>todo!()
         }
     }
-    pub fn f(&self, w_out: &Vec3, w_in: &mut Vec3) -> Vec3 {
+    pub fn f(&self, w_out: &Vec3, w_in: &Vec3) -> Vec3 {
         match &self {
             BxDF::LambertianReflection(lam) => lam.f(w_in, w_out),
             BxDF::SpecularReflection(spec_ref)=>spec_ref.f(w_in, w_out),

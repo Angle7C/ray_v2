@@ -55,10 +55,10 @@ pub mod shape {
             }
         }
         // 形状采样
-        pub fn sample(&self, smaple_point: Vec2,_common:&InteractionCommon,pdf:&mut f32) -> InteractionCommon {
+        pub fn sample(&self, smaple_point: Vec2,common:&mut InteractionCommon,pdf:&mut f32) {
             *pdf=1.0/self.agt_area();
             match self {
-                Self::Rect(rect) => rect.sample_interaction(smaple_point),
+                Self::Rect(rect) => rect.sample_interaction(common,smaple_point),
             }
         }
         //对于在不同点采样的时，会存在不同pdf值。给定指定方向与点，确定是否有交点。
@@ -146,6 +146,7 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
         self.primitive.compute_scattering(isct, mode)
     }
     fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
+        
         self.primitive.interacect(ray)
     }
     fn interacect_bound(&self, ray: &RayDiff) -> bool {
