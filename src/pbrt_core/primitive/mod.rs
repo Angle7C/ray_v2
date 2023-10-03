@@ -5,7 +5,7 @@ use super::{
     light::LightAble,
     tool::{Bound, RayDiff, SurfaceInteraction},
 };
-use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
+// use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
 
 pub mod bvh;
 pub mod mesh;
@@ -46,6 +46,11 @@ pub mod shape {
                 Shape::Rect(rect) => rect.world_bound(),
             }
         }
+        fn hit_p(&self,ray:&crate::pbrt_core::tool::RayDiff)->bool {
+            match &self {
+                Shape::Rect(rect) => rect.hit_p(ray)
+            }
+        }
     }
     impl<'a> Shape<'a> {
         // 获得面积
@@ -55,10 +60,10 @@ pub mod shape {
             }
         }
         // 形状采样
-        pub fn sample(&self, smaple_point: Vec2,common:&mut InteractionCommon,pdf:&mut f32) {
-            *pdf=1.0/self.agt_area();
+        pub fn sample(&self, smaple_point: Vec2, common: &mut InteractionCommon, pdf: &mut f32) {
+            *pdf = 1.0 / self.agt_area();
             match self {
-                Self::Rect(rect) => rect.sample_interaction(common,smaple_point),
+                Self::Rect(rect) => rect.sample_interaction(common, smaple_point),
             }
         }
         //对于在不同点采样的时，会存在不同pdf值。给定指定方向与点，确定是否有交点。
@@ -92,9 +97,11 @@ pub trait Primitive: Debug {
     fn get_area(&self) -> f32 {
         1.0
     }
+    fn hit_p(&self,ray:&RayDiff)->bool;
 }
 pub trait Aggregate: Sync {
     fn interacect(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
+    fn hit_p(&self,ray: &RayDiff)->bool;
 }
 #[derive(Debug)]
 pub enum ObjectType {
@@ -113,7 +120,7 @@ impl PartialEq for ObjectType {
 #[derive(Debug)]
 pub struct GeometricePrimitive<'a> {
     primitive: &'a dyn Primitive,
-    light:Option<&'a dyn LightAble>,
+    light: Option<&'a dyn LightAble>,
     node_index: usize,
 }
 unsafe impl<'a> Sync for GeometricePrimitive<'a> {}
@@ -123,22 +130,38 @@ impl<'a> GeometricePrimitive<'a> {
         Self {
             primitive,
             node_index: 0,
-            light:None
+            light: None,
         }
     }
 }
-impl<'a> Bounded for GeometricePrimitive<'a> {
-    fn aabb(&self) -> ::bvh::aabb::AABB {
+// impl<'a> Bounded for GeometricePrimitive<'a> {
+//     fn aabb(&self) -> ::bvh::aabb::AABB {
+//         let bound = self.primitive.world_bound();
+//         bound.into()
+//     }
+// }
+// impl<'a> BHShape for GeometricePrimitive<'a> {
+//     fn bh_node_index(&self) -> usize {
+//         self.node_index
+//     }
+//     fn set_bh_node_index(&mut self, i: usize) {
+//         self.node_index = i
+//     }
+// }
+impl<'a> rtbvh::Primitive for GeometricePrimitive<'a> {
+    
+    fn aabb(&self) -> rtbvh::Aabb {
         let bound = self.primitive.world_bound();
-        bound.into()
+        rtbvh::Aabb {
+            min: bound.min,
+            extra1: 0,
+            max:bound.max,
+            extra2: 0,
+        }
     }
-}
-impl<'a> BHShape for GeometricePrimitive<'a> {
-    fn bh_node_index(&self) -> usize {
-        self.node_index
-    }
-    fn set_bh_node_index(&mut self, i: usize) {
-        self.node_index = i
+    fn center(&self) -> glam::Vec3 {
+        let bound = self.primitive.world_bound();
+        (bound.max+bound.min)/2.0
     }
 }
 impl<'a> Primitive for GeometricePrimitive<'a> {
@@ -146,7 +169,6 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
         self.primitive.compute_scattering(isct, mode)
     }
     fn interacect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
-        
         self.primitive.interacect(ray)
     }
     fn interacect_bound(&self, ray: &RayDiff) -> bool {
@@ -157,5 +179,8 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
     }
     fn get_light(&self) -> Option<&dyn LightAble> {
         self.primitive.get_light()
+    }
+    fn hit_p(&self,ray:&RayDiff)->bool{
+        self.primitive.hit_p(ray)
     }
 }

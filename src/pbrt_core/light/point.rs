@@ -20,7 +20,7 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn new(lemit: Vec3, p: Vec3, _object_to_wworld: Mat4,index:usize) -> Self {
+    pub fn new(lemit: Vec3, p: Vec3,index:usize) -> Self {
         Self { p, lemit,index }
     }
 }
@@ -40,7 +40,11 @@ impl LightAble for Point {
         *pdf = 1.0;
         light_common.p = self.p;
         light_common.time = surface_common.time;
-        *vis = Visibility { a: *surface_common, b: *light_common };
+        light_common.normal=-*wi;
+        *vis = Visibility {
+            a: *light_common,
+            b: *surface_common,
+        };
         self.lemit/ self.p.distance_squared(surface_common.p)
     }
     #[inline]
@@ -76,5 +80,7 @@ impl Primitive for Point {
         let bound = Bound::<3>::new(Vec3::splat(-0.0003) + self.p, Vec3::splat(0.0003) + self.p);
         bound
     }
-    
+    fn hit_p(&self,ray:&RayDiff)->bool {
+        false
+    }
 }

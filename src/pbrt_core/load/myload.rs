@@ -134,11 +134,11 @@ impl MyLoad {
         for (index, item) in self.light.iter().enumerate() {
             let light: Light = match item {
                 LightToml::Point {
-                    trans,
+                    // trans,
                     point,
                     lemit,
                 } => {
-                    Light::PointLight(Box::new(Point::new(*lemit, *point, trans.get_mat(), index)))
+                    Light::PointLight(Box::new(Point::new(*lemit, *point,  index)))
                 }
                 LightToml::Area { lemit, shape_index } => Light::AreaLight(Box::new(
                     DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap(), index),
@@ -323,7 +323,7 @@ pub enum TextureToml {
 #[serde(tag = "mode")]
 pub enum LightToml {
     Point {
-        trans: TransformToml,
+        // trans: TransformToml,
         point: Vec3,
         lemit: Vec3,
     },

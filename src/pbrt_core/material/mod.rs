@@ -2,6 +2,8 @@ use std::fmt::Debug;
 
 use crate::pbrt_core::bxdf::BxDFType;
 use glam::{Vec2, Vec3};
+use log::info;
+use rand::Rng;
 
 use super::{
     bxdf::{BxDF, TransportMode},
@@ -108,7 +110,7 @@ impl BSDF {
         } else {
             let wo = self.world_to_local(*w_out);
             let wi = self.world_to_local(*w_in);
-            if wo.z == 0.0 {
+            if wo.z.abs()<f32::EPSILON {
                 return 0.0;
             }
             let mut pdf = 0.0;
@@ -127,16 +129,16 @@ impl BSDF {
         }
     }
     pub fn f(&self, w_out: &Vec3, w_in: &Vec3, flag: u32) -> Vec3 {
-        let w_in = &mut self.world_to_local(*w_in);
-        let w_out = &mut self.world_to_local(*w_out);
+        let wi = self.world_to_local(*w_in);
+        let wo = self.world_to_local(*w_out);
         let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
         let mut f = Vec3::ZERO;
         for bxdf in &self.bxdfs {
             if bxdf.match_type(flag)
-           // && ((reflect&&bxdf.match_type(BxDFType::Reflection as u32))
-             //   || (!reflect&&bxdf.match_type(BxDFType::Transmission as u32)))
+        //    && ((reflect&&bxdf.match_type(BxDFType::Reflection as u32))
+        //        || (!reflect&&bxdf.match_type(BxDFType::Transmission as u32)))
             {
-                f += bxdf.f(&w_out, &w_in);
+                f += bxdf.f(&wo, &wi);
             }
         }
         f

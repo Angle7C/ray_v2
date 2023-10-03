@@ -3,7 +3,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{Bound, InteractionCommon, SurfaceInteraction},
+    tool::{Bound, InteractionCommon, SurfaceInteraction, func::transform_interaction}, bxdf::func,
 };
 #[derive(Debug)]
 pub struct Rectangle<'a> {
@@ -23,13 +23,16 @@ impl<'a> Rectangle<'a> {
         p1.cross(p2).length()
         // DMat2::from_cols(self.obj_to_world.x_axis.xy(), self.obj_to_world.y_axis.xy()).determinant()
     }
-    pub fn sample_interaction(&self,commom:&mut InteractionCommon, sampler_point: Vec2) {
+    pub fn sample_interaction(&self, commom: &mut InteractionCommon, sampler_point: Vec2) {
         let p = self
             .obj_to_world
             .transform_point3(sampler_point.extend(0.0));
         commom.p = p;
-        commom.normal = self.obj_to_world.transform_vector3(Vec3::Z);
-        
+        commom.normal = self
+            .obj_to_world
+            .inverse()
+            .transpose()
+            .transform_vector3(Vec3::Z);
     }
 }
 impl<'a> Primitive for Rectangle<'a> {
@@ -50,34 +53,45 @@ impl<'a> Primitive for Rectangle<'a> {
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let t = -o.z / dir.z;
         let p = o + dir * t;
-        if p.x <= 0.0 || p.x >= 1.0 || t <= 0.0{
+        if p.x <= 0.0 || p.x >= 1.0 || t <= 0.0 {
             return None;
         }
-        if p.y <= 0.0 || p.y >= 1.0 || t<= 0.0 {
+        if p.y <= 0.0 || p.y >= 1.0 || t <= 0.0 {
             return None;
         }
-        let p = self.obj_to_world.transform_point3(p);
-        let n = self.obj_to_world.transform_vector3(Vec3::Z).normalize();
-        let dpdu = self.obj_to_world.transform_point3(Vec3::X).normalize();
-        let dpdv = self.obj_to_world.transform_point3(Vec3::Y).normalize();
-        let surface = SurfaceInteraction::new(
+
+        let mut surface = SurfaceInteraction::new(
             p,
-            p.truncate(),
-            n,
-            ray.o.dir,
-            dpdu,
-            dpdv,
+            (o + dir * t).truncate(),
+            Vec3::Z,
+            -ray.o.dir,
+            Vec3::X,
+            Vec3::Y,
             Vec3::ZERO,
             Vec3::ZERO,
             t,
             Some(self),
             None,
         );
+        transform_interaction(self.obj_to_world, &mut surface);
         Some(surface)
     }
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let min = self.obj_to_world.transform_point3(Vec3::ZERO) - Vec3::splat(0.003);
         let max = self.obj_to_world.transform_point3(Vec3::ONE) + Vec3::splat(0.003);
         Bound::<3>::new(min, max)
+    }
+    fn hit_p(&self,ray:&crate::pbrt_core::tool::RayDiff)->bool {
+        let o = self.obj_to_world.inverse().transform_point3(ray.o.origin);
+        let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
+        let t = -o.z / dir.z;
+        let p = o + dir * t;
+        if p.x <= 0.0 || p.x >= 1.0 || t <= ray.o.t_min ||t>=ray.o.t_max {
+            return false;
+        }
+        if p.y <= 0.0 || p.y >= 1.0 || t <= ray.o.t_min ||t>=ray.o.t_max{
+            return false;
+        }
+        true
     }
 }

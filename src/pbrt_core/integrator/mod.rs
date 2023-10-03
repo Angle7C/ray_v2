@@ -123,6 +123,7 @@ impl Integrator {
                         let ray = camera.generate_ray(camera_sample);
                         color += self.fi(ray, sence, &mut sampler);
                     }
+
                     tile.push(color);
                 }
                 pb.inc(1);
@@ -200,7 +201,7 @@ pub fn uniform_sample_all_light(
     common: &SurfaceInteraction,
     sence: &Sence,
     mut sampler: Sampler,
-    n_light_sample: Vec<i32>,
+    n_light_sample: Vec<usize>,
     handle_media: bool,
 ) -> Color {
     let mut l = Color::ZERO;
@@ -258,15 +259,15 @@ pub fn unifrom_sample_one_light(
             sampler.clone(),
             handle_media,
             false,
-        ) / smaple as f32
+        );
     }
-    ld * len as f32
+    ld*len as f32 / smaple  as f32
 }
 
 pub fn estimate_direct(
     inter: &SurfaceInteraction,
     light: &Light,
-    _u_light: Vec2,
+    u_light: Vec2,
     sence: &Sence,
     mut sampler: Sampler,
     _handle_media: bool,
@@ -285,11 +286,12 @@ pub fn estimate_direct(
     let mut li = light.sample_li(
         &inter.common,
         &mut light_common,
-        sampler.sample_2d_d(),
+         sampler.sample_2d(),
         &mut wi,
         &mut light_pdf,
         &mut vis,
     );
+    // return vis.g_inf(sence)*Vec3::ONE;
     //合理的pdf和采样出光线
     if light_pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         //计算BSDF
@@ -304,12 +306,18 @@ pub fn estimate_direct(
                 li = Color::ZERO;
             }
         }
+        let scattle_pdf = if let Some(ref bsdf) = inter.bsdf {
+            bsdf.pdf(&inter.common.w0, &wi, bxdf_flags)
+        } else {
+            1.0
+        };
+
         if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
             if LightType::is_delta(light.get_type()) {
-                ld += f * li * vis.g(sence) / light_pdf;
+                ld +=  li *f* vis.g(sence) / light_pdf;
             } else {
-                let weight = power_heuristic(1.0, light_pdf, 1.0, 1.0);
-                ld += f * li * weight * vis.g(sence) / light_pdf;
+                let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
+                ld +=  li *f * vis.g(sence)*weight / light_pdf;
             }
         }
     }
@@ -334,15 +342,17 @@ pub fn estimate_direct(
                     if light_pdf.abs() < f32::EPSILON {
                         return ld;
                     }
-                    power_heuristic(1.0, 1.0, 1.0, light_pdf)
+                    power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
                 } else {
                     1.0
                 };
                 let ray = RayDiff::new(Ray::new(inter.common.p, wi));
-                let mut li = Vec3::ZERO;
+                let li =
                 if let Some(ref light_inter) = sence.interacect(ray) {
-                    li = light_inter.le(ray);
-                }
+                    light_inter.le(ray)
+                }else{
+                    Default::default()
+                };
                 if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
                     ld += li * f * weight / bsdf_pdf;
                 }
@@ -360,11 +370,8 @@ pub fn power_heuristic(nf: f32, f_pdf: f32, ng: f32, g_pdf: f32) -> f32 {
 
 pub fn get_light(
     inter: &SurfaceInteraction,
-    _u_light: Vec2,
     sence: &Sence,
     mut sampler: Sampler,
-    _handle_media: bool,
-    specular: bool,
 ) -> Color {
     if sence.light.len() == 0 {
         return Color::ZERO;
@@ -383,11 +390,12 @@ pub fn get_light(
         &mut pdf,
         &mut vis,
     );
-    // let ray=RayDiff::new(Ray::new(inter.common.p, wi));
     let f = if let Some(ref bsdf) = inter.bsdf {
-        bsdf.f(&inter.common.w0, &wi, BxDFType::All.into()) * wi.dot(inter.shading.n).abs()
+        bsdf.f(&inter.common.w0, &wi, BxDFType::All.into())
+         * wi.dot(inter.shading.n).abs()
     } else {
         Vec3::ZERO
     };
-    li * f * vis.g(sence)
+    // return  f;
+    vis.g(sence)* f *li/pdf
 }

@@ -1,7 +1,6 @@
 use std::ops::Add;
 
-
-use bvh::aabb::AABB;
+// use bvh::aabb::AABB;
 use glam::{Vec2, Vec3};
 
 use self::sence::Sence;
@@ -31,8 +30,8 @@ impl Ray {
         Self {
             origin,
             dir: dir.normalize(),
-            t_max: f32::INFINITY,
-            t_min: 0.0,
+            t_max: f32::MAX,
+            t_min: 0.001,
         }
     }
     pub fn at(&self, t: f32) -> Vec3 {
@@ -90,13 +89,13 @@ pub struct Bound<const N: usize> {
     pub max: Vec3,
 }
 
-impl From<Bound<3>> for AABB {
-    fn from(value: Bound<3>) -> Self {
-        let min = value.min;
-        let max = value.max;
-        Self { min, max }
-    }
-}
+// impl From<Bound<3>> for AABB {
+//     fn from(value: Bound<3>) -> Self {
+//         let min = value.min;
+//         let max = value.max;
+//         Self { min, max }
+//     }
+// }
 
 impl Bound<2> {
     pub fn new(min: Vec2, max: Vec2) -> Self {
@@ -150,7 +149,7 @@ impl<const N: usize> Bound<N> {
         let b = t1.max(t2);
         let t_entry = a.max_element();
         let t_exit = b.min_element();
-        t_entry <= t_exit && t_exit > 0.0
+        t_entry <= t_exit && t_exit > ray.o.t_min
     }
 }
 impl Add<Bound<2>> for Bound<2> {
@@ -189,11 +188,8 @@ impl InteractionCommon {
 #[derive(Default)]
 pub struct SurfaceInteraction<'a> {
     pub common: InteractionCommon,
-    _uv: Vec2,
-    _dpdu: Vec3,
-    _dpdv: Vec3,
     //求交的图元信息
-    shape: Option<&'a dyn Primitive>,
+    pub shape: Option<&'a dyn Primitive>,
     // 渲染信息与几何信息
     pub shading: Shading,
     // BSDF采样值。表示表面的对光的作用。
@@ -205,7 +201,7 @@ impl<'a> SurfaceInteraction<'a> {
     pub fn new(
         p: Vec3,
         uv: Vec2,
-        normal: Vec3,
+        n:Vec3,
         w_out: Vec3,
         dpdu: Vec3,
         dpdv: Vec3,
@@ -217,18 +213,15 @@ impl<'a> SurfaceInteraction<'a> {
     ) -> Self {
         Self {
             common: InteractionCommon {
-                w0: w_out,
+                w0: w_out.normalize(),
                 p: p,
-                normal: normal.normalize(),
+                normal:n,
                 time: time,
                 uv,
             },
-            _uv: uv,
-            _dpdu: dpdu,
-            _dpdv: dpdv,
             shape,
             shading: Shading {
-                n: dpdu.cross(dpdv).normalize(),
+                 n,
                 dpdu,
                 dpdv,
                 dndu,
@@ -256,7 +249,7 @@ impl<'a> SurfaceInteraction<'a> {
         }
     }
 }
-#[derive(Default)]
+#[derive(Default,Clone, Copy)]
 pub struct Shading {
     pub n: Vec3,
     pub dpdu: Vec3,
@@ -265,9 +258,9 @@ pub struct Shading {
     pub dndv: Vec3,
 }
 impl Shading {
-    pub fn new(n: Vec3, dpdu: Vec3, dpdv: Vec3, dndu: Vec3, dndv: Vec3) -> Self {
+    pub fn new( dpdu: Vec3, dpdv: Vec3, dndu: Vec3, dndv: Vec3) -> Self {
         Self {
-            n,
+            n: dpdu.cross(dpdv).normalize(),
             dpdu,
             dpdv,
             dndu,
@@ -281,12 +274,26 @@ pub struct Visibility {
     pub b: InteractionCommon,
 }
 impl Visibility {
+    const DET:f32=0.0001;
     //是否可视
-    pub fn is_vis(&self, sence: &Sence) -> bool {
-        let dir = self.a.p - self.b.p;
-        let ray_diff = RayDiff::new(Ray::from_with_t(self.b.p, dir, 0.001, dir.length()-0.001));
 
-        sence.interacect(ray_diff).is_none()
+    pub fn is_vis(&self, sence: &Sence) -> bool {
+       
+        let a={
+            let w=(self.b.p-self.a.p).normalize();
+            let sign=self.a.normal.dot(w).signum();
+            self.a.p+sign* self.a.normal*Self::DET
+        };
+        let b={
+            let w=(self.a.p-self.b.p).normalize();
+            let sign=self.b.normal.dot(w).signum();
+            self.b.p+sign* self.b.normal*Self::DET
+        };
+        let dir=a-b;
+        let ray_diff = RayDiff::new(
+            Ray::from_with_t(b, dir,0.0001,dir.length()-0.0001)
+        );
+        !sence.hit_p(&ray_diff)
     }
     pub fn g(&self, sence: &Sence) -> f32 {
         let vis = if self.is_vis(sence) { 1.0 } else { 0.0 };
@@ -298,6 +305,10 @@ impl Visibility {
     }
     pub fn g_inf(&self, sence: &Sence) -> f32 {
         let vis = self.is_vis(sence);
-        if vis {1.0}else{0.0}
+        if vis {
+            1.0
+        } else {
+            0.0
+        }
     }
 }

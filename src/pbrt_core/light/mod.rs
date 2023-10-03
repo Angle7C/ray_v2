@@ -8,7 +8,7 @@ use crate::pbrt_core::tool::color::Color;
 use crate::pbrt_core::tool::RayDiff;
 use glam::{Vec2, Vec3};
 
-use self::{area::AreaLight, infinite::InfiniteLight, point::Point};
+use self::{area::AreaLight, inf::InfiniteLight, point::Point};
 
 use super::{
     primitive::{shape::Shape, Primitive},
@@ -16,7 +16,7 @@ use super::{
 };
 
 pub mod area;
-pub mod infinite;
+pub mod inf;
 pub mod point;
 pub mod spot;
 
@@ -54,6 +54,13 @@ impl Primitive for Light {
             Light::AreaLight(area) => area.world_bound(),
             Light::PointLight(point) => point.world_bound(),
             Light::Infinite(ref infinite) => infinite.world_bound(),
+        }
+    }
+    fn hit_p(&self,ray:&RayDiff)->bool {
+        match &self {
+            Light::AreaLight(area) => area.hit_p(ray),
+            Light::PointLight(point) => point.hit_p(ray),
+            Light::Infinite(ref infinite) => infinite.hit_p(ray),
         }
     }
 }
@@ -103,7 +110,11 @@ impl LightAble for Light {
     }
 
     fn get_n_sample(&self) -> usize {
-        1
+        match self {
+            Light::AreaLight(area) => area.get_n_sample(),
+            Light::PointLight(point) => point.get_n_sample(),
+            Light::Infinite(inf) => inf.get_n_sample(),
+        }
     }
 
     fn get_index(&self)->usize {

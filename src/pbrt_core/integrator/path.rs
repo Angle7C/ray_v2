@@ -1,4 +1,5 @@
 use glam::Vec3;
+use log::info;
 
 use crate::pbrt_core::{
     bxdf::BxDFType,
@@ -7,7 +8,7 @@ use crate::pbrt_core::{
     tool::{color::Color, sence::Sence, RayDiff},
 };
 
-use super::{unifrom_sample_one_light, IntegratorAble};
+use super::{unifrom_sample_one_light, IntegratorAble, get_light};
 
 //路径追踪积分器
 pub struct PathIntegrator {
@@ -44,15 +45,12 @@ impl IntegratorAble for PathIntegrator {
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
-        let _n_sample = vec![1, 1, 1, 1];
-        let specular = false;
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {
                     ans += beta * item.le(ray);
                     return ans;
                 }
-                if dept == 1 || specular {}
                 item.compute_scattering(ray, mode);
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
@@ -69,22 +67,19 @@ impl IntegratorAble for PathIntegrator {
                         &mut pdf,
                         BxDFType::All.into(),
                         &mut samped_type,
-                    );
-                    beta *= f * w_in.dot(item.shading.n).abs() / pdf;
-
+                    ) * w_in.dot(item.shading.n).abs()
+                        / pdf;
+                    beta *= f;
+                    // specular = (samped_type & BxDFType::Specular as u32) > 0;
                     ray = item.spawn_ray(&w_in);
                 }
-
-               
             } else {
                 //环境光采样
-                if dept == 1 || specular {
-                    ans=Vec3::X;
-                }
                 return ans;
             }
             beta = beta / p;
         }
+
         ans
     }
 }

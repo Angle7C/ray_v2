@@ -49,7 +49,7 @@ pub trait BxDFAble {
     }
     
     fn get_type(&self)->u32{
-        (BxDFType::Specular & BxDFType::Reflection) as u32
+        BxDFType::Specular & BxDFType::Reflection
     }
 }
 
@@ -105,7 +105,7 @@ impl BxDF {
     pub fn sample_f(&self, w_out: &Vec3, wi: &mut Vec3, u: Vec2, pdf: &mut f32) -> Vec3 {
         match &self {
             Self::LambertianReflection(lambert) => lambert.sample_f(wi, w_out, u, pdf),
-            BxDF::SpecularReflection(spec_ref)=>spec_ref.sample_f(wi, w_out, u, pdf),
+            Self::SpecularReflection(spec_ref)=>spec_ref.sample_f(wi, w_out, u, pdf),
             Self::OrenNayar(oren)=>oren.sample_f(wi, w_out, u, pdf),
             Self::PbrDiff(diff)=>diff.sample_f(wi, w_out, u, pdf),
             Self::PbrReflection(reflection)=>reflection.sample_f(wi, w_out, u, pdf),
@@ -123,8 +123,16 @@ impl BxDF {
             Self::SpecularReflection(specular)=>specular.get_type(),
         }
     }
-    pub fn pdf(&self,_wo:&Vec3,_wi:&Vec3)->f32{
-        1.0
+    pub fn pdf(&self,wo:&Vec3,wi:&Vec3)->f32{
+        match &self {
+            Self::LambertianReflection(lambert) => lambert.pdf(*wo,*wi),
+            Self::OrenNayar(oren)=>oren.pdf(*wo,*wi),
+            Self::PbrDiff(diff)=>diff.pdf(*wo,*wi),
+            Self::PbrReflection(reflection)=>reflection.pdf(*wo,*wi),
+            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.pdf(*wo,*wi),
+            Self::SpecularReflection(specular)=>specular.pdf(*wo,*wi),
+      
+        }
     }
 }
 #[derive(Debug, Clone, Copy)]

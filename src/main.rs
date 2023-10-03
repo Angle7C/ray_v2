@@ -1,7 +1,6 @@
 
 use pbrt_core::tool::{log::log_init, build::Context};
 
-// #[allow(unused, dead_code)]
 pub mod pbrt_core;
 
 mod test;
@@ -9,7 +8,7 @@ mod test;
 pub fn main() {
     log_init();
 
-    let context= Context::new("./file/box.toml");
+    let context= Context::new("./file/setting.toml");
     context.render();
 
 }

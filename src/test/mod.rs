@@ -1,15 +1,12 @@
 #[cfg(test)]
 pub mod test{
+    use glam::Vec3;
 
-    
+    use crate::pbrt_core::{bxdf::reflection::LambertianReflection, material::BSDF};
 
-    
-
-
-    use crate::pbrt_core::{tool::log::log_init};
     #[test]
     fn test_load(){
-        log_init();
-        // khr_lights_punctual
     }
+    
+
 }

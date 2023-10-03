@@ -1,6 +1,8 @@
-use glam::Vec3;
+use glam::{Vec3, Mat4};
 
 use crate::pbrt_core::bxdf::func::{sin_phi, cos_phi, cos_theta};
+
+use super::{SurfaceInteraction, InteractionCommon, Shading};
 
 pub fn vec3_coordinate_system(v1:Vec3,v2:&mut Vec3,v3:&mut Vec3){
     if v1.x.abs()>v1.y.abs(){
@@ -130,4 +132,24 @@ pub fn quadratic(a:f32,b:f32,c:f32)->Option<(f32,f32)>{
         let t2=(-b-det.sqrt())/(2.0*a);
         Some((t1,t2))
     }
+}
+pub fn transform_interaction<'a>(transform:Mat4,inter:&mut SurfaceInteraction<'a>){
+    let common = transform_common(transform, inter.common);
+    let shading=transform_shading(transform, inter.shading);
+    inter.common=common;
+    inter.shading=shading;
+
+}
+ fn transform_common(transform:Mat4,common:InteractionCommon)->InteractionCommon{
+    let p = transform.transform_point3(common.p);
+    let n = transform.inverse().transpose().transform_vector3(common.normal);
+    InteractionCommon { w0: common.w0, p, normal: n, time: common.time, uv: common.uv}
+}
+fn transform_shading(transform:Mat4,shading:Shading)->Shading{
+    let dpdu=transform.transform_vector3(shading.dpdu);
+    let dpdv=transform.transform_vector3(shading.dpdv);
+    let dndu=transform.transform_vector3(shading.dndu);
+    let dndv=transform.transform_vector3(shading.dndv);
+    Shading::new(dpdu, dpdv, dndu, dndv)
+
 }

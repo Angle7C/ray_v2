@@ -28,7 +28,10 @@ impl DirectIntegrator {
     pub fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color {
         let mut ans = Vec3::ZERO;
         let beta=Vec3::ONE;
-        let n_sample=vec![1,1,1,1];
+        let mut n_sample=vec![];
+        for i in sence.light{
+            n_sample.push(i.get_n_sample());
+        }
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         if let Some(mut item) = sence.interacect(ray) {
             if item.light.is_some() {

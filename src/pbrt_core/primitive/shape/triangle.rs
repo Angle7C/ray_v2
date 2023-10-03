@@ -72,7 +72,7 @@ impl<'a> Triangle<'a> {
                 (-dp_12[0] * dn1 + duv_02[0] * dn2) * inv_det,
             )
         };
-        Shading::new(dp_02.cross(dp_12), dpdu, dpdv, Vec3::ZERO, Vec3::ZERO)
+        Shading::new( dpdu, dpdv, Vec3::ZERO, Vec3::ZERO)
     }
     pub fn point(&self, i: u32) -> Vec3 {
         self.obj_to_world
@@ -169,5 +169,8 @@ impl<'a> Primitive for Triangle<'a> {
             Some(material) => material.compute_scattering_functions(surface, mode),
             None => (),
         }
+    }
+    fn hit_p(&self,ray:&RayDiff)->bool {
+        false
     }
 }

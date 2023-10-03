@@ -1,17 +1,13 @@
 use std::default::Default;
 use std::fmt::Debug;
 
-
-
-
-
+use crate::pbrt_core::light::Light;
 use crate::pbrt_core::{
     camera::Camera,
     primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
 };
-use crate::pbrt_core::light::Light;
 
-use super::{Bound};
+use super::Bound;
 
 pub struct Sence {
     shape: &'static [Box<dyn Primitive>],
@@ -26,11 +22,7 @@ pub struct Sence {
 unsafe impl Sync for Sence {}
 
 impl Sence {
-    pub fn new(
-        primitive: Vec<Box<dyn Primitive>>,
-        camera: Camera,
-        light: Vec<Light>,
-    ) -> Self {
+    pub fn new(primitive: Vec<Box<dyn Primitive>>, camera: Camera, light: Vec<Light>) -> Self {
         let primitive = primitive.leak();
 
         //场景集合
@@ -52,7 +44,7 @@ impl Sence {
         let mut t = vec![];
         light.iter().for_each(|i| {
             if match i {
-                Light::Infinite( _) => true,
+                Light::Infinite(_) => true,
                 _ => false,
             } {
                 env.push(i);
@@ -99,6 +91,17 @@ impl Primitive for Sence {
             None
         }
     }
+    fn hit_p(&self,ray:&super::RayDiff)->bool {
+        if self.interacect_bound(&ray) {
+            if let Some(accel) = &self.accel {
+                accel.hit_p(&ray)
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
     fn world_bound(&self) -> Bound<3> {
         self.bound
     }
@@ -107,4 +110,3 @@ impl Primitive for Sence {
         self.world_bound().intesect(ray)
     }
 }
-

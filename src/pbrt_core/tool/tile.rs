@@ -36,10 +36,6 @@ impl Buffer {
         let _=rbg_buffer.save_with_format(name, format);
     }
     pub fn to_color(color: Color, ssp: f32) -> Rgb<u8> {
-        if color.is_nan()||!color.is_finite(){
-            info!("color nan:{}",color.is_nan());
-            info!("color inf:{}",!color.is_finite());
-        }
         let vec = (color / ssp).powf(0.5);
         let rgb = vec * 255.0;
         let color= Rgb([

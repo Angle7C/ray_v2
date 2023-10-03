@@ -65,8 +65,7 @@ impl Sampler {
 }
 pub fn cosine_sample_hemisphere(u:Vec2)->Vec3{
     let d=concentric_sample_disk(u);
-    let z=0.0_f32.max(1.0-d.length_squared())
-    .sqrt();
+    let z=0.0_f32.max(1.0-d.length_squared()).sqrt();
     d.extend(z)
 }
 
