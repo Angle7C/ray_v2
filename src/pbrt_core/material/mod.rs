@@ -79,7 +79,7 @@ impl BSDF {
         *pdf /= bxdfs.len() as f32;
         if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
             f = Vec3::ZERO;
-            let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
+            let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
             for item in bxdfs.iter() {
                 if item.match_type(flag)
                 //    && ((reflect && item.match_type(BxDFType::Reflection.into()))
@@ -129,7 +129,7 @@ impl BSDF {
     pub fn f(&self, w_out: &Vec3, w_in: &Vec3, flag: u32) -> Vec3 {
         let wi: Vec3 = self.world_to_local(*w_in);
         let wo = self.world_to_local(*w_out);
-        let reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
+        let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
         let mut f = Vec3::ZERO;
         for bxdf in &self.bxdfs {
             if bxdf.match_type(flag)
