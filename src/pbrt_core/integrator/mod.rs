@@ -286,7 +286,7 @@ pub fn estimate_direct(
     let mut li = light.sample_li(
         &inter.common,
         &mut light_common,
-         sampler.sample_2d(),
+        u_light,
         &mut wi,
         &mut light_pdf,
         &mut vis,

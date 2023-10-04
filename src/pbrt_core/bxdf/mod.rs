@@ -93,8 +93,8 @@ impl BxDF {
     }
     pub fn f(&self, w_out: &Vec3, w_in: &Vec3) -> Vec3 {
         match &self {
-            BxDF::LambertianReflection(lam) => lam.f(w_in, w_out),
-            BxDF::SpecularReflection(spec_ref)=>spec_ref.f(w_in, w_out),
+            Self::LambertianReflection(lam) => lam.f(w_in, w_out),
+            Self::SpecularReflection(spec_ref)=>spec_ref.f(w_in, w_out),
             Self::OrenNayar(oren)=>oren.f(w_in, w_out),
             Self::PbrDiff(diff)=>diff.f(w_in, w_out),
             Self::PbrReflection(reflection)=>reflection.f(w_in, w_out),

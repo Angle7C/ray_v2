@@ -3,7 +3,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{Bound, InteractionCommon, SurfaceInteraction, func::transform_interaction}, bxdf::func,
+    tool::{func::transform_interaction, Bound, InteractionCommon, SurfaceInteraction, Shading},
 };
 #[derive(Debug)]
 pub struct Rectangle<'a> {
@@ -53,25 +53,22 @@ impl<'a> Primitive for Rectangle<'a> {
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let t = -o.z / dir.z;
         let p = o + dir * t;
-        if p.x <= 0.0 || p.x >= 1.0 || t <= 0.0 {
+        if t < ray.o.t_min || t > ray.o.t_max{
             return None;
         }
-        if p.y <= 0.0 || p.y >= 1.0 || t <= 0.0 {
+        if p.x < 0.0 || p.x > 1.0 {
             return None;
         }
-
+        if p.y < 0.0 || p.y > 1.0  {
+            return None;
+        }
+        let common=InteractionCommon::new(-dir, p, Vec3::Z, t, p.truncate());
+        let shading=Shading::new(Vec3::X, Vec3::Y, Vec3::ZERO, Vec3::ZERO);
         let mut surface = SurfaceInteraction::new(
-            p,
-            (o + dir * t).truncate(),
-            Vec3::Z,
-            -ray.o.dir,
-            Vec3::X,
-            Vec3::Y,
-            Vec3::ZERO,
-            Vec3::ZERO,
-            t,
+            common,
+            shading,
             Some(self),
-            None,
+            None
         );
         transform_interaction(self.obj_to_world, &mut surface);
         Some(surface)
@@ -81,15 +78,18 @@ impl<'a> Primitive for Rectangle<'a> {
         let max = self.obj_to_world.transform_point3(Vec3::ONE) + Vec3::splat(0.003);
         Bound::<3>::new(min, max)
     }
-    fn hit_p(&self,ray:&crate::pbrt_core::tool::RayDiff)->bool {
+    fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
         let o = self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let t = -o.z / dir.z;
         let p = o + dir * t;
-        if p.x <= 0.0 || p.x >= 1.0 || t <= ray.o.t_min ||t>=ray.o.t_max {
+        if t < ray.o.t_min || t > ray.o.t_max{
             return false;
         }
-        if p.y <= 0.0 || p.y >= 1.0 || t <= ray.o.t_min ||t>=ray.o.t_max{
+        if p.x <= 0.0 || p.x >= 1.0 {
+            return false;
+        }
+        if p.y <= 0.0 || p.y >= 1.0 {
             return false;
         }
         true

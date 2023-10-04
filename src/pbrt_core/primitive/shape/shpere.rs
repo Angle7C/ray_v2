@@ -5,7 +5,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{func, Bound, Shading, SurfaceInteraction},
+    tool::{func, Bound, Shading, SurfaceInteraction, InteractionCommon},
 };
 #[derive(Debug)]
 pub struct Shpere<'a> {
@@ -89,16 +89,10 @@ impl<'a> Primitive for Shpere<'a> {
         let dndu = (ff * f - ee * g) * inv_egf * dpdu + (ee * f - ff * e) * inv_egf * dpdv;
         let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
         let shading = Shading::new(dpdu, dpdv, dndu, dndv);
+        let common=InteractionCommon::new(-dir, p, n, t, uv);
         let mut item = SurfaceInteraction::new(
-            p,
-            uv,
-            Vec3::ZERO-p.normalize(),
-            -ray.o.dir,
-            shading.dpdu,
-            shading.dpdv,
-            shading.dndu,
-            shading.dndv,
-            t,
+            common,
+            shading,
             Some(self),
             None,
         );
@@ -120,7 +114,7 @@ impl<'a> Primitive for Shpere<'a> {
             }else if t1>0.0&&t2>0.0{
                 t1.min(t2)
             }else{
-                f32::MIN
+                return false;
             };
             if t <ray.o.t_min||t> ray.o.t_max{
                 return false;

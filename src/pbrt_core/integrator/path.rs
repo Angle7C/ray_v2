@@ -1,6 +1,7 @@
 use glam::Vec3;
 use log::info;
 
+
 use crate::pbrt_core::{
     bxdf::BxDFType,
     primitive::Primitive,
@@ -8,7 +9,7 @@ use crate::pbrt_core::{
     tool::{color::Color, sence::Sence, RayDiff},
 };
 
-use super::{unifrom_sample_one_light, IntegratorAble, get_light};
+use super::{unifrom_sample_one_light, IntegratorAble};
 
 //路径追踪积分器
 pub struct PathIntegrator {
@@ -33,7 +34,7 @@ impl IntegratorAble for PathIntegrator {
             if p > self.q {
                 None
             } else {
-                Some(1.0 - self.q)
+                Some(1.0 -p)
             }
         } else {
             Some(1.0)
@@ -45,6 +46,7 @@ impl IntegratorAble for PathIntegrator {
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
+        let mut stack=vec![];
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {
@@ -72,14 +74,17 @@ impl IntegratorAble for PathIntegrator {
                     beta *= f;
                     // specular = (samped_type & BxDFType::Specular as u32) > 0;
                     ray = item.spawn_ray(&w_in);
+                    stack.push(f);
+                    if ans.x>1.0||ans.y>1.0||ans.z>1.0{
+                        info!("ans: {ans} ,f: {:#?}\n",stack)
+                    }
                 }
             } else {
                 //环境光采样
-                return ans;
+                break;
             }
             beta = beta / p;
         }
-
         ans
     }
 }

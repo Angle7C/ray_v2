@@ -1,6 +1,6 @@
 
 
-use glam::{Mat4, Vec2, Vec3};
+use glam::{Vec2, Vec3};
 
 use crate::pbrt_core::{
     primitive::Primitive,
@@ -80,7 +80,7 @@ impl Primitive for Point {
         let bound = Bound::<3>::new(Vec3::splat(-0.0003) + self.p, Vec3::splat(0.0003) + self.p);
         bound
     }
-    fn hit_p(&self,ray:&RayDiff)->bool {
+    fn hit_p(&self,_ray:&RayDiff)->bool {
         false
     }
 }

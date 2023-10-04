@@ -2,7 +2,7 @@ use glam::UVec2;
 
 
 
-use super::sence::Sence;
+
 
 pub struct Setting {
     pub core_num: u64,

@@ -54,7 +54,7 @@ impl Primitive for InfiniteLight {
         // interaction.common.time=f32::MAX;
         // Some(interaction)
     }
-    fn hit_p(&self,ray:&RayDiff)->bool {
+    fn hit_p(&self,_ray:&RayDiff)->bool {
         false
     }
 }

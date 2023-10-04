@@ -1,5 +1,6 @@
 use std::ops::Add;
 
+use bvh::aabb::AABB;
 // use bvh::aabb::AABB;
 use glam::{Vec2, Vec3};
 
@@ -31,7 +32,7 @@ impl Ray {
             origin,
             dir: dir.normalize(),
             t_max: f32::MAX,
-            t_min: 0.001,
+            t_min: 0.0,
         }
     }
     pub fn at(&self, t: f32) -> Vec3 {
@@ -89,13 +90,13 @@ pub struct Bound<const N: usize> {
     pub max: Vec3,
 }
 
-// impl From<Bound<3>> for AABB {
-//     fn from(value: Bound<3>) -> Self {
-//         let min = value.min;
-//         let max = value.max;
-//         Self { min, max }
-//     }
-// }
+impl From<Bound<3>> for AABB {
+    fn from(value: Bound<3>) -> Self {
+        let min = value.min;
+        let max = value.max;
+        Self { min, max }
+    }
+}
 
 impl Bound<2> {
     pub fn new(min: Vec2, max: Vec2) -> Self {
@@ -199,34 +200,15 @@ pub struct SurfaceInteraction<'a> {
 }
 impl<'a> SurfaceInteraction<'a> {
     pub fn new(
-        p: Vec3,
-        uv: Vec2,
-        n:Vec3,
-        w_out: Vec3,
-        dpdu: Vec3,
-        dpdv: Vec3,
-        dndu: Vec3,
-        dndv: Vec3,
-        time: f32,
+        common:InteractionCommon,
+        shading:Shading,
         shape: Option<&'a dyn Primitive>,
         light: Option<&'a dyn LightAble>,
     ) -> Self {
         Self {
-            common: InteractionCommon {
-                w0: w_out.normalize(),
-                p: p,
-                normal:n,
-                time: time,
-                uv,
-            },
+            common,
             shape,
-            shading: Shading {
-                 n,
-                dpdu,
-                dpdv,
-                dndu,
-                dndv,
-            },
+            shading,
             bsdf: None,
             light: light,
         }

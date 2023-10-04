@@ -147,21 +147,7 @@ impl<'a> Primitive for Triangle<'a> {
             let normal = (n0 * a + n1 * b + n2 * c).normalize();
             let uv = uv0 * a + uv1 * b + uv2 * c;
             let shading = self.compute_dnuv(normal.normalize());
-
-            let surface = SurfaceInteraction::new(
-                p,
-                uv,
-                normal,
-                -ray.o.dir,
-                shading.dpdu,
-                shading.dpdv,
-                shading.dndu,
-                shading.dndv,
-                t,
-                Some(self),
-                None,
-            );
-            Some(surface)
+            unimplemented!();
         }
     }
     fn compute_scattering(&self, surface: &mut SurfaceInteraction, mode: TransportMode) {
@@ -170,7 +156,7 @@ impl<'a> Primitive for Triangle<'a> {
             None => (),
         }
     }
-    fn hit_p(&self,ray:&RayDiff)->bool {
+    fn hit_p(&self,_ray:&RayDiff)->bool {
         false
     }
 }

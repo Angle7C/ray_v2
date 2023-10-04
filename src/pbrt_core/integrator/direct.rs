@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use crate::pbrt_core::{
     primitive::Primitive,
     sampler::Sampler,
-    tool::{sence::Sence, RayDiff, color::Color, Visibility, InteractionCommon}, light::LightAble, bxdf::BxDFType,
+    tool::{sence::Sence, RayDiff, color::Color}, light::LightAble,
 };
 
 use super::{uniform_sample_all_light};
@@ -39,7 +39,7 @@ impl DirectIntegrator {
                 return ans;
             }
             item.compute_scattering(ray, mode);
-            if let Some(bsdf) = &item.bsdf {
+            if let Some(_bsdf) = &item.bsdf {
                 // return (item.common.normal+Vec3::ONE)/2.0;
                 ans += beta * uniform_sample_all_light(&item, sence, sampler.clone(),n_sample,false);
                 // ans+=beta *get_light(&item,sampler.sample_2d(),sence,sampler.clone(),false,false);

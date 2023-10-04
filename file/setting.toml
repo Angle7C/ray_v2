@@ -16,29 +16,29 @@ trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 1.0] }
 r = 1.0
 material_index = 0
 
-[[primitive]]
-mode = "Shpere"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, -100.0] }
-r = 98.0
-material_index = 0
 # [[primitive]]
-# mode = "Rect"
-# trans = { r = [
-#     1.0,
-#     0.0,
-#     0.0,
-#     0.0,
-# ], s = [
-#     8.0,
-#     8.0,
-#     1.0,
-# ], t = [
-#     0.0,
-#     0.0,
-#     0.0,
-# ] }
+# mode = "Shpere"
+# trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, -100.0] }
+# r = 97.0
 # material_index = 0
-# # r = 100.0
+[[primitive]]
+mode = "Rect"
+trans = { r = [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+], s = [
+    8.0,
+    8.0,
+    1.0,
+], t = [
+    0.0,
+    0.0,
+    0.0,
+] }
+material_index = 0
+# r = 100.0
 
 [[shapes]]
 mode = "Rect"
@@ -85,14 +85,14 @@ shape_index = 0
 #world_center = [0.0, 0.0, 0.0]
 #world_radius = 10000.0
 
-# [intergator]
-# mode = "Path"
-# core_num = 10
-# sample_num = 1
-# q = 0.5
-# max_depth = 3
 [intergator]
-mode = "Direct"
-sample_num = 1
+mode = "Path"
 core_num = 10
-startegy = "UniformOne"
+sample_num = 1
+q = 0.5
+max_depth = 1
+# [intergator]
+# mode = "Direct"
+# sample_num = 1
+# core_num = 10
+# startegy = "UniformOne"

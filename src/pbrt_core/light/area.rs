@@ -71,7 +71,7 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
                 a: *light_common,
                 b: *surface_common,
             };
-            self.l(light_common, &-*wi)
+            self.l(light_common, wi)
         }
     }
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {

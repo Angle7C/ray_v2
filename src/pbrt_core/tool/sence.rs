@@ -53,7 +53,7 @@ impl Sence {
             }
         });
 
-        let accel = Box::new(BVH::new(geoemtry));
+        let accel = Box::new(BVH::new(geoemtry.leak()));
         // let x = t.leak();
         let sence = Self {
             shape: primitive,

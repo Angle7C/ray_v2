@@ -1,23 +1,16 @@
-use rtbvh::{Builder, Bvh};
 
 use crate::pbrt_core::tool::SurfaceInteraction;
 
 use super::{Aggregate, GeometricePrimitive, Primitive};
 
 pub struct BVH<'b> {
-    geo: Vec<GeometricePrimitive<'b>>,
-    accel: rtbvh::Bvh,
+    geo: &'b[GeometricePrimitive<'b>],
+    accel: bvh::bvh::BVH,
 }
 
 impl<'b> BVH<'b> {
-    pub fn new(mut shape: Vec<GeometricePrimitive<'b>>) -> Self {
-        let builder = Builder {
-            aabbs: None,
-            primitives: shape.as_slice(),
-            primitives_per_leaf: None,
-        };
-        let bvh = builder.construct_binned_sah().unwrap();
-        // let flat_bvh = bvh::bvh::BVH::build(&mut shape);
+    pub fn new(shape: &'b mut [GeometricePrimitive<'b>]) -> Self {
+        let bvh = bvh::bvh::BVH::build(shape);
         Self {
             geo: shape,
             accel: bvh,
@@ -28,15 +21,13 @@ impl<'b> BVH<'b> {
 impl<'b> Aggregate for BVH<'b> {
     fn interacect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let o_ray = ray.clone();
-        let mut bvh_ray = rtbvh::Ray::new(ray.o.origin, ray.o.dir);
-        let iter = self.accel.traverse_iter(&mut bvh_ray, &self.geo);
-        // let mut ray = bvh::ray::Ray::new(o_ray.o.origin, o_ray.o.dir);
-        // let iter = self.accel.traverse_iterator(&mut ray, &self.geo);
+        let bvh_ray = bvh::ray::Ray::new(ray.o.origin, ray.o.dir);
+        let iter = self.accel.traverse_iterator(&bvh_ray, &self.geo);
         let mut ans: Option<SurfaceInteraction> = None;
         let t_max = o_ray.o.t_max;
         let t_min = o_ray.o.t_min;
         let mut t = f32::MAX;
-        for (shape,t_ray) in iter {
+        for shape in iter {
             match shape.interacect(o_ray) {
                 Some(v) if v.common.time > t_min && v.common.time < t_max && t > v.common.time => {
                     t = v.common.time;
@@ -49,12 +40,10 @@ impl<'b> Aggregate for BVH<'b> {
         ans
     }
     fn hit_p(&self,ray: &crate::pbrt_core::tool::RayDiff)->bool {
-        let mut bvh_ray = rtbvh::Ray::new(ray.o.origin, ray.o.dir);
-        let iter = self.accel.traverse_iter(&mut bvh_ray, &self.geo);
-        // let mut ray = bvh::ray::Ray::new(o_ray.o.origin, o_ray.o.dir);
-        // let iter = self.accel.traverse_iterator(&mut ray, &self.geo);
-        for (shape,_) in iter {
-           if shape.hit_p(ray){
+        let bvh_ray = bvh::ray::Ray::new(ray.o.origin, ray.o.dir);
+        let iter = self.accel.traverse_iterator(&bvh_ray, &self.geo);
+        for shape in iter {
+           if shape.hit_p(ray) {
                 return true
            }
             

@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
+
 use super::{
     bxdf::TransportMode,
     light::LightAble,
@@ -134,34 +136,18 @@ impl<'a> GeometricePrimitive<'a> {
         }
     }
 }
-// impl<'a> Bounded for GeometricePrimitive<'a> {
-//     fn aabb(&self) -> ::bvh::aabb::AABB {
-//         let bound = self.primitive.world_bound();
-//         bound.into()
-//     }
-// }
-// impl<'a> BHShape for GeometricePrimitive<'a> {
-//     fn bh_node_index(&self) -> usize {
-//         self.node_index
-//     }
-//     fn set_bh_node_index(&mut self, i: usize) {
-//         self.node_index = i
-//     }
-// }
-impl<'a> rtbvh::Primitive for GeometricePrimitive<'a> {
-    
-    fn aabb(&self) -> rtbvh::Aabb {
+impl<'a> Bounded for GeometricePrimitive<'a> {
+    fn aabb(&self) -> ::bvh::aabb::AABB {
         let bound = self.primitive.world_bound();
-        rtbvh::Aabb {
-            min: bound.min,
-            extra1: 0,
-            max:bound.max,
-            extra2: 0,
-        }
+        bound.into()
     }
-    fn center(&self) -> glam::Vec3 {
-        let bound = self.primitive.world_bound();
-        (bound.max+bound.min)/2.0
+}
+impl<'a> BHShape for GeometricePrimitive<'a> {
+    fn bh_node_index(&self) -> usize {
+        self.node_index
+    }
+    fn set_bh_node_index(&mut self, i: usize) {
+        self.node_index = i
     }
 }
 impl<'a> Primitive for GeometricePrimitive<'a> {
