@@ -17,6 +17,17 @@ pub struct MetalMaterial{
 
     remap:bool
 }
+impl MetalMaterial {
+    pub fn new(  eta: Arc<dyn Texture>,
+        // 金属率
+        k: Arc<dyn Texture>,
+        // roughness ,u_roughness,v_roughness
+        // 粗糙度
+        roughness:Arc<dyn Texture>,remap:bool)->Self{
+            Self { eta, k, roughness, remap }
+
+    }
+}
 impl Material for MetalMaterial{
     
     

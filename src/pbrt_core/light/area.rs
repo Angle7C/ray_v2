@@ -48,7 +48,7 @@ impl<'a> AreaLight for DiffuseAreaLight<'a> {
 
 impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn get_n_sample(&self) -> usize {
-        8
+        128
     }
     fn sample_li(
         &self,

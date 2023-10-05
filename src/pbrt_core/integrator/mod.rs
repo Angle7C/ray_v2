@@ -291,7 +291,6 @@ pub fn estimate_direct(
         &mut light_pdf,
         &mut vis,
     );
-    // return vis.g_inf(sence)*Vec3::ONE;
     //合理的pdf和采样出光线
     if light_pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         //计算BSDF

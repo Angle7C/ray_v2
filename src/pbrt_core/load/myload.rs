@@ -4,6 +4,7 @@ use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use serde::{Deserialize, Serialize};
 
 
+use crate::pbrt_core::material::metal::MetalMaterial;
 use crate::pbrt_core::material::mirror::Mirror;
 use crate::pbrt_core::{
     camera::{Camera, CameraMode},
@@ -74,6 +75,12 @@ impl MyLoad {
                 MaterialToml::Mirror { kr } => {
                     let kr = texture.get(*kr).unwrap();
                     Box::new(Mirror::new(kr.clone()))
+                }
+                MaterialToml::Metal { eta, k, roughness }=>{
+                    let eta=texture.get(*eta).clone().unwrap();
+                    let k=texture.get(*k).clone().unwrap();
+                    let roughness = texture.get(*roughness).unwrap();
+                    Box::new(MetalMaterial::new(eta.clone(), k.clone(), roughness.clone(), false))
                 }
                 //    MaterialToml::Fourier {  } => todo!(),
                 _ => todo!(),
@@ -308,7 +315,11 @@ pub enum MaterialToml {
     Mirror {
         kr: usize,
     },
-    Fourier {},
+    Metal{
+        eta:usize,
+        k:usize,
+        roughness:usize
+    }
 }
 
 #[derive(Deserialize, Debug, Serialize)]
