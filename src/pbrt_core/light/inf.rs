@@ -65,7 +65,7 @@ impl LightAble for InfiniteLight {
         1.0
     }
 
-    fn le(&self, ray: RayDiff) -> Vec3 {
+    fn le(&self, ray: &RayDiff) -> Vec3 {
         let w = self.obj_to_world.inverse().transform_vector3(ray.o.dir).normalize();
         let mut phi = (w.y).atan2(w.x);
         //uv计算
@@ -115,11 +115,11 @@ impl LightAble for InfiniteLight {
         pdf: &mut f32,
         vis: &mut Visibility,
     ) -> Vec3 {
-        let _theta = u.x * PI;
-        let _phi = u.y * 2.0 * PI;
-        // let (sin_t, cos_t) = theta.sin_cos();
-        // let (sin_phi, cos_phi) = phi.sin_cos();
-        // *w_in = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
+        let theta = u.x * PI;
+        let phi = u.y * 2.0 * PI;
+        let (sin_t, cos_t) = theta.sin_cos();
+        let (sin_phi, cos_phi) = phi.sin_cos();
+        *wi = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
         let hit_p = surface_common.p + *wi * 2.0 * self.r;
         let common = InteractionCommon::new(*wi, hit_p, *wi, 01.0, u);
         *vis = Visibility {
@@ -127,7 +127,7 @@ impl LightAble for InfiniteLight {
             b: common,
         };
         *pdf = 1.0;
-        self.color.evaluate(&common)
+        self.color.evaluate(&common)*self.lemit
     }
     fn get_index(&self)->usize {
         self.index   

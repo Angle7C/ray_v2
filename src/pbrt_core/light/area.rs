@@ -90,7 +90,7 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn get_index(&self) -> usize {
         self.index
     }
-    fn le(&self, ray: RayDiff) -> Color {
+    fn le(&self, ray: &RayDiff) -> Color {
         if Vec3::Z.dot(ray.o.dir) > 0.0 {
             self.lemit
         } else {

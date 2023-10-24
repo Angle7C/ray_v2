@@ -1,9 +1,11 @@
+use std::path::Path;
 use std::sync::Arc;
 
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
+use image::codecs::hdr::HdrEncoder;
 use serde::{Deserialize, Serialize};
 
-
+use crate::pbrt_core::light::inf::InfiniteLight;
 use crate::pbrt_core::material::metal::MetalMaterial;
 use crate::pbrt_core::material::mirror::Mirror;
 use crate::pbrt_core::{
@@ -34,6 +36,7 @@ static mut SHAPE: Vec<Shape> = vec![];
 pub struct MyLoad {
     camera: CameraToml,
     primitive: Vec<ShapeToml>,
+    #[serde(default)]
     shapes: Vec<ShapeToml>,
     material: Vec<MaterialToml>,
     light: Vec<LightToml>,
@@ -76,11 +79,16 @@ impl MyLoad {
                     let kr = texture.get(*kr).unwrap();
                     Box::new(Mirror::new(kr.clone()))
                 }
-                MaterialToml::Metal { eta, k, roughness }=>{
-                    let eta=texture.get(*eta).clone().unwrap();
-                    let k=texture.get(*k).clone().unwrap();
+                MaterialToml::Metal { eta, k, roughness } => {
+                    let eta = texture.get(*eta).clone().unwrap();
+                    let k = texture.get(*k).clone().unwrap();
                     let roughness = texture.get(*roughness).unwrap();
-                    Box::new(MetalMaterial::new(eta.clone(), k.clone(), roughness.clone(), false))
+                    Box::new(MetalMaterial::new(
+                        eta.clone(),
+                        k.clone(),
+                        roughness.clone(),
+                        false,
+                    ))
                 }
                 //    MaterialToml::Fourier {  } => todo!(),
                 _ => todo!(),
@@ -95,6 +103,7 @@ impl MyLoad {
         for texture in &self.texture {
             let box_texture: Arc<dyn Texture> = match texture {
                 TextureToml::Image { path } => {
+                    let path = Path::new("image").join(path);
                     let image = image::io::Reader::open(path).expect("").decode().expect("");
                     let image_data = ImageData::new_dynimage(image);
                     let mipmap = MipMap::new(image_data);
@@ -135,7 +144,7 @@ impl MyLoad {
     fn load_light<'a>(
         &'a self,
         shape: &'static [Shape<'static>],
-        _texture: &'static [Arc<dyn Texture>],
+        texture: &'static [Arc<dyn Texture>],
     ) -> Vec<Light> {
         let mut vec = vec![];
         for (index, item) in self.light.iter().enumerate() {
@@ -144,21 +153,22 @@ impl MyLoad {
                     // trans,
                     point,
                     lemit,
-                } => {
-                    Light::PointLight(Box::new(Point::new(*lemit, *point,  index)))
-                }
+                } => Light::PointLight(Box::new(Point::new(*lemit, *point, index))),
                 LightToml::Area { lemit, shape_index } => Light::AreaLight(Box::new(
                     DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap(), index),
                 )),
                 LightToml::Infinite {
-                    world_center: _,
-                    world_radius: _,
-                    lemit: _,
-                    skybox: _,
-                } => {
-                    continue;
-                    // Light::Infinite(Box::new(InfiniteLight::new(*world_radius, *world_center, texture.get(*skybox).unwrap().clone(), Mat4::default(), *lemit)))
-                }
+                    world_center,
+                    world_radius,
+                    skybox,
+                } => Light::Infinite(Box::new(InfiniteLight::new(
+                    *world_radius,
+                    *world_center,
+                    texture.get(*skybox).unwrap().clone(),
+                    Mat4::default(),
+                    Vec3::ONE/255.0,
+                    index,
+                ))),
                 _ => todo!(),
             };
             vec.push(light)
@@ -315,11 +325,11 @@ pub enum MaterialToml {
     Mirror {
         kr: usize,
     },
-    Metal{
-        eta:usize,
-        k:usize,
-        roughness:usize
-    }
+    Metal {
+        eta: usize,
+        k: usize,
+        roughness: usize,
+    },
 }
 
 #[derive(Deserialize, Debug, Serialize)]
@@ -334,7 +344,6 @@ pub enum TextureToml {
 #[serde(tag = "mode")]
 pub enum LightToml {
     Point {
-        // trans: TransformToml,
         point: Vec3,
         lemit: Vec3,
     },
@@ -361,7 +370,6 @@ pub enum LightToml {
     },
     Infinite {
         skybox: usize,
-        lemit: Vec3,
         world_center: Vec3,
         world_radius: f32,
     },

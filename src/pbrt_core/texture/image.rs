@@ -1,4 +1,4 @@
-use glam::Vec3;
+use glam::{Vec3, Vec2};
 
 
 use crate::pbrt_core::{filter::Filter, tool::mipmap::MipMap};
@@ -19,10 +19,8 @@ impl ImageTexture {
 }
 
 impl Texture for ImageTexture {
-    fn evaluate(&self, _inter: &crate::pbrt_core::tool::InteractionCommon) -> Vec3 {
-        // let uv=self.filter.filter_uv(&inter.uv);
-        // Distribution
-        Vec3::ZERO
+    fn evaluate(&self, inter: &crate::pbrt_core::tool::InteractionCommon) -> Vec3 {
+        self.mipmap.lookup(inter.uv,Vec2::ZERO,Vec2::ZERO)
         
     }
 }

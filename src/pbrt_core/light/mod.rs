@@ -56,7 +56,7 @@ impl Primitive for Light {
             Light::Infinite(ref infinite) => infinite.world_bound(),
         }
     }
-    fn hit_p(&self,ray:&RayDiff)->bool {
+    fn hit_p(&self, ray: &RayDiff) -> bool {
         match &self {
             Light::AreaLight(area) => area.hit_p(ray),
             Light::PointLight(point) => point.hit_p(ray),
@@ -117,14 +117,21 @@ impl LightAble for Light {
         }
     }
 
-    fn get_index(&self)->usize {
+    fn get_index(&self) -> usize {
         match self {
             Light::AreaLight(area) => area.get_index(),
             Light::PointLight(p) => p.get_index(),
             Light::Infinite(inf) => inf.get_index(),
         }
     }
+    fn le(&self, ray: &RayDiff) -> Color {
+        match self {
+            Self::Infinite(inf) => inf.le(ray),
+            Self::AreaLight(area) => area.le(ray),
+            Self::PointLight(point) => point.le(ray),
 
+        }
+    }
 }
 
 pub trait LightAble: Debug + Primitive {
@@ -141,12 +148,12 @@ pub trait LightAble: Debug + Primitive {
     //pdf采样
     fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32;
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color;
-    fn le(&self,_ray:RayDiff)->Color{
+    fn le(&self, _ray: &RayDiff) -> Color {
         Color::ZERO
     }
     fn get_type(&self) -> LightType;
     fn get_n_sample(&self) -> usize;
-    fn get_index(&self)->usize;
+    fn get_index(&self) -> usize;
 }
 
 pub enum LightType {

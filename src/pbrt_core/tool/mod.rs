@@ -225,7 +225,7 @@ impl<'a> SurfaceInteraction<'a> {
     }
     pub fn le(&self, ray: RayDiff) -> Vec3 {
         if let Some(light) = self.light {
-            light.le(ray)
+            light.le(&ray)
         } else {
             Vec3::ZERO
         }

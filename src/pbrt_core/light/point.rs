@@ -27,7 +27,7 @@ impl Point {
 
 impl LightAble for Point {
     #[inline]
-    fn le(&self, _ray: RayDiff) -> Vec3 {
+    fn le(&self, _ray: &RayDiff) -> Vec3 {
         Vec3::ZERO
     }
     #[inline]

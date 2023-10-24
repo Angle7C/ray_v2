@@ -1,19 +1,20 @@
 use std::default::Default;
 use std::fmt::Debug;
 
-use crate::pbrt_core::light::Light;
+use crate::pbrt_core::light::{Light, LightAble};
 use crate::pbrt_core::{
     camera::Camera,
     primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
 };
 
-use super::Bound;
+use super::color::Color;
+use super::{Bound, RayDiff};
 
 pub struct Sence {
     shape: &'static [Box<dyn Primitive>],
     pub camera: Camera,
     pub light: &'static [Light],
-    env: Vec<&'static Light>,
+    pub env: Vec<&'static Light>,
     bound: Bound<3>,
     // material: Vec<Box<dyn Material>>,
     accel: Option<Box<dyn Aggregate>>,
@@ -68,8 +69,12 @@ impl Sence {
 }
 
 impl Sence {
-    pub fn has_env(&self) -> bool {
-        !self.env.is_empty()
+    pub fn sample_env_light(&self, ray: &RayDiff) -> Color {
+        let mut ans = Color::default();
+        for env_light in &self.env {
+            ans += env_light.le(ray);
+        }
+        ans
     }
 }
 
@@ -91,7 +96,7 @@ impl Primitive for Sence {
             None
         }
     }
-    fn hit_p(&self,ray:&super::RayDiff)->bool {
+    fn hit_p(&self, ray: &super::RayDiff) -> bool {
         if self.interacect_bound(&ray) {
             if let Some(accel) = &self.accel {
                 accel.hit_p(&ray)
