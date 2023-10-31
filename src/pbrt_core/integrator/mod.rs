@@ -312,7 +312,7 @@ pub fn estimate_direct(
             }
         }
         let scattle_pdf = if let Some(ref bsdf) = inter.bsdf {
-            bsdf.pdf(&inter.common.w0, &wi, bxdf_flags)
+            bsdf.pdf(&inter.common.w0, &-wi, bxdf_flags)
         } else {
             1.0
         };
@@ -325,7 +325,7 @@ pub fn estimate_direct(
             }
              else {
                 let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
-                ld +=  li *f * vis.g(sence)*weight/light_pdf;
+                ld +=  li *f * vis.g(sence)*weight/scattle_pdf;
             }
         }
     }
