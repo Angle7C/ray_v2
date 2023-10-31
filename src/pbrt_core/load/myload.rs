@@ -2,7 +2,6 @@ use std::path::Path;
 use std::sync::Arc;
 
 use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
-use image::codecs::hdr::HdrEncoder;
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::light::inf::InfiniteLight;
@@ -39,6 +38,7 @@ pub struct MyLoad {
     #[serde(default)]
     shapes: Vec<ShapeToml>,
     material: Vec<MaterialToml>,
+    #[serde(default)]
     light: Vec<LightToml>,
     // env_light: Vec<LightToml>,
     texture: Vec<TextureToml>,

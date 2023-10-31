@@ -103,31 +103,31 @@ impl LightAble for InfiniteLight {
     }
 
     fn get_n_sample(&self) -> usize {
-        1
+        32
     }
 
     fn sample_li(
         &self,
         surface_common: &InteractionCommon,
-        _light_common: &mut InteractionCommon,
+        light_common: &mut InteractionCommon,
         u: Vec2,
         wi: &mut Vec3,
         pdf: &mut f32,
         vis: &mut Visibility,
     ) -> Vec3 {
-        let theta = u.x * PI;
-        let phi = u.y * 2.0 * PI;
+        let phi=u.x*2.0*PI;
+        let theta=u.y*PI;
         let (sin_t, cos_t) = theta.sin_cos();
         let (sin_phi, cos_phi) = phi.sin_cos();
-        *wi = self.obj_to_world.transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
-        let hit_p = surface_common.p + *wi * 2.0 * self.r;
-        let common = InteractionCommon::new(*wi, hit_p, *wi, 01.0, u);
+        *wi=Vec3::new(sin_t*cos_phi, sin_t*sin_phi, cos_t);
+        let p=surface_common.p+*wi*self.r*2.0;
+        *light_common=InteractionCommon::new(*wi, p, -*wi, 0.01, u);
         *vis = Visibility {
-            a: *surface_common,
-            b: common,
+            a: *light_common,
+            b: *surface_common,
         };
         *pdf = 1.0;
-        self.color.evaluate(&common)*self.lemit
+        self.color.evaluate(&light_common)*self.lemit
     }
     fn get_index(&self)->usize {
         self.index   

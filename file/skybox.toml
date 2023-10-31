@@ -5,40 +5,44 @@ mode = "P"
 size = [1024.0, 1024.0]
 far = 1000.0
 near = 0.01
-eye = [0.0, 20.0, 8.0]
+eye = [0.0, 10.0, 4.0]
 target = [0.0, -8.0, 0.0]
 up = [0.0, 1.0, 0.0]
 fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 1
-sample_num = 1
-q = 0.8
-max_depth = 3
+core_num = 10
+sample_num = 10
+q = 0.4
+max_depth = 2
 
 [[primitive]]
 mode = "Rect"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 0.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, -3.0, 0.0] }
 material_index = 0
 
-[[primitive]]
-mode = "Shpere"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }
-r=1.0
-material_index = 0
+# [[primitive]]
+# mode = "Shpere"
+# trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }
+# r=1.0
+# material_index = 0
 
 [[light]]
 mode = "Infinite"
-world_center = [0.0,0.0,0.0]
+world_center = [0.0, 0.0, 0.0]
 world_radius = 10000.0
-skybox=1
-
+skybox = 1
 
 
 [[material]]
 mode = "Matte"
 kd = 0
+sigma = 0.0
+
+[[material]]
+mode = "Mirror"
+kr = 0
 sigma = 0.0
 
 
@@ -54,6 +58,3 @@ path = "kloofendal_43d_clear_puresky_1k.hdr"
 # [[texture]]
 # mode = "Image"
 # path = "Cube_BaseColor.png"
-
-
-

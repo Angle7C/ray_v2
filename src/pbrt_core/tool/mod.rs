@@ -215,7 +215,6 @@ impl<'a> SurfaceInteraction<'a> {
     }
     pub fn compute_scattering(&mut self, _ray: RayDiff, _mode: TransportMode) {
         if let Some(shape) = self.shape {
-            // let primitive = &*shape ;
             shape.compute_scattering(self, TransportMode::Importance);
         }
     }

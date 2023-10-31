@@ -1,3 +1,5 @@
+use std::{process::exit, time::{Duration, SystemTime}, io::stdout, ops::Sub};
+
 use glam::Vec3;
 use log::info;
 
@@ -30,12 +32,13 @@ impl IntegratorAble for PathIntegrator {
     fn is_next(&self, dept: &mut usize) -> Option<f32> {
         *dept += 1;
         if *dept > self.max_path {
-            let p: f32 = rand::random();
-            if p > self.q {
-                None
-            } else {
-                Some(1.0 -p)
-            }
+            // let p: f32 = rand::random();
+            // if p > self.q {
+            //     None
+            // } else {
+            //     Some(1.0 -p)
+            // }
+            None
         } else {
             Some(1.0)
         }
@@ -45,20 +48,20 @@ impl IntegratorAble for PathIntegrator {
         let mut dept = 0;
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
-        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
-        let mut stack=vec![];
+        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;   
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {
                     ans += beta * item.le(ray);
+                    // ans+=Vec3::X;
                     return ans;
                 }
-                // ans+=beta*sence.sample_env_light(&ray);
                 item.compute_scattering(ray, mode);
+                // ans+=beta*sence.sample_env_light(&ray);
+             
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
                     ans += beta * unifrom_sample_one_light(&item, sence, sampler.clone(), false);
-                
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = Vec3::default();
@@ -75,7 +78,8 @@ impl IntegratorAble for PathIntegrator {
                         / pdf;
                     beta *= f;
                     ray = item.spawn_ray(&w_in);
-                    stack.push(f);
+                    // stack.push((ans,f,beta,ray));
+                    
                 }
             } else {
                 ans+=beta*sence.sample_env_light(&ray);

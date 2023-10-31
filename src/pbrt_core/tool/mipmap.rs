@@ -29,11 +29,10 @@ impl ImageData {
     pub fn new_dynimage(image: DynamicImage) -> Self {
         let mut image_data = ImageData::default();
         image_data.pixels=vec![];
+        image_data.width = image.width();
+        image_data.height = image.height();
         match image {
             DynamicImage::ImageRgb8(image) => {
-                image_data.width = image.width();
-                image_data.height = image.height();
-                image_data.pixels=vec![];
                 for i in 0..image_data.width{
                     let mut vec=vec![];
                     for j in 0..image_data.height{
@@ -171,8 +170,8 @@ impl MipMap {
         // let y_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
         let level = Level { x: 0, y: 0 };
         let pixel = self.mapping.get(&level).expect("获取MipMap失败");
-        let x=uv.x*self.resolution.x as f32;
-        let y=uv.y*self.resolution.y as f32;
+        let x=uv.x* (self.resolution.x as f32-1.0);
+        let y=uv.y* (self.resolution.y as f32-1.0);
         let pixel = pixel.get(x as usize).unwrap().get(y as usize).unwrap();
         Vec4::from(*pixel).truncate()
 

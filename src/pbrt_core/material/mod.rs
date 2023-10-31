@@ -63,11 +63,12 @@ impl BSDF {
         *pdf = 0.0;
         *sampled_type = bxdf.get_type();
         let mut f = bxdf.sample_f(&w_out, &mut wi, u, pdf);
+        *w_in = self.local_to_world(wi);
+
         if pdf.abs() < f32::EPSILON {
             *sampled_type = 0;
             return Vec3::ZERO;
         }
-        *w_in = self.local_to_world(wi);
 
         if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
             for (index, item) in bxdfs.iter().enumerate() {

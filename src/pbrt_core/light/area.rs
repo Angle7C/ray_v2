@@ -1,4 +1,5 @@
 use glam::{Vec2, Vec3};
+use log::info;
 
 use crate::pbrt_core::light::LightType;
 use crate::pbrt_core::tool::color::Color;
@@ -48,7 +49,7 @@ impl<'a> AreaLight for DiffuseAreaLight<'a> {
 
 impl<'a> LightAble for DiffuseAreaLight<'a> {
     fn get_n_sample(&self) -> usize {
-        128
+        64
     }
     fn sample_li(
         &self,
@@ -106,7 +107,8 @@ impl<'a> Primitive for DiffuseAreaLight<'a> {
     fn interacect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let mut inter = self.shape.interacect(ray);
         if let Some(ref mut suface) = inter {
-            suface.light = self.get_light();
+            info!("{:?}",self.index);
+            suface.light = Some(self);
         }
         inter
     }

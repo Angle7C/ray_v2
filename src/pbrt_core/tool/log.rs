@@ -10,7 +10,7 @@ pub fn log_init() {
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new(
             "[File] {d(%Y-%m-%d %H:%M:%S)} - {l} - {t} - {m}{n}\n",
-        )))
+        ))).append(false)
         .build("log/output.log")
         .unwrap();
     let config = Config::builder()
