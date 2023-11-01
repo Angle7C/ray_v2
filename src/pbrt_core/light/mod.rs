@@ -171,6 +171,12 @@ impl LightType {
             _ => false,
         }
     }
+    pub fn is_inf(flag: LightType)->bool{
+        match flag {
+            LightType::Infinite=>true,
+            _=>false
+        }
+    }
 }
 
 impl BitAnd<u32> for LightType {

@@ -77,7 +77,7 @@ impl Integrator {
         let len = size.x / (core * 2) as u32;
         let num = self.get_sample().num;
         thread::scope(|scope| {
-            for _ in 0..core {
+            for i in 0..core {
                 let pb = m.add(ProgressBar::new(len as u64));
                 pb.set_style(style.clone());
                 scope.spawn(self.render_core(
@@ -87,6 +87,7 @@ impl Integrator {
                     sence,
                     self.get_sample(),
                     pb,
+                    i
                 ));
             }
             drop(sender);
@@ -105,6 +106,7 @@ impl Integrator {
         sence: &'a Sence,
         mut sampler: Sampler,
         pb: ProgressBar,
+        index:usize
     ) -> impl FnOnce() + 'a
     where
         'b: 'a,
@@ -126,9 +128,11 @@ impl Integrator {
 
                     tile.push(color);
                 }
+                
                 pb.inc(1);
                 tiles.push(tile);
             }
+            info!("thread {} close",index);
             pb.finish();
             send.send(tiles).expect("send 失败");
         }
@@ -205,7 +209,7 @@ pub fn uniform_sample_all_light(
     handle_media: bool,
 ) -> Color {
     let mut l = Color::ZERO;
-
+    return Color::ZERO;
     for (index, light) in sence.light.iter().enumerate() {
         let mut ld = Vec3::ZERO;
         if n_light_sample[index] == 1 {
@@ -273,6 +277,7 @@ pub fn estimate_direct(
     _handle_media: bool,
     specular: bool,
 ) -> Color {
+    // return Color::ZERO;
     let bxdf_flags = if specular {
         BxDFType::All.into()
     } else {
@@ -291,6 +296,7 @@ pub fn estimate_direct(
         &mut light_pdf,
         &mut vis,
     );
+
     //合理的pdf和采样出光线
     if light_pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         //计算BSDF
@@ -306,7 +312,7 @@ pub fn estimate_direct(
             }
         }
         let scattle_pdf = if let Some(ref bsdf) = inter.bsdf {
-            bsdf.pdf(&inter.common.w0, &wi, bxdf_flags)
+            bsdf.pdf(&inter.common.w0, &-wi, bxdf_flags)
         } else {
             1.0
         };
@@ -314,50 +320,54 @@ pub fn estimate_direct(
         if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
             if LightType::is_delta(light.get_type()) {
                 ld +=  li *f* vis.g(sence) / light_pdf;
-            } else {
+            }else if LightType::is_inf(light.get_type()){
+                ld+=li*f*vis.g_inf(sence)/light_pdf;
+            }
+             else {
                 let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
-                ld +=  li *f * vis.g(sence)*weight / light_pdf;
+                ld +=  li *f * vis.g(sence)*weight/scattle_pdf;
             }
         }
     }
-    //BSDF重要性采样
-    if !LightType::is_delta(light.get_type()) {
-        let mut sampled_specular = false;
-        let mut smapled_type = BxDFType::None as u32;
-        let mut bsdf_pdf = 0.0;
-        if let Some(ref bsdf) = inter.bsdf {
-            let f = bsdf.sample_f(
-                &inter.common.w0,
-                &mut wi,
-                sampler.sample_2d_d(),
-                &mut bsdf_pdf,
-                bxdf_flags,
-                &mut smapled_type,
-            ) * wi.dot(inter.shading.n).abs();
-            sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
-            if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
-                let weight = if !sampled_specular {
-                    let light_pdf = light.pdf_li(&inter, &wi);
-                    if light_pdf.abs() < f32::EPSILON {
-                        return ld;
-                    }
-                    power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
-                } else {
-                    1.0
-                };
-                let ray = RayDiff::new(Ray::new(inter.common.p, wi));
-                let li =
-                if let Some(ref light_inter) = sence.interacect(ray) {
-                    light_inter.le(ray)
-                }else{
-                    Default::default()
-                };
-                if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                    ld += li * f * weight / bsdf_pdf;
-                }
-            }
-        }
-    };
+    // //BSDF重要性采样
+    // if !LightType::is_delta(light.get_type()) {
+    //     let mut sampled_specular = false;
+    //     let mut smapled_type = BxDFType::None as u32;
+    //     let mut bsdf_pdf = 0.0;
+    //     if let Some(ref bsdf) = inter.bsdf {
+    //         let f = bsdf.sample_f(
+    //             &inter.common.w0,
+    //             &mut wi,
+    //             sampler.sample_2d_d(),
+    //             &mut bsdf_pdf,
+    //             bxdf_flags,
+    //             &mut smapled_type,
+    //         ) * wi.dot(inter.shading.n).abs();
+    //         sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
+    //         if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
+    //             let weight = if !sampled_specular {
+    //                 let light_pdf = light.pdf_li(&inter, &wi);
+    //                 if light_pdf.abs() < f32::EPSILON {
+    //                     return ld;
+    //                 }
+    //                 power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
+    //             } else {
+    //                 1.0
+    //             };
+    //             let ray = RayDiff::new(Ray::new(inter.common.p, wi));
+    //             let li =
+    //             if let Some(ref light_inter) = sence.interacect(ray) {
+    //                 light_inter.le(ray)
+    //             }else{
+    //                 Default::default()
+    //             };
+    //             if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+    //                 ld += li * f * weight / bsdf_pdf;
+    //             }
+       
+    //         }
+    //     }
+    // };
     ld
 }
 

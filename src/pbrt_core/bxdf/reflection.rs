@@ -24,7 +24,7 @@ impl BxDFAble for LambertianReflection {
         BxDFType::Reflection | BxDFType::Diffuse
     }
     fn pdf(&self, w_out: Vec3, w_in: Vec3) -> f32 {
-        if !same_hemisphere(w_out, w_in) {
+        if same_hemisphere(w_out, w_in) {
             cos_theta(&w_in).abs()
         } else {
             0.0

@@ -48,9 +48,9 @@ pub mod shape {
                 Shape::Rect(rect) => rect.world_bound(),
             }
         }
-        fn hit_p(&self,ray:&crate::pbrt_core::tool::RayDiff)->bool {
+        fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
             match &self {
-                Shape::Rect(rect) => rect.hit_p(ray)
+                Shape::Rect(rect) => rect.hit_p(ray),
             }
         }
     }
@@ -99,11 +99,11 @@ pub trait Primitive: Debug {
     fn get_area(&self) -> f32 {
         1.0
     }
-    fn hit_p(&self,ray:&RayDiff)->bool;
+    fn hit_p(&self, ray: &RayDiff) -> bool;
 }
 pub trait Aggregate: Sync {
     fn interacect(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
-    fn hit_p(&self,ray: &RayDiff)->bool;
+    fn hit_p(&self, ray: &RayDiff) -> bool;
 }
 #[derive(Debug)]
 pub enum ObjectType {
@@ -166,7 +166,7 @@ impl<'a> Primitive for GeometricePrimitive<'a> {
     fn get_light(&self) -> Option<&dyn LightAble> {
         self.primitive.get_light()
     }
-    fn hit_p(&self,ray:&RayDiff)->bool{
+    fn hit_p(&self, ray: &RayDiff) -> bool {
         self.primitive.hit_p(ray)
     }
 }

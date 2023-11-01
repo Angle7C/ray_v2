@@ -70,6 +70,9 @@ impl Sence {
 
 impl Sence {
     pub fn sample_env_light(&self, ray: &RayDiff) -> Color {
+        if self.env.len()==0{
+            return Color::default();
+        }
         let mut ans = Color::default();
         for env_light in &self.env {
             ans += env_light.le(ray);
