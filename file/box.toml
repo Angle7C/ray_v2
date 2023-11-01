@@ -51,7 +51,7 @@ material_index = 0
 
 [[primitive]]
 mode = "Shpere"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-1.0, 1.0, 1.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-1.0, 1.0, 4.0] }
 r=1.0
 material_index = 1
 
