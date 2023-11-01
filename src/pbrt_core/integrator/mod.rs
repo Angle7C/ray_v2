@@ -209,7 +209,6 @@ pub fn uniform_sample_all_light(
     handle_media: bool,
 ) -> Color {
     let mut l = Color::ZERO;
-    return Color::ZERO;
     for (index, light) in sence.light.iter().enumerate() {
         let mut ld = Vec3::ZERO;
         if n_light_sample[index] == 1 {
@@ -277,7 +276,6 @@ pub fn estimate_direct(
     _handle_media: bool,
     specular: bool,
 ) -> Color {
-    // return Color::ZERO;
     let bxdf_flags = if specular {
         BxDFType::All.into()
     } else {
@@ -330,44 +328,43 @@ pub fn estimate_direct(
         }
     }
     // //BSDF重要性采样
-    // if !LightType::is_delta(light.get_type()) {
-    //     let mut sampled_specular = false;
-    //     let mut smapled_type = BxDFType::None as u32;
-    //     let mut bsdf_pdf = 0.0;
-    //     if let Some(ref bsdf) = inter.bsdf {
-    //         let f = bsdf.sample_f(
-    //             &inter.common.w0,
-    //             &mut wi,
-    //             sampler.sample_2d_d(),
-    //             &mut bsdf_pdf,
-    //             bxdf_flags,
-    //             &mut smapled_type,
-    //         ) * wi.dot(inter.shading.n).abs();
-    //         sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
-    //         if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
-    //             let weight = if !sampled_specular {
-    //                 let light_pdf = light.pdf_li(&inter, &wi);
-    //                 if light_pdf.abs() < f32::EPSILON {
-    //                     return ld;
-    //                 }
-    //                 power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
-    //             } else {
-    //                 1.0
-    //             };
-    //             let ray = RayDiff::new(Ray::new(inter.common.p, wi));
-    //             let li =
-    //             if let Some(ref light_inter) = sence.interacect(ray) {
-    //                 light_inter.le(ray)
-    //             }else{
-    //                 Default::default()
-    //             };
-    //             if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-    //                 ld += li * f * weight / bsdf_pdf;
-    //             }
-       
-    //         }
-    //     }
-    // };
+    if !LightType::is_delta(light.get_type()) {
+        let mut sampled_specular = false;
+        let mut smapled_type = BxDFType::None as u32;
+        let mut bsdf_pdf = 0.0;
+        if let Some(ref bsdf) = inter.bsdf {
+            let f = bsdf.sample_f(
+                &inter.common.w0,
+                &mut wi,
+                sampler.sample_2d_d(),
+                &mut bsdf_pdf,
+                bxdf_flags,
+                &mut smapled_type,
+            ) * wi.dot(inter.shading.n).abs();
+            sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
+            if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
+                let weight = if !sampled_specular {
+                    let light_pdf = light.pdf_li(&inter, &wi);
+                    if light_pdf.abs() < f32::EPSILON {
+                        return ld;
+                    }
+                    power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
+                } else {
+                    1.0
+                };
+                let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
+                let li =
+                if let Some(ref light_inter) = sence.interacect(ray) {
+                    light_inter.le_dir(ray.o.origin,ray.o.dir)
+                }else{
+                    Default::default()
+                };
+                if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+                    ld += li * f  / bsdf_pdf;
+                }
+            }
+        }
+    };
     ld
 }
 

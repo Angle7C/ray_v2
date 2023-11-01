@@ -1,4 +1,4 @@
-use std::{process::exit, time::{Duration, SystemTime}, io::stdout, ops::Sub};
+use std::{process::exit, time::{Duration, SystemTime}, io::stdout, ops::Sub, f32::consts::E};
 
 use glam::Vec3;
 use log::info;
@@ -32,13 +32,12 @@ impl IntegratorAble for PathIntegrator {
     fn is_next(&self, dept: &mut usize) -> Option<f32> {
         *dept += 1;
         if *dept > self.max_path {
-            // let p: f32 = rand::random();
-            // if p > self.q {
-            //     None
-            // } else {
-            //     Some(1.0 -p)
-            // }
-            None
+            let p=rand::random::<f32>();
+            if p>self.q{
+                None
+            }else{
+                Some(1.0-self.q)
+            }
         } else {
             Some(1.0)
         }
@@ -53,11 +52,9 @@ impl IntegratorAble for PathIntegrator {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {
                     ans += beta * item.le(ray);
-                    // ans+=Vec3::X;
                     return ans;
                 }
                 item.compute_scattering(ray, mode);
-                // ans+=beta*sence.sample_env_light(&ray);
              
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
@@ -78,8 +75,7 @@ impl IntegratorAble for PathIntegrator {
                         / pdf;
                     beta *= f;
                     ray = item.spawn_ray(&w_in);
-                    // stack.push((ans,f,beta,ray));
-                    
+            
                 }
             } else {
                 ans+=beta*sence.sample_env_light(&ray);
