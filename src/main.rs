@@ -8,7 +8,7 @@ mod test;
 pub fn main() {
     log_init();
 
-    let context= Context::new("./file/skybox.toml");
+    let context= Context::new("./file/box.toml");
     context.render();
 
 }

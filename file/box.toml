@@ -12,8 +12,8 @@ fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 14
-sample_num = 1
+core_num = 6
+sample_num = 9
 q = 0.8
 max_depth = 3
 
@@ -101,9 +101,9 @@ value = [0.7, 0.7, 0.7]
 mode = "Constant"
 value = [0.4, 0.8, 0.1]
 
-[[texture]]
-mode = "Image"
-path = "Cube_BaseColor.png"
+# [[texture]]
+# mode = "Image"
+# path = "Cube_BaseColor.png"
 
 [[texture]]
 mode = "Constant"

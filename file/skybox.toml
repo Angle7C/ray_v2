@@ -2,31 +2,31 @@ name = "image"
 
 [camera]
 mode = "P"
-size = [1024.0, 1024.0]
+size = [2048.0, 2048.0]
 far = 1000.0
 near = 0.01
-eye = [0.0, 20.0, 8.0]
+eye = [0.0, 10.0, 4.0]
 target = [0.0, -8.0, 0.0]
 up = [0.0, 1.0, 0.0]
 fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 1
-sample_num = 1
+core_num = 6
+sample_num = 10
 q = 0.8
 max_depth = 3
 
 [[primitive]]
 mode = "Rect"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 0.0] }
-material_index = 0
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, -3.0, 0.0] }
+material_index = 1
 
 [[primitive]]
 mode = "Shpere"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 2.0] }
 r=1.0
-material_index = 0
+material_index = 1
 
 [[light]]
 mode = "Infinite"
@@ -41,15 +41,23 @@ mode = "Matte"
 kd = 0
 sigma = 0.0
 
+[[material]]
+mode = "Mirror"
+kr = 2
 
 [[texture]]
 mode = "Constant"
 value = [0.7, 0.7, 0.7]
 
+
+
 [[texture]]
 mode = "Image"
 path = "kloofendal_43d_clear_puresky_1k.hdr"
 
+[[texture]]
+mode = "Constant"
+value = [0.9, 0.8, 0.7]
 
 # [[texture]]
 # mode = "Image"
