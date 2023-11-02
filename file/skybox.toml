@@ -2,31 +2,37 @@ name = "image"
 
 [camera]
 mode = "P"
-size = [1024.0, 1024.0]
+size = [2048.0, 2048.0]
 far = 1000.0
 near = 0.01
-eye = [0.0, 10.0, 4.0]
+eye = [0.0, 5.0, 5.0]
 target = [0.0, -8.0, 0.0]
 up = [0.0, 1.0, 0.0]
 fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 10
-sample_num = 10
-q = 0.4
-max_depth = 2
+core_num = 16
+sample_num = 16
+q = 0.1
+max_depth = 3
 
 [[primitive]]
 mode = "Rect"
 trans = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, -3.0, 0.0] }
-material_index = 0
+material_index = 1
 
-# [[primitive]]
-# mode = "Shpere"
-# trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 0.0] }
-# r=1.0
-# material_index = 0
+[[primitive]]
+mode = "Shpere"
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-2.0, 0.0, 1.0] }
+r=1.0
+material_index = 1
+
+[[primitive]]
+mode = "Shpere"
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [2.0, 0.0, 1.0] }
+r=1.0
+material_index = 0
 
 [[light]]
 mode = "Infinite"
@@ -52,7 +58,7 @@ value = [0.7, 0.7, 0.7]
 
 [[texture]]
 mode = "Image"
-path = "kloofendal_43d_clear_puresky_1k.hdr"
+path = "kloofendal_48d_partly_cloudy_puresky_1k.hdr"
 
 
 # [[texture]]

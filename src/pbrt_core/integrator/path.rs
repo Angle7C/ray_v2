@@ -36,7 +36,7 @@ impl IntegratorAble for PathIntegrator {
             if p>self.q{
                 None
             }else{
-                Some(1.0-self.q)
+                Some(self.q)
             }
         } else {
             Some(1.0)
@@ -58,7 +58,7 @@ impl IntegratorAble for PathIntegrator {
              
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
-                    ans += beta * unifrom_sample_one_light(&item, sence, sampler.clone(), false);
+                    ans += beta * unifrom_sample_one_light(&item, sence, sampler.clone(), false)/p;
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = Vec3::default();
@@ -82,7 +82,7 @@ impl IntegratorAble for PathIntegrator {
                 //环境光采样
                 break;
             }
-            beta = beta / p;
+            // beta = beta / p;
         }
         ans
     }
