@@ -276,7 +276,6 @@ pub fn estimate_direct(
     _handle_media: bool,
     specular: bool,
 ) -> Color {
-    // return Color::ZERO;
     let bxdf_flags = if specular {
         BxDFType::All.into()
     } else {
@@ -353,17 +352,16 @@ pub fn estimate_direct(
                 } else {
                     1.0
                 };
-                let ray = RayDiff::new(Ray::new(inter.common.p, wi));
+                let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
                 let li =
                 if let Some(ref light_inter) = sence.interacect(ray) {
-                    light_inter.le(ray)
+                    light_inter.le_dir(ray.o.origin,-ray.o.dir)
                 }else{
                     Default::default()
                 };
                 if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                    ld += li * f * weight / bsdf_pdf;
+                    ld += li * f  / bsdf_pdf;
                 }
-       
             }
         }
     };

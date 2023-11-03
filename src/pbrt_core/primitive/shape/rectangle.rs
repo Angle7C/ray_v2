@@ -3,7 +3,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{func::transform_interaction, Bound, InteractionCommon, SurfaceInteraction, Shading},
+    tool::{func::transform_interaction, Bound, InteractionCommon, SurfaceInteraction, Shading, color::Color},
 };
 #[derive(Debug)]
 pub struct Rectangle<'a> {
@@ -33,6 +33,15 @@ impl<'a> Rectangle<'a> {
             .inverse()
             .transpose()
             .transform_vector3(Vec3::Z);
+    }
+    pub fn get_cos(&self,dir:Vec3)->Option<f32>{
+        let dir = self.obj_to_world.inverse().transform_vector3(dir);
+        let cos = Vec3::Z.dot(dir);
+        if cos>0.0{
+            Some(cos)
+        }else{
+            None
+        }
     }
 }
 impl<'a> Primitive for Rectangle<'a> {

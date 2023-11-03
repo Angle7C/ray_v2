@@ -77,6 +77,11 @@ pub mod shape {
                 Self::Rect(rect) => rect.obj_to_world,
             }
         }
+        pub fn get_cos(&self,dir:Vec3)->Option<f32>{
+            match self {
+                Self::Rect(rect) => rect.get_cos(dir),
+            }
+        }
     }
 }
 pub trait Primitive: Debug {

@@ -92,8 +92,8 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         self.index
     }
     fn le(&self, ray: &RayDiff) -> Color {
-        let dir = self.get_shape().get_mat().inverse().transform_vector3(ray.o.dir);
-        if Vec3::Z.dot(dir) > 0.0 {
+        let cos=self.get_shape().get_cos(-ray.o.dir);
+        if cos.is_some(){
             self.lemit
         } else {
             Color::ZERO

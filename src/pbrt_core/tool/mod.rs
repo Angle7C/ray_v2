@@ -230,14 +230,9 @@ impl<'a> SurfaceInteraction<'a> {
             Vec3::ZERO
         }
     }
-   
     pub fn le_dir(&self,o:Vec3,dir:Vec3)->Vec3{
         let ray=RayDiff::new(Ray::new(o, dir));
-        if let Some(light) = self.light {
-            light.le(&ray)
-        } else {
-            Vec3::ZERO
-        }
+        self.le(ray)
     }
 }
 #[derive(Default,Clone, Copy)]

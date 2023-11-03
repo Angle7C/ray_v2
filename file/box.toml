@@ -2,7 +2,7 @@ name = "image"
 
 [camera]
 mode = "P"
-size = [512.0, 512.0]
+size = [1024.0, 1024.0]
 far = 1000.0
 near = 0.01
 eye = [0.0, 8.0, 4.0]
@@ -12,9 +12,9 @@ fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 10
-sample_num = 1
-q = 0.5
+core_num = 16
+sample_num = 128
+q = 0.1
 max_depth = 1
 
 # [intergator]
@@ -51,19 +51,19 @@ material_index = 0
 
 [[primitive]]
 mode = "Shpere"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-1.0, 3.0, 1.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-1.0, 1.0, 4.0] }
 r=1.0
 material_index = 1
 
 [[primitive]]
 mode = "Shpere"
-trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.5, 3.0, 2.0] }
+trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.5, 1.0, 2.0] }
 r=1.0
-material_index = 1
+material_index = 0
 
 [[shapes]]
 mode = "Rect"
-trans = { r = [1.0, 0.0, 0.0, 180.0], s = [1.0, 1.0, 1.0], t = [-0.5, 3.0, 5.5] }
+trans = { r = [1.0, 0.0, 0.0, 180.0], s = [1.0, 1.0, 1.0], t = [-0.5, 3.0, 5.9] }
 material_index = 0
 
 [[light]]
@@ -71,27 +71,26 @@ mode = "Area"
 lemit = [100.0, 100.0, 100.0]
 shape_index = 0
 
+# [[light]]
+# mode = "Infinite"
+# world_center = [0.0, 0.0, 0.0]
+# world_radius = 10000.0
+# skybox = 3
+
 [[material]]
 mode = "Matte"
 kd = 0
 sigma = 0.0
 
 [[material]]
-mode = "Matte"
-kd = 2
+mode = "Mirror"
+kr = 1
 sigma = 0.0
 
 [[material]]
 mode = "Matte"
 kd = 2
 sigma = 0.0
-
-
-# [[material]]
-# mode = "Metal"
-# eta = 3
-# k=2
-# roughness=2
 
 [[texture]]
 mode = "Constant"
