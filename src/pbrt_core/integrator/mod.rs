@@ -355,7 +355,7 @@ pub fn estimate_direct(
                 let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
                 let li =
                 if let Some(ref light_inter) = sence.interacect(ray) {
-                    light_inter.le_dir(ray.o.origin,-ray.o.dir)
+                    light_inter.le(ray)
                 }else{
                     Default::default()
                 };

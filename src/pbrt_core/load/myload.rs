@@ -166,7 +166,7 @@ impl MyLoad {
                     *world_center,
                     texture.get(*skybox).unwrap().clone(),
                     Mat4::default(),
-                    Vec3::ONE/255.0,
+                    Vec3::ONE,
                     index,
                 ))),
                 _ => todo!(),

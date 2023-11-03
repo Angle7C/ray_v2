@@ -28,14 +28,14 @@ pub struct ImageData {
 impl ImageData {
     pub fn new_dynimage(image: DynamicImage) -> Self {
         let mut image_data = ImageData::default();
-        image_data.pixels=vec![];
+        image_data.pixels = vec![];
         image_data.width = image.width();
         image_data.height = image.height();
         match image {
             DynamicImage::ImageRgb8(image) => {
-                for i in 0..image_data.width{
-                    let mut vec=vec![];
-                    for j in 0..image_data.height{
+                for i in 0..image_data.width {
+                    let mut vec = vec![];
+                    for j in 0..image_data.height {
                         let pixel = image.get_pixel(i, j);
                         vec.push(Pixel::new(pixel.0));
                     }
@@ -43,19 +43,19 @@ impl ImageData {
                 }
             }
             DynamicImage::ImageRgba8(image) => {
-                for i in 0..image_data.width{
-                    let mut vec=vec![];
-                    for j in 0..image_data.height{
+                for i in 0..image_data.width {
+                    let mut vec = vec![];
+                    for j in 0..image_data.height {
                         let pixel = image.get_pixel(i, j);
                         vec.push(Pixel::from_sclie(&pixel.0));
                     }
                     image_data.pixels.push(vec);
                 }
             }
-            DynamicImage::ImageRgb16(image)=>{
-               unimplemented!()
+            DynamicImage::ImageRgb16(image) => {
+                unimplemented!()
             }
-            _=> todo!(),
+            _ => todo!(),
         }
         image_data
     }
@@ -85,8 +85,13 @@ impl Pixel {
             w: 1.0,
         }
     }
-    pub fn new(arr:[u8;3])->Self{
-        Self { x:arr[0] as f32, y: arr[1] as f32, z: arr[2] as f32, w: 255.0 }
+    pub fn new(arr: [u8; 3]) -> Self {
+        Self {
+            x: arr[0] as f32 / 255.0,
+            y: arr[1] as f32 / 255.0,
+            z: arr[2] as f32 / 255.0,
+            w: 255.0,
+        }
     }
 }
 impl Add for Pixel {
@@ -139,25 +144,24 @@ impl DerefMut for Pixel {
 
 impl MipMap {
     pub fn new(image_data: ImageData) -> Self {
-        let w_level = f32::log2(image_data.width as f32).ceil() as usize+1;
-        let h_level = f32::log2(image_data.height as f32).ceil() as usize+1;
-        let level=w_level.min(h_level);
+        let w_level = f32::log2(image_data.width as f32).ceil() as usize + 1;
+        let h_level = f32::log2(image_data.height as f32).ceil() as usize + 1;
+        let level = w_level.min(h_level);
         let mut mipmap = MipMap::default();
         //分辨率
         mipmap.resolution = UVec2::new(image_data.width as u32, image_data.height as u32);
         //多级纹理
-        let mut data= Box::new(HashMap::<Level,Vec<Vec<Pixel>>>::new());
+        let mut data = Box::new(HashMap::<Level, Vec<Vec<Pixel>>>::new());
         let w = image_data.width;
         let h = image_data.height;
         data.insert(Level { x: 0, y: 0 }, image_data.pixels);
         //生成多级纹理
         // (0,0)->(0,1)->(1,0)->(1,1)
-        for i in 1..level{
-            let last = Level { x: i-1, y: i-1 };
-            let a=data.get(&last).unwrap();
+        for i in 1..level {
+            let last = Level { x: i - 1, y: i - 1 };
+            let a = data.get(&last).unwrap();
             data.insert(
                 Level { x: i, y: i },
-                
                 //依据上一层生成下一层和左右两边不规则层数。
                 Self::build_floor(a, w >> (i), h >> (i)),
             );
@@ -170,23 +174,22 @@ impl MipMap {
         // let y_level = duvdx.x.max(duvdy.x).sqrt().log2().floor() as usize;
         let level = Level { x: 0, y: 0 };
         let pixel = self.mapping.get(&level).expect("获取MipMap失败");
-        let x=uv.x* (self.resolution.x as f32-1.0);
-        let y=uv.y* (self.resolution.y as f32-1.0);
+        let x = uv.x * (self.resolution.x as f32 - 1.0);
+        let y = uv.y * (self.resolution.y as f32 - 1.0);
         let pixel = pixel.get(x as usize).unwrap().get(y as usize).unwrap();
         Vec4::from(*pixel).truncate()
-
     }
     #[allow(dead_code)]
-    fn build_floor(data: &Vec<Vec<Pixel>>, w: u32, h: u32) -> Vec<Vec<Pixel>> {        
-        let mut vec=vec![];
+    fn build_floor(data: &Vec<Vec<Pixel>>, w: u32, h: u32) -> Vec<Vec<Pixel>> {
+        let mut vec = vec![];
         for i in 0..w {
             let mut pixel: Vec<Pixel> = Vec::new();
             for j in 0..h {
                 let (a, b, c, d) = (
                     data.get(i as usize).unwrap().get(j as usize),
-                    data.get(i as usize).unwrap().get((j+1) as usize),
-                    data.get((i*2) as usize).unwrap().get(j as usize),
-                    data.get((i*2) as usize).unwrap().get((j+1) as usize),
+                    data.get(i as usize).unwrap().get((j + 1) as usize),
+                    data.get((i * 2) as usize).unwrap().get(j as usize),
+                    data.get((i * 2) as usize).unwrap().get((j + 1) as usize),
                 );
                 match (a, b, c, d) {
                     (Some(a), Some(b), Some(c), Some(d)) => {
@@ -201,5 +204,4 @@ impl MipMap {
         }
         vec
     }
-
 }
