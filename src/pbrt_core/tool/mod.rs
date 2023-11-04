@@ -218,6 +218,7 @@ impl<'a> SurfaceInteraction<'a> {
             shape.compute_scattering(self, TransportMode::Importance);
         }
     }
+    #[inline]
     pub fn spawn_ray(&self, wi: &Vec3) -> RayDiff {
         let ray = Ray::new(self.common.p, *wi);
         RayDiff::new(ray)
@@ -261,9 +262,7 @@ pub struct Visibility {
 impl Visibility {
     const DET:f32=0.0001;
     //是否可视
-
     pub fn is_vis(&self, sence: &Sence) -> bool {
-       
         let a={
             let w=(self.b.p-self.a.p).normalize();
             let sign=self.a.normal.dot(w).signum();
@@ -280,6 +279,7 @@ impl Visibility {
         );
         !sence.hit_p(&ray_diff)
     }
+    #[inline]
     pub fn g(&self, sence: &Sence) -> f32 {
         let vis = if self.is_vis(sence) { 1.0 } else { 0.0 };
         let dir = self.a.p - self.b.p;
@@ -288,6 +288,7 @@ impl Visibility {
             * self.b.normal.dot(dir.normalize()).abs();
         value / dir.length_squared()
     }
+    #[inline]
     pub fn g_inf(&self, sence: &Sence) -> f32 {
         let vis = self.is_vis(sence);
         if vis {

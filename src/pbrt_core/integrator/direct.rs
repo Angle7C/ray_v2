@@ -7,7 +7,7 @@ use crate::pbrt_core::{
     tool::{sence::Sence, RayDiff, color::Color}, light::LightAble,
 };
 
-use super::{uniform_sample_all_light};
+use super::uniform_sample_all_light;
 
 pub struct DirectIntegrator {
     _strategy: LightStartegy,

@@ -100,9 +100,9 @@ value = [0.7, 0.7, 0.7]
 mode = "Constant"
 value = [0.4, 0.8, 0.1]
 
-[[texture]]
-mode = "Image"
-path = "kloofendal_43d_clear_puresky_1k.hdr"
+# [[texture]]
+# mode = "Image"
+# path = "Cube_BaseColor.png"
 
 [[texture]]
 mode = "Constant"
