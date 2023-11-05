@@ -61,7 +61,9 @@ impl BSDF {
             return Vec3::ZERO;
         }
         *pdf = 0.0;
-        *sampled_type = bxdf.get_type();
+        if *sampled_type !=0{
+            *sampled_type = bxdf.get_type();
+        }
         let mut f = bxdf.sample_f(&w_out, &mut wi, u, pdf);
         *w_in = self.local_to_world(wi);
 

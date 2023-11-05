@@ -4,7 +4,7 @@ use glam::Vec3;
 
 use crate::pbrt_core::{
     bxdf::{
-        frensnel::{ConductorFresnel, Fresnel},
+        frensnel::{ConductorFresnel, Fresnel, DielectricFresnel},
         microfacet_distribution::{roughness_to_alpha, TrowbridgeReitzDistribution},
         reflection::MicrofacetReflection,
     },

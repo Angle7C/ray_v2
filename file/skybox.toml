@@ -13,9 +13,15 @@ fov = 110.0
 [intergator]
 mode = "Path"
 core_num = 16
-sample_num = 16
+sample_num = 1
 q = 0.1
 max_depth = 3
+
+# [intergator]
+# mode = "Direct"
+# core_num = 16
+# sample_num = 1
+# startegy = "UniformAll"
 
 [[primitive]]
 mode = "Rect"
@@ -25,14 +31,14 @@ material_index = 1
 [[primitive]]
 mode = "Shpere"
 trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-2.0, 0.0, 1.0] }
-r=1.0
+r = 1.0
 material_index = 1
 
 [[primitive]]
 mode = "Shpere"
 trans = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [2.0, 0.0, 1.0] }
-r=1.0
-material_index = 0
+r = 1.0
+material_index = 2
 
 [[light]]
 mode = "Infinite"
@@ -40,6 +46,15 @@ world_center = [0.0, 0.0, 0.0]
 world_radius = 10000.0
 skybox = 1
 
+# [[shapes]]
+# mode = "Rect"
+# trans = { r = [1.0, 0.0, 0.0, 180.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 1.0] }
+# material_index = 0
+
+# [[light]]
+# mode = "Area"
+# lemit = [100.0, 100.0, 100.0]
+# shape_index = 0
 
 [[material]]
 mode = "Matte"
@@ -51,20 +66,29 @@ mode = "Mirror"
 kr = 0
 sigma = 0.0
 
+[[material]]
+mode = "Metal"
+eta = 1
+k = 2
+roughness = 0
 
 [[texture]]
 mode = "Constant"
 value = [0.7, 0.7, 0.7]
 
 
-
 [[texture]]
 mode = "Image"
 path = "kloofendal_48d_partly_cloudy_puresky_1k.hdr"
 
+
+# [[texture]]
+# mode = "Image"
+# path = "kloofendal_48d_partly_cloudy_puresky_1k.hdr"
+
 [[texture]]
 mode = "Constant"
-value = [0.9, 0.8, 0.7]
+value = [0.5, 0.9, 0.1]
 
 # [[texture]]
 # mode = "Image"

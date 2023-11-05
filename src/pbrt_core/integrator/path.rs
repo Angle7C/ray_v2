@@ -1,8 +1,4 @@
-use std::{process::exit, time::{Duration, SystemTime}, io::stdout, ops::Sub, f32::consts::E};
-
 use glam::Vec3;
-use log::info;
-
 
 use crate::pbrt_core::{
     bxdf::BxDFType,
@@ -32,22 +28,28 @@ impl IntegratorAble for PathIntegrator {
     fn is_next(&self, dept: &mut usize) -> Option<f32> {
         *dept += 1;
         if *dept > self.max_path {
-            let p=rand::random::<f32>();
-            if p>self.q{
+            let p = rand::random::<f32>();
+            if p > self.q {
                 None
-            }else{
+            } else {
                 Some(self.q)
             }
         } else {
             Some(1.0)
         }
     }
-    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color {
+    fn fi(
+        &self,
+        ray: RayDiff,
+        sence: &Sence,
+        sampler: &mut Sampler,
+        #[cfg(debug_assertions)] i: &mut i32,
+    ) -> Color {
         let mut ans = Color::ZERO;
         let mut dept = 0;
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
-        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;   
+        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {
@@ -55,10 +57,11 @@ impl IntegratorAble for PathIntegrator {
                     return ans;
                 }
                 item.compute_scattering(ray, mode);
-             
+
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
-                    ans += beta * unifrom_sample_one_light(&item, sence, sampler.clone(), false)/p;
+                    ans +=
+                        beta * unifrom_sample_one_light(&item, sence, sampler.clone(), false) / p;
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = Vec3::default();
@@ -73,12 +76,18 @@ impl IntegratorAble for PathIntegrator {
                         &mut samped_type,
                     ) * w_in.dot(item.shading.n).abs()
                         / pdf;
+                    if f.is_nan() || f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+                        break;
+                    }
                     beta *= f;
                     ray = item.spawn_ray(&w_in);
-            
+                    #[cfg(debug_assertions)]
+                    {
+                        *i += 1;
+                    }
                 }
             } else {
-                ans+=beta*sence.sample_env_light(&ray);
+                ans += beta * sence.sample_env_light(&ray);
                 //环境光采样
                 break;
             }

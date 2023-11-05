@@ -1,8 +1,12 @@
 use std::f32::consts::FRAC_1_PI;
 
-use glam::{Vec2,Vec3};
+use glam::{Vec2, Vec3};
 
-use self::{reflection::{LambertianReflection, OrenNayar, MicrofacetReflection}, specular::SpecularReflection, pbr::{PbrDiff, PbrReflection}};
+use self::{
+    pbr::{PbrDiff, PbrReflection},
+    reflection::{LambertianReflection, MicrofacetReflection, OrenNayar},
+    specular::SpecularReflection,
+};
 
 use super::sampler::cosine_sample_hemisphere;
 // 菲涅尔反射率
@@ -26,13 +30,7 @@ pub trait BxDFAble {
     //计算，从wi射入，到wo射出时，光线被反射了多少回去[Vec3::ZERO,Vec3::ONE]
     fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3;
     //根据采样点sample_point计算，从wi射入，到wo射出时，的双向分布函数值。
-    fn sample_f(
-        &self,
-        w_in: &mut Vec3,
-        w_out: &Vec3,
-        sample_point: Vec2,
-        pdf: &mut f32,
-    ) -> Vec3 {
+    fn sample_f(&self, w_in: &mut Vec3, w_out: &Vec3, sample_point: Vec2, pdf: &mut f32) -> Vec3 {
         *w_in = cosine_sample_hemisphere(sample_point).normalize();
         if w_out.z < 0.0 {
             w_in.z *= -1.0
@@ -40,36 +38,34 @@ pub trait BxDFAble {
         *pdf = self.pdf(*w_out, *w_in);
         return self.f(w_in, &w_out);
     }
-    fn pdf(&self,w_out: Vec3, w_in: Vec3) -> f32 {
+    fn pdf(&self, w_out: Vec3, w_in: Vec3) -> f32 {
         if w_out.z * w_in.z > 0.0 {
             w_in.z * FRAC_1_PI
         } else {
             0.0
         }
     }
-    
-    fn get_type(&self)->u32{
+
+    fn get_type(&self) -> u32 {
         BxDFType::Specular & BxDFType::Reflection
     }
 }
 
-
 // 溦表面模型
 pub trait MicrofacetDistribution {
-    //给定法向量，求得微分面积
-    fn d(&self,wh:&Vec3)->f32;
-    //
-    fn lamdba(&self,w:&Vec3)->f32;
     //法线分布函数
-    fn g1(&self,w:&Vec3)->f32{
-        1.0/(1.0+self.lamdba(w))
+    fn d(&self, wh: &Vec3) -> f32;
+    //
+    fn lamdba(&self, w: &Vec3) -> f32;
+    // 遮挡函数
+    fn g1(&self, w: &Vec3) -> f32 {
+        1.0 / (1.0 + self.lamdba(w))
     }
-    fn g(&self,w_out:&Vec3,w_in:&Vec3)->f32{
-        1.0/(1.0+self.lamdba(w_out)+self.lamdba(w_in))
+    fn g(&self, w_out: &Vec3, w_in: &Vec3) -> f32 {
+        1.0 / (1.0 + self.lamdba(w_out) + self.lamdba(w_in))
     }
-    fn sample_wh(&self,w_out:&Vec3,u:Vec2)->Vec3;
-    fn pdf(&self,w_out:&Vec3,wh:&Vec3)->f32;
-
+    fn sample_wh(&self, w_out: &Vec3, u: Vec2) -> Vec3;
+    fn pdf(&self, w_out: &Vec3, wh: &Vec3) -> f32;
 }
 pub enum BxDF {
     LambertianReflection(LambertianReflection),
@@ -77,61 +73,68 @@ pub enum BxDF {
     OrenNayar(OrenNayar),
     PbrDiff(PbrDiff),
     PbrReflection(PbrReflection),
-    MicrofacetReflection(MicrofacetReflection)
+    MicrofacetReflection(MicrofacetReflection),
 }
 impl BxDF {
     pub fn match_type(&self, flag: u32) -> bool {
         match &self {
             Self::LambertianReflection(lambert) => lambert.match_type(flag),
-            Self::SpecularReflection(spec_ref)=>spec_ref.match_type(flag),
-            Self::OrenNayar(oren)=>oren.match_type(flag),
-            Self::PbrDiff(diff)=>diff.match_type(flag),
-            Self::PbrReflection(reflection)=>reflection.match_type(flag),
-            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.match_type(flag),
-            _=>todo!()
+            Self::SpecularReflection(spec_ref) => spec_ref.match_type(flag),
+            Self::OrenNayar(oren) => oren.match_type(flag),
+            Self::PbrDiff(diff) => diff.match_type(flag),
+            Self::PbrReflection(reflection) => reflection.match_type(flag),
+            Self::MicrofacetReflection(microfacet_reflection) => {
+                microfacet_reflection.match_type(flag)
+            }
+            _ => todo!(),
         }
     }
     pub fn f(&self, w_out: &Vec3, w_in: &Vec3) -> Vec3 {
         match &self {
             Self::LambertianReflection(lam) => lam.f(w_in, w_out),
-            Self::SpecularReflection(spec_ref)=>spec_ref.f(w_in, w_out),
-            Self::OrenNayar(oren)=>oren.f(w_in, w_out),
-            Self::PbrDiff(diff)=>diff.f(w_in, w_out),
-            Self::PbrReflection(reflection)=>reflection.f(w_in, w_out),
-            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.f(w_in, w_out),
-            _=>todo!()
+            Self::SpecularReflection(spec_ref) => spec_ref.f(w_in, w_out),
+            Self::OrenNayar(oren) => oren.f(w_in, w_out),
+            Self::PbrDiff(diff) => diff.f(w_in, w_out),
+            Self::PbrReflection(reflection) => reflection.f(w_in, w_out),
+            Self::MicrofacetReflection(microfacet_reflection) => {
+                microfacet_reflection.f(w_in, w_out)
+            }
+            _ => todo!(),
         }
     }
     pub fn sample_f(&self, w_out: &Vec3, wi: &mut Vec3, u: Vec2, pdf: &mut f32) -> Vec3 {
         match &self {
             Self::LambertianReflection(lambert) => lambert.sample_f(wi, w_out, u, pdf),
-            Self::SpecularReflection(spec_ref)=>spec_ref.sample_f(wi, w_out, u, pdf),
-            Self::OrenNayar(oren)=>oren.sample_f(wi, w_out, u, pdf),
-            Self::PbrDiff(diff)=>diff.sample_f(wi, w_out, u, pdf),
-            Self::PbrReflection(reflection)=>reflection.sample_f(wi, w_out, u, pdf),
-            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.sample_f(wi, w_out, u, pdf),
-            _=>todo!()
+            Self::SpecularReflection(spec_ref) => spec_ref.sample_f(wi, w_out, u, pdf),
+            Self::OrenNayar(oren) => oren.sample_f(wi, w_out, u, pdf),
+            Self::PbrDiff(diff) => diff.sample_f(wi, w_out, u, pdf),
+            Self::PbrReflection(reflection) => reflection.sample_f(wi, w_out, u, pdf),
+            Self::MicrofacetReflection(microfacet_reflection) => {
+                microfacet_reflection.sample_f(wi, w_out, u, pdf)
+            }
+            _ => todo!(),
         }
     }
-    pub fn get_type(&self)->u32{
+    pub fn get_type(&self) -> u32 {
         match &self {
             Self::LambertianReflection(lambert) => lambert.get_type(),
-            Self::OrenNayar(oren)=>oren.get_type(),
-            Self::PbrDiff(diff)=>diff.get_type(),
-            Self::PbrReflection(reflection)=>reflection.get_type(),
-            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.get_type(),
-            Self::SpecularReflection(specular)=>specular.get_type(),
+            Self::OrenNayar(oren) => oren.get_type(),
+            Self::PbrDiff(diff) => diff.get_type(),
+            Self::PbrReflection(reflection) => reflection.get_type(),
+            Self::MicrofacetReflection(microfacet_reflection) => microfacet_reflection.get_type(),
+            Self::SpecularReflection(specular) => specular.get_type(),
         }
     }
-    pub fn pdf(&self,wo:&Vec3,wi:&Vec3)->f32{
+    pub fn pdf(&self, wo: &Vec3, wi: &Vec3) -> f32 {
         match &self {
-            Self::LambertianReflection(lambert) => lambert.pdf(*wo,*wi),
-            Self::OrenNayar(oren)=>oren.pdf(*wo,*wi),
-            Self::PbrDiff(diff)=>diff.pdf(*wo,*wi),
-            Self::PbrReflection(reflection)=>reflection.pdf(*wo,*wi),
-            Self::MicrofacetReflection(microfacet_reflection)=>microfacet_reflection.pdf(*wo,*wi),
-            Self::SpecularReflection(specular)=>specular.pdf(*wo,*wi),
-      
+            Self::LambertianReflection(lambert) => lambert.pdf(*wo, *wi),
+            Self::OrenNayar(oren) => oren.pdf(*wo, *wi),
+            Self::PbrDiff(diff) => diff.pdf(*wo, *wi),
+            Self::PbrReflection(reflection) => reflection.pdf(*wo, *wi),
+            Self::MicrofacetReflection(microfacet_reflection) => {
+                microfacet_reflection.pdf(*wo, *wi)
+            }
+            Self::SpecularReflection(specular) => specular.pdf(*wo, *wi),
         }
     }
 }
@@ -159,7 +162,7 @@ impl PartialEq<TransportMode> for TransportMode {
         }
     }
 }
-impl std::ops::Not for BxDFType{
+impl std::ops::Not for BxDFType {
     type Output = u32;
     fn not(self) -> Self::Output {
         !(self as u32)
@@ -217,7 +220,6 @@ pub(crate) mod func {
     //eta_t 出射折射率
     //cos_theta_i: 入射角
     //k: 吸收系数
-    #[allow(unused)]
     #[inline]
     pub fn fr_conductor(cos_theta_i: f32, eta_i: Vec3, eta_t: Vec3, k: Vec3) -> Vec3 {
         let not_clamped = cos_theta_i;
@@ -260,6 +262,13 @@ pub(crate) mod func {
         let r = schlick_weight(cos_theta);
         Vec3::lerp(r0, Vec3::ONE, r)
     }
+
+    /** 
+     * 使用折射定律，计算从介质i传播到介质t的折射光线
+     * n：交点，并且是介质i的同一个半球的法线
+     * eta：相对折射率，物体内部相对于外部的IOR比率
+     * 
+    */
     #[allow(unused)]
     pub fn refract(wi: &Vec3, n: &Vec3, eta: f32, wt: &mut Vec3) -> bool {
         let cos_theta_i = n.dot(*wi);
@@ -290,37 +299,37 @@ pub(crate) mod func {
     }
     #[inline]
     pub fn cos_theta(wi: &Vec3) -> f32 {
-      wi.z
+        wi.z
     }
-    pub fn cos2_theta(wi: &Vec3)->f32{
-        cos_theta(wi)*cos_theta(wi)
+    pub fn cos2_theta(wi: &Vec3) -> f32 {
+        cos_theta(wi) * cos_theta(wi)
     }
     pub fn cos_phi(w: &Vec3) -> f32 {
         let sin_theta = sin_theta(w);
-        if sin_theta == 0.0  {
+        if sin_theta == 0.0 {
             1.0
         } else {
             (w.x / sin_theta).clamp(-1.0, 1.0)
         }
     }
-    pub fn cos2_phi(w:&Vec3)->f32{
-        cos_phi(w)*cos_phi(w)
+    pub fn cos2_phi(w: &Vec3) -> f32 {
+        cos_phi(w) * cos_phi(w)
     }
     pub fn sin_phi(w: &Vec3) -> f32 {
         let sin_theta = sin_theta(w);
-        if sin_theta == 0.0  {
+        if sin_theta == 0.0 {
             1.0
         } else {
             (w.x / sin_theta).clamp(-1.0, 1.0)
         }
     }
     pub fn sin2_phi(w: &Vec3) -> f32 {
-       sin_phi(w)*sin_phi(w)
+        sin_phi(w) * sin_phi(w)
     }
     pub fn vec3_same_hemisphere_vec3(w: &Vec3, wp: &Vec3) -> bool {
-        w.z * wp.z > 0.0 
+        w.z * wp.z > 0.0
     }
     pub fn reflect(wo: &Vec3, n: &Vec3) -> Vec3 {
-        -(*wo) + *n * 2.0 * wo.dot(*n)
+        -(*wo) + 2.0 * wo.dot(*n) * *n
     }
 }

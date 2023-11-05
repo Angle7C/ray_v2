@@ -1,7 +1,9 @@
 use glam::f32::Vec3;
 
-
-use super::{func::{fr_conductor, fr_dielectric, fr_schlick_spectrum}, TransportMode};
+use super::{
+    func::{fr_conductor, fr_dielectric, fr_schlick_spectrum},
+    TransportMode,
+};
 
 //菲涅尔反射模型
 #[allow(unused)]
@@ -10,7 +12,7 @@ pub enum Fresnel {
     NoOP(NoOPFresnel),
     //菲涅尔导体
     Conductor(ConductorFresnel),
-    //电介质导体
+    //电介质，导体，半导体
     Dielectric(DielectricFresnel),
     //迪尼斯导体
     Disney(DisneyFrenel),
@@ -53,6 +55,7 @@ pub struct ConductorFresnel {
     pub(crate) eta_i: Vec3,
     //出射折射率
     pub(crate) eta_t: Vec3,
+    // 吸收系数
     k: Vec3,
 }
 #[allow(unused)]
@@ -62,11 +65,11 @@ impl ConductorFresnel {
         Self { eta_i, eta_t, k }
     }
     pub fn evaluate(&self, cos_theta_i: f32) -> Vec3 {
-        fr_conductor(cos_theta_i, self.eta_i, self.eta_t, self.k)
+        fr_conductor(cos_theta_i.abs(), self.eta_i, self.eta_t, self.k)
     }
 }
 
-//电介质导体
+//电介质，导体，半导体
 #[derive(Clone, Debug)]
 #[allow(unused)]
 pub struct DielectricFresnel {
@@ -76,6 +79,11 @@ pub struct DielectricFresnel {
     pub(crate) eta_t: f32,
 }
 impl DielectricFresnel {
+    /**
+     *  cos_theta_i： 入射余弦,
+     *  eta: 相对折射率
+     *
+     */
     pub fn evaluate(&self, cos_theta_i: f32) -> Vec3 {
         Vec3::splat(fr_dielectric(cos_theta_i, self.eta_i, self.eta_t))
     }
@@ -125,4 +133,3 @@ impl FrensnelSpecular {
         }
     }
 }
-

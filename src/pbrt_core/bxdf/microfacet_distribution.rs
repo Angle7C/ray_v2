@@ -99,6 +99,7 @@ impl TrowbridgeReitzDistribution {
         }
     }
 }
+//GGX 分布模型
 impl MicrofacetDistribution for TrowbridgeReitzDistribution {
     fn d(&self, wh: &glam::Vec3) -> f32 {
         let tan_2_theta = sin2_theta(wh) / cos2_theta(wh);
@@ -121,7 +122,7 @@ impl MicrofacetDistribution for TrowbridgeReitzDistribution {
         let alpha = (cos2_phi(w) * self.alphax * self.alphax
             + sin2_phi(w) * self.alphay * self.alphay)
             .sqrt();
-        let a = (alpha * abs_tan_theta).powf(2.0);
+        let a = (alpha * abs_tan_theta)*(alpha * abs_tan_theta);
 
         (-1.0 + (1.0 + a).sqrt()) / 2.0
     }

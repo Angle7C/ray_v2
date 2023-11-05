@@ -35,7 +35,10 @@ pub enum Integrator {
 
 pub trait IntegratorAble {
     fn is_next(&self, dept: &mut usize) -> Option<f32>;
-    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color;
+    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler,
+        #[cfg(debug_assertions)]
+        i:&mut i32
+    ) -> Color;
 }
 
 impl IntegratorAble for Integrator {
@@ -46,10 +49,17 @@ impl IntegratorAble for Integrator {
         }
     }
 
-    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler) -> Color {
+    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler,
+        #[cfg(debug_assertions)]
+        i:&mut i32
+    ) -> Color {
         match &self {
-            Integrator::Path(path, _, _) => path.fi(ray, sence, sampler),
-            Integrator::Direct(direct, _, _) => direct.fi(ray, sence, sampler),
+            Integrator::Path(path, _, _) => path.fi(ray, sence, sampler,
+                #[cfg(debug_assertions)]
+                i),
+            Integrator::Direct(direct, _, _) => direct.fi(ray, sence, sampler,
+                #[cfg(debug_assertions)]
+                i),
         }
     }
 }
@@ -113,19 +123,25 @@ impl Integrator {
     {
         move || {
             let n = sampler.num;
-            // let mut sampler = sampler.clone();
+            let mut i=0;
             let mut tiles: Vec<Tile> = vec![];
             while let Some(item) = film.iter() {
                 let index = item.index;
                 let mut tile = Tile::new(index);
                 for (u, v) in item {
                     let mut color = Color::ZERO;
+                    i=0;
                     for _ in 0..n {
                         let camera_sample = CameraSample::new(u, v, &mut sampler);
                         let ray = camera.generate_ray(camera_sample);
-                        color += self.fi(ray, sence, &mut sampler);
+                        color += self.fi(ray, sence, &mut sampler,
+                            #[cfg(debug_assertions)]
+                            &mut i
+                        );
                     }
-
+                    if i>0 {
+                        info!("{}",color);
+                    }
                     tile.push(color);
                 }
                 
@@ -158,13 +174,17 @@ impl Integrator {
         let camera = sence.camera;
         let bar = ProgressBar::new(bar_size as u64);
         let mut image = RgbImage::new(size.x, size.y);
+        let mut i=0;
         while let Some(item) = film.iter() {
             for (u, v) in item {
                 let mut color = Color::ZERO;
                 for _ in 0..n {
                     let camera_sample = CameraSample::new(u, v, &mut sampler);
                     let ray = camera.generate_ray(camera_sample);
-                    color += self.fi(ray, sence, &mut sampler);
+                    color += self.fi(ray, sence, &mut sampler,
+                        #[cfg(debug_assertions)]
+                        &mut i
+                    );
                 }
                 image.put_pixel(u as u32, v as u32, to_color(color, num as f32));
                 bar.inc(1);
@@ -294,8 +314,8 @@ pub fn estimate_direct(
         &mut light_pdf,
         &mut vis,
     );
-
-    //合理的pdf和采样出光线
+    // return li;
+    // 合理的pdf和采样出光线 
     if light_pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
         //计算BSDF
         let f = if let Some(ref bsdf) = inter.bsdf {
@@ -319,7 +339,7 @@ pub fn estimate_direct(
             if LightType::is_delta(light.get_type()) {
                 ld +=  li *f* vis.g(sence) / light_pdf;
             }else if LightType::is_inf(light.get_type()){
-                ld+=li*f*vis.g_inf(sence)/light_pdf;
+                ld+=li*f*vis.g_inf(sence) / light_pdf;
             }
              else {
                 let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
@@ -327,7 +347,7 @@ pub fn estimate_direct(
             }
         }
     }
-    // //BSDF重要性采样
+    //BSDF重要性采样
     if !LightType::is_delta(light.get_type()) {
         let mut sampled_specular = false;
         let mut smapled_type = BxDFType::None as u32;
@@ -360,7 +380,7 @@ pub fn estimate_direct(
                     Default::default()
                 };
                 if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                    ld += li * f  / bsdf_pdf;
+                    ld += li * f *weight / bsdf_pdf;
                 }
             }
         }

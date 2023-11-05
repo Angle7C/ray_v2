@@ -18,7 +18,7 @@ impl BxDFAble for LambertianReflection {
         self.r * FRAC_1_PI
     }
     fn match_type(&self, flag: u32) -> bool {
-        ((BxDFType::Reflection | BxDFType::Diffuse) & flag ) != 0
+        ((BxDFType::Reflection | BxDFType::Diffuse) & flag) != 0
     }
     fn get_type(&self) -> u32 {
         BxDFType::Reflection | BxDFType::Diffuse
@@ -108,16 +108,16 @@ impl BxDFAble for MicrofacetReflection {
             return Vec3::ZERO;
         }
         wh = wh.normalize();
-        let dot = w_in.dot(wh);
+        let dot = w_out.dot(wh);
         let f = self.fresnel.evaluate(dot);
-        self.r * self.distribution.d(&wh) * self.distribution.g(w_out, w_in) * f
+        self.r * f * self.distribution.d(&wh) * self.distribution.g(w_out, w_in) 
             / (4.0 * cos_i * cos_o)
     }
     fn pdf(&self, w_out: Vec3, w_in: Vec3) -> f32 {
-        if func::vec3_same_hemisphere_vec3(&w_out, &w_in) {
+        if !func::vec3_same_hemisphere_vec3(&w_out, &w_in) {
             0.0
         } else {
-            let wh = (w_in + w_out).normalize();
+            let wh = (w_out+w_in).normalize();
             self.distribution.pdf(&w_out, &wh) / (4.0 * w_out.dot(wh))
         }
     }
@@ -133,10 +133,10 @@ impl BxDFAble for MicrofacetReflection {
         }
         let wh = self.distribution.sample_wh(w_out, sample_point);
         *w_in = func::reflect(w_out, &wh);
-        if func::vec3_same_hemisphere_vec3(w_out, &w_in) {
+        if !func::vec3_same_hemisphere_vec3(w_out, &w_in) {
             return Color::ZERO;
         }
-        *pdf = self.distribution.pdf(w_out, &wh) / (4.0 * w_out.dot(wh));
+        *pdf = self.distribution.pdf(w_out, &wh) / (4.0 * w_in.dot(wh));
         self.f(w_in, w_out)
     }
 }
