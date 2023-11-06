@@ -22,8 +22,8 @@ impl Buffer {
     pub fn new(size: UVec2) -> Self {
         Self {
             buffer: vec![],
-            width: size.x as u32,
-            height: size.y as u32,
+            width: size.x,
+            height: size.y,
         }
     }
     pub fn write(self, format: ImageFormat, ssp: f32, name: impl AsRef<Path>) {
@@ -47,12 +47,12 @@ impl Buffer {
     pub fn to_color(color: Color, ssp: f32) -> Rgb<u8> {
         let vec = (color / ssp).powf(0.5);
         let rgb = vec * 255.0;
-        let color = Rgb([
+        
+        Rgb([
             rgb.x.clamp(0.0, 255.0) as u8,
             rgb.y.clamp(0.0, 255.0) as u8,
             rgb.z.clamp(0.0, 255.0) as u8,
-        ]);
-        color
+        ])
     }
 }
 impl PartialEq for Tile {

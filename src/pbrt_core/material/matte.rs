@@ -33,7 +33,7 @@ impl Material for Matte {
             .kd
             .evaluate(&suface.common)
             .clamp(Vec3::ZERO, Vec3::splat(f32::INFINITY));
-        suface.bsdf = Some(BSDF::new(&suface, 1.0));
+        suface.bsdf = Some(BSDF::new(suface, 1.0));
         if let Some(bsdf) = &mut suface.bsdf {
             if r != Vec3::ZERO&&self.sigma==0.0 {
                 bsdf.bxdfs

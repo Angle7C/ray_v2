@@ -3,7 +3,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{func::transform_interaction, Bound, InteractionCommon, SurfaceInteraction, Shading, color::Color},
+    tool::{func::transform_interaction, Bound, InteractionCommon, SurfaceInteraction, Shading},
 };
 #[derive(Debug)]
 pub struct Rectangle<'a> {

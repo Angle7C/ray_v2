@@ -54,7 +54,7 @@ impl Sampler {
         self.sample_2d_d()
     }
     pub fn sample_d(&mut self)->f32{
-        self.sample_1d_d() as f32
+        self.sample_1d_d()
     }
     pub fn smapel_dir(&mut self)->Vec3{
         let x=self.sample_1d_d();

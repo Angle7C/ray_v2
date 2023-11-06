@@ -81,7 +81,7 @@ impl BxDFAble for PbrReflection{
         }
         let wh=self.distribution.sample_wh(w_out, sample_point);
         *w_in=func::reflect(w_out, &wh);
-        if func::vec3_same_hemisphere_vec3(w_out, &w_in){
+        if func::vec3_same_hemisphere_vec3(w_out, w_in){
             return Color::ZERO
         }
         *pdf=self.distribution.pdf(w_out, &wh)/(4.0*w_out.dot(wh));

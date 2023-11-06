@@ -44,7 +44,6 @@ impl DirectIntegrator {
                 ans += beta * uniform_sample_all_light(&item, sence, sampler.clone(),n_sample,false);
                 // ans+=beta *get_light(&item,sampler.sample_2d(),sence,sampler.clone(),false,false);
             }
-        }else{
         }
         ans
     }

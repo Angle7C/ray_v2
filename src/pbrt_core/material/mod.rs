@@ -49,7 +49,7 @@ impl BSDF {
             .iter()
             .filter(|item| item.match_type(flag))
             .collect::<Vec<_>>();
-        if bxdfs.len() == 0 {
+        if bxdfs.is_empty() {
             return Vec3::ZERO;
         }
         let num = (u.x * bxdfs.len() as f32).clamp(0.0, bxdfs.len() as f32) as usize;
@@ -73,7 +73,7 @@ impl BSDF {
         if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
             for (index, item) in bxdfs.iter().enumerate() {
                 if index != num && item.match_type(flag) {
-                    *pdf += item.pdf(&w_out, &w_in)
+                    *pdf += item.pdf(&w_out, w_in)
                 }
             }
         };
@@ -104,7 +104,7 @@ impl BSDF {
         }
     }
     pub fn pdf(&self, w_out: &Vec3, w_in: &Vec3, flag: u32) -> f32 {
-        if self.bxdfs.len() == 0 {
+        if self.bxdfs.is_empty() {
             0.0
         } else {
             let wo = self.world_to_local(*w_out);

@@ -56,21 +56,21 @@ impl Sence {
 
         let accel = Box::new(BVH::new(geoemtry.leak()));
         // let x = t.leak();
-        let sence = Self {
+        
+        Self {
             shape: primitive,
             camera,
             bound,
-            light: light,
-            env: env,
+            light,
+            env,
             accel: Some(accel),
-        };
-        sence
+        }
     }
 }
 
 impl Sence {
     pub fn sample_env_light(&self, ray: &RayDiff) -> Color {
-        if self.env.len()==0{
+        if self.env.is_empty(){
             return Color::default();
         }
         let mut ans = Color::default();
@@ -100,9 +100,9 @@ impl Primitive for Sence {
         }
     }
     fn hit_p(&self, ray: &super::RayDiff) -> bool {
-        if self.interacect_bound(&ray) {
+        if self.interacect_bound(ray) {
             if let Some(accel) = &self.accel {
-                accel.hit_p(&ray)
+                accel.hit_p(ray)
             } else {
                 false
             }

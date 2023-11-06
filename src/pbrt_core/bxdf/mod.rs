@@ -38,7 +38,7 @@ pub trait BxDFAble {
             w_in.z *= -1.0
         }
         *pdf = self.pdf(*w_out, *w_in);
-        return self.f(w_in, &w_out);
+        self.f(w_in, w_out)
     }
     fn pdf(&self,w_out: Vec3, w_in: Vec3) -> f32 {
         if w_out.z * w_in.z > 0.0 {

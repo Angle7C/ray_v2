@@ -20,9 +20,9 @@ impl<'b> BVH<'b> {
 
 impl<'b> Aggregate for BVH<'b> {
     fn interacect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
-        let o_ray = ray.clone();
+        let o_ray = *ray;
         let bvh_ray = bvh::ray::Ray::new(ray.o.origin, ray.o.dir);
-        let iter = self.accel.traverse_iterator(&bvh_ray, &self.geo);
+        let iter = self.accel.traverse_iterator(&bvh_ray, self.geo);
         let mut ans: Option<SurfaceInteraction> = None;
         let t_max = o_ray.o.t_max;
         let t_min = o_ray.o.t_min;
@@ -41,7 +41,7 @@ impl<'b> Aggregate for BVH<'b> {
     }
     fn hit_p(&self,ray: &crate::pbrt_core::tool::RayDiff)->bool {
         let bvh_ray = bvh::ray::Ray::new(ray.o.origin, ray.o.dir);
-        let iter = self.accel.traverse_iterator(&bvh_ray, &self.geo);
+        let iter = self.accel.traverse_iterator(&bvh_ray, self.geo);
         for shape in iter {
            if shape.hit_p(ray) {
                 return true

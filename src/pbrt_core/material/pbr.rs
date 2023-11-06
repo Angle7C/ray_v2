@@ -76,7 +76,7 @@ impl Material for PbrMaterial {
             Vec3::splat(0.5)
         };
         let roughness = roughness_to_alpha(roughness.y);
-        suface.bsdf = Some(BSDF::new(&suface, 1.0));
+        suface.bsdf = Some(BSDF::new(suface, 1.0));
         if let Some(bsdf) = &mut suface.bsdf {
             if r != Vec3::ZERO {
                 bsdf.bxdfs.push(BxDF::PbrDiff(PbrDiff::new(r)));

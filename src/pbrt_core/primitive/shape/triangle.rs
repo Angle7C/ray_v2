@@ -28,7 +28,7 @@ impl<'a> Triangle<'a> {
         Self {
             index: [index.x as usize, index.y as usize, index.z as usize],
             mesh,
-            materail: materail,
+            materail,
             obj_to_world,
         }
     }
@@ -139,7 +139,7 @@ impl<'a> Primitive for Triangle<'a> {
         let b = s2.dot(ray.o.dir) / s1_e1;
         let c = 1.0 - a - b;
 
-        if t < 0.0 || b < 0.0 || b > 1.0 || a < 0.0 || a > 1.0 || c < 0.0 || c > 1.0 {
+        if t < 0.0 || !(0.0..=1.0).contains(&b) || !(0.0..=1.0).contains(&a) || !(0.0..=1.0).contains(&c) {
             None
         } else {
             let (a, b, c) = (c, a, b);

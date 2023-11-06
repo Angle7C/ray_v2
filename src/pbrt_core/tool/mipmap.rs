@@ -52,14 +52,14 @@ impl ImageData {
                     image_data.pixels.push(vec);
                 }
             }
-            DynamicImage::ImageRgb16(image) => {
+            DynamicImage::ImageRgb16(_image) => {
                 unimplemented!()
             }
             _ => todo!(),
         }
         image_data
     }
-    pub fn new(data: &Data) -> Self {
+    pub fn new(_data: &Data) -> Self {
         unimplemented!()
     }
 }
@@ -149,9 +149,9 @@ impl MipMap {
         let level = w_level.min(h_level);
         let mut mipmap = MipMap::default();
         //分辨率
-        mipmap.resolution = UVec2::new(image_data.width as u32, image_data.height as u32);
+        mipmap.resolution = UVec2::new(image_data.width, image_data.height);
         //多级纹理
-        let mut data = Box::new(HashMap::<Level, Vec<Vec<Pixel>>>::new());
+        let mut data = Box::<HashMap<Level, Vec<Vec<Pixel>>>>::default();
         let w = image_data.width;
         let h = image_data.height;
         data.insert(Level { x: 0, y: 0 }, image_data.pixels);

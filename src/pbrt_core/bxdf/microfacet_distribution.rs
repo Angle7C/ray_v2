@@ -4,7 +4,7 @@ use glam::{Vec2, Vec3};
 
 use crate::pbrt_core::{
     bxdf::func::vec3_same_hemisphere_vec3,
-    tool::func::{spherical_direction, trowbridge_reitz_sample},
+    tool::func::{spherical_direction},
 };
 
 use super::{

@@ -68,16 +68,8 @@ impl RayDiff {
     }
     pub fn at(&self, t: f32) -> RayDiffHit {
         let o = self.o.at(t);
-        let p_dx = if let Some(ref dx) = self.dx {
-            Some(dx.at(t))
-        } else {
-            None
-        };
-        let p_dy = if let Some(ref dy) = self.dy {
-            Some(dy.at(t))
-        } else {
-            None
-        };
+        let p_dx = self.dx.as_ref().map(|dx| dx.at(t));
+        let p_dy = self.dy.as_ref().map(|dy| dy.at(t));
         RayDiffHit { p_dx, p_dy, p: o }
     }
 }
@@ -128,8 +120,8 @@ impl Bound<3> {
         Self { min, max }
     }
     pub fn center(&self) -> Vec3 {
-        let center = (self.min + self.max) / 2.0;
-        center
+        
+        (self.min + self.max) / 2.0
     }
 }
 
@@ -210,7 +202,7 @@ impl<'a> SurfaceInteraction<'a> {
             shape,
             shading,
             bsdf: None,
-            light: light,
+            light,
         }
     }
     pub fn compute_scattering(&mut self, _ray: RayDiff, _mode: TransportMode) {
