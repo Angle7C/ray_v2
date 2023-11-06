@@ -13,6 +13,9 @@ unsafe impl Sync for Film {}
 unsafe impl Send for Film {}
 impl Film {
     pub const BLOCK_SIZE: UVec2 = UVec2 { x: 16, y: 16 };
+    pub fn block_size()->u32{
+        Self::BLOCK_SIZE.x * Self::BLOCK_SIZE.y
+    }
     pub fn render_size(&self) -> u32 {
         self.size() / Self::BLOCK_SIZE.x * Self::BLOCK_SIZE.y
     }

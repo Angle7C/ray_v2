@@ -2,7 +2,7 @@ name = "image"
 
 [camera]
 mode = "P"
-size = [512.0, 512.0]
+size = [1024.0, 1024.0]
 far = 1000.0
 near = 0.01
 eye = [0.0, 5.0, 5.0]
@@ -12,8 +12,8 @@ fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 1
-sample_num = 1
+core_num = 16
+sample_num = 20
 q = 0.1
 max_depth = 3
 
@@ -76,3 +76,4 @@ value = [0.1, 0.1, 0.1]
 # [[texture]]
 # mode = "Image"
 # path = "Cube_BaseColor.png"
+# 0,16,32,48,64,
