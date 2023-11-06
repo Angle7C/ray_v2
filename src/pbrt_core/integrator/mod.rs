@@ -74,7 +74,7 @@ impl Integrator {
         let t1 = Instant::now();
         let (m, style) = pbr();
         let core = self.get_num();
-        let len = size.x / (core * 2) as u32;
+        let len = film.render_size() / (core * 2) as u32;
         let num = self.get_sample().num;
         thread::scope(|scope| {
             for i in 0..core {
