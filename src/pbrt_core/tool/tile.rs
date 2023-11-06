@@ -1,20 +1,20 @@
-use std::path::Path;
-use glam:: UVec2;
+use glam::UVec2;
 use image::{ImageFormat, Rgb, RgbImage};
 use log::info;
+use std::path::Path;
 
-use super::color::Color;
+use super::{color::Color, film::Film};
 
 ///
 /// 多线程合并
 /// 用于存储渲染数据
 pub struct Tile {
     buffer: Vec<Color>,
-    index: usize,
+    index: (u32, u32),
 }
 unsafe impl Send for Tile {}
 pub struct Buffer {
-    buffer: Vec<Color>,
+    buffer: Vec<Tile>,
     width: u32,
     height: u32,
 }
@@ -22,28 +22,37 @@ impl Buffer {
     pub fn new(size: UVec2) -> Self {
         Self {
             buffer: vec![],
-            width: size.x as u32,
-            height: size.y as u32,
+            width: size.x,
+            height: size.y,
         }
     }
-    pub fn write(self, format: ImageFormat, ssp: f32, name:  impl AsRef<Path>) {
+    pub fn write(self, format: ImageFormat, ssp: f32, name: impl AsRef<Path>) {
         let mut rbg_buffer = RgbImage::new(self.width, self.height);
-        for (index, color) in self.buffer.into_iter().enumerate() {
-            let x = index as u32 / self.width;
-            let y = index as u32 % self.width;
-            rbg_buffer.put_pixel(x, y, Self::to_color(color, ssp))
+        for (_, tile) in self.buffer.into_iter().enumerate() {
+            let x_start = tile.index.0 * Film::BLOCK_SIZE.x;
+            let y_start = tile.index.1 * Film::BLOCK_SIZE.y;
+            for i in 0..Film::BLOCK_SIZE.x {
+                let x = x_start + i;
+                for j in 0..Film::BLOCK_SIZE.y {
+                    let y = y_start + j;
+                    let index = j + i * Film::BLOCK_SIZE.x;
+                    info!("{} {}", x_start, y_start);
+                    let color = unsafe { tile.buffer.get_unchecked(index as usize) };
+                    rbg_buffer.put_pixel(x, y, Self::to_color(*color, ssp))
+                }
+            }
         }
-        let _=rbg_buffer.save_with_format(name, format);
+        let _ = rbg_buffer.save_with_format(name, format);
     }
     pub fn to_color(color: Color, ssp: f32) -> Rgb<u8> {
         let vec = (color / ssp).powf(0.5);
         let rgb = vec * 255.0;
-        let color= Rgb([
+        
+        Rgb([
             rgb.x.clamp(0.0, 255.0) as u8,
             rgb.y.clamp(0.0, 255.0) as u8,
             rgb.z.clamp(0.0, 255.0) as u8,
-        ]);
-        color
+        ])
     }
 }
 impl PartialEq for Tile {
@@ -63,7 +72,7 @@ impl Ord for Tile {
     }
 }
 impl Tile {
-    pub fn new(index: usize) -> Self {
+    pub fn new(index: (u32, u32)) -> Self {
         Self {
             buffer: vec![],
             index,
@@ -80,14 +89,6 @@ pub fn merage_tile(list: Vec<Vec<Tile>>, size: UVec2) -> Buffer {
         .collect::<Vec<_>>();
     list.sort();
     let mut buffer = Buffer::new(size);
-    for (index, tile) in list.iter_mut().enumerate() {
-        if index != tile.index {
-            info!(
-                "merage image buffer error index:{}, title_index:{}",
-                index, tile.index
-            );
-        }
-        buffer.buffer.append(&mut tile.buffer)
-    }
+    buffer.buffer = list;
     buffer
 }

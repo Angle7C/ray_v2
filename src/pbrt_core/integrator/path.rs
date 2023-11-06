@@ -49,7 +49,7 @@ impl IntegratorAble for PathIntegrator {
         let mut dept = 0;
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray.clone();
-        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
+        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;   
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {
                 if item.light.is_some() {

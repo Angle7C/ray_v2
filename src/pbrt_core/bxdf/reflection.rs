@@ -53,7 +53,7 @@ impl OrenNayar {
 }
 impl BxDFAble for OrenNayar {
     fn match_type(&self, flag: u32) -> bool {
-        ((BxDFType::Reflection | BxDFType::Diffuse) & flag as u32) != 0
+        ((BxDFType::Reflection | BxDFType::Diffuse) & flag) != 0
     }
     #[inline]
     fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
@@ -133,7 +133,7 @@ impl BxDFAble for MicrofacetReflection {
         }
         let wh = self.distribution.sample_wh(w_out, sample_point);
         *w_in = func::reflect(w_out, &wh);
-        if !func::vec3_same_hemisphere_vec3(w_out, &w_in) {
+        if !func::vec3_same_hemisphere_vec3(w_out, w_in) {
             return Color::ZERO;
         }
         *pdf = self.distribution.pdf(w_out, &wh) / (4.0 * w_in.dot(wh));

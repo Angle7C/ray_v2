@@ -1,6 +1,6 @@
 /target
 /image
-/vscode
+.vscode
 .vscode/launch.json
 /log
 .vscode/launch.json

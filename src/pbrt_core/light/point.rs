@@ -77,8 +77,8 @@ impl Primitive for Point {
         None
     }
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-        let bound = Bound::<3>::new(Vec3::splat(-0.0003) + self.p, Vec3::splat(0.0003) + self.p);
-        bound
+        
+        Bound::<3>::new(Vec3::splat(-0.0003) + self.p, Vec3::splat(0.0003) + self.p)
     }
     fn hit_p(&self,_ray:&RayDiff)->bool {
         false

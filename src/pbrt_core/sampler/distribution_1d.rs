@@ -7,7 +7,7 @@ pub struct Distribution1D {
 }
 impl Distribution1D {
     pub fn new(func: &[f32], n: usize) -> Self {
-        let func: Vec<f32> = func.iter().map(|i| *i).collect::<Vec<_>>();
+        let func: Vec<f32> = func.to_vec();
         let mut cdf = vec![];
         cdf.push(0.0);
         for i in 1..n + 1 {

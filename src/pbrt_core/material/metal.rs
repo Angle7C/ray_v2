@@ -49,7 +49,7 @@ impl Material for MetalMaterial {
         surface: &mut crate::pbrt_core::tool::SurfaceInteraction,
         _mode: crate::pbrt_core::bxdf::TransportMode,
     ) {
-        let mut bsdf = BSDF::new(&surface, 1.0);
+        let mut bsdf = BSDF::new(surface, 1.0);
         let roughness = self.roughness.evaluate(&surface.common);
         let (u_alpha, v_alpha) = (
             roughness_to_alpha(roughness.y),

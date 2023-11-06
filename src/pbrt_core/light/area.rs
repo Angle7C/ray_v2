@@ -43,7 +43,7 @@ impl<'a> AreaLight for DiffuseAreaLight<'a> {
         }
     }
     fn get_shape(&self) -> &Shape {
-        &self.shape
+        self.shape
     }
 }
 

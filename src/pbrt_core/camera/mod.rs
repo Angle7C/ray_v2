@@ -53,7 +53,7 @@ impl Camera {
         let world_to_camera = p*look_at_lh;
         let screen_to_camera=Self::computer_viewport(size);
         Self{
-            eye:eye.into(),
+            eye,
             screen_to_camera,
             camera_to_world:world_to_camera.inverse(),
             mode
@@ -69,7 +69,7 @@ impl Camera {
             CameraMode::O=>{
                 let p=self.camera_to_world.transform_point3(p);
                 let dir=self.camera_to_world.transform_vector3(Vec3::Z);
-                RayDiff::new(Ray::new(p.into(), dir.into()))
+                RayDiff::new(Ray::new(p, dir))
             },
             CameraMode::P=>{
                 let dir_p=self.camera_to_world.project_point3(p);

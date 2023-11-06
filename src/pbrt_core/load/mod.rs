@@ -87,7 +87,7 @@ fn load_mesh(
             .into_u32()
             .collect::<Vec<_>>()
             .chunks(3)
-            .map(|x| UVec3::from_slice(x))
+            .map(UVec3::from_slice)
             .map(|x| x.extend(material_index as u32))
             .collect();
 
@@ -97,14 +97,14 @@ fn load_mesh(
                     *point = reader
                         .read_positions()
                         .unwrap()
-                        .map(|x| Vec3::from_array(x))
+                        .map(Vec3::from_array)
                         .collect::<Vec<_>>();
                 }
                 gltf::Semantic::Normals => {
                     *normal = reader
                         .read_normals()
                         .unwrap()
-                        .map(|x| Vec3::from_array(x))
+                        .map(Vec3::from_array)
                         .collect::<Vec<_>>();
                 }
                 gltf::Semantic::Tangents => {}
@@ -114,7 +114,7 @@ fn load_mesh(
                         .read_tex_coords(coords)
                         .unwrap()
                         .into_f32()
-                        .map(|x| Vec2::from_array(x))
+                        .map(Vec2::from_array)
                         .collect::<Vec<_>>();
                 }
                 gltf::Semantic::Joints(_) => {}
@@ -187,7 +187,7 @@ fn load_node(
         if let Some(mesh) = item.mesh() {
             load_mesh(
                 mesh,
-                &material_vec,
+                material_vec,
                 &buffer,
                 &mut index,
                 &mut point,

@@ -1,7 +1,7 @@
 #[cfg(test)]
 pub mod test {
     use std::path::Path;
-    use crate::pbrt_core::tool::mipmap::{MipMap, ImageData};
+    
 
 
 

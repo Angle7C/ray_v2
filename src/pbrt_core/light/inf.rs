@@ -47,7 +47,7 @@ impl Primitive for InfiniteLight {
         Some(self)
     }
     fn interacect(&self, _ray: RayDiff) -> Option<SurfaceInteraction> {
-        return None;
+        None
         // let mut interaction = SurfaceInteraction::default();
         // interaction.light=self.get_light();
         // interaction.common.normal=-ray.o.dir+Vec3::ONE*0.002;
@@ -127,7 +127,7 @@ impl LightAble for InfiniteLight {
             b: *surface_common,
         };
         *pdf = 1.0;
-        self.color.evaluate(&light_common)*self.lemit
+        self.color.evaluate(light_common)*self.lemit
     }
     fn get_index(&self)->usize {
         self.index   

@@ -49,17 +49,9 @@ impl DirectIntegrator {
             item.compute_scattering(ray, mode);
             if let Some(_bsdf) = &item.bsdf {
                 // return (item.common.normal+Vec3::ONE)/2.0;
-                ans +=
-                    beta * uniform_sample_all_light(&item, sence, sampler.clone(), n_sample, false);
-                #[cfg(debug_assertions)]
-                {
-                    *i += 1;
-                }
+                ans += beta * uniform_sample_all_light(&item, sence, sampler.clone(),n_sample,false);
+                // ans+=beta *get_light(&item,sampler.sample_2d(),sence,sampler.clone(),false,false);
             }
-        }
-        #[cfg(debug_assertions)]
-        if *i>0 {
-            warn!("sub color {}",ans);
         }
         ans
     }

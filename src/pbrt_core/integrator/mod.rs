@@ -84,7 +84,7 @@ impl Integrator {
         let t1 = Instant::now();
         let (m, style) = pbr();
         let core = self.get_num();
-        let len = size.x / (core * 2) as u32;
+        let len = film.render_size() / (core * 2) as u32;
         let num = self.get_sample().num;
         thread::scope(|scope| {
             for i in 0..core {
@@ -203,12 +203,12 @@ impl Integrator {
 pub fn to_color(color: Color, ssp: f32) -> Rgb<u8> {
     let vec = (color / ssp).powf(2.0);
     let rgb = vec * 255.0;
-    let color = Rgb([
+    
+    Rgb([
         rgb.x.clamp(0.0, 255.0) as u8,
         rgb.y.clamp(0.0, 255.0) as u8,
         rgb.z.clamp(0.0, 255.0) as u8,
-    ]);
-    color
+    ])
 }
 
 pub fn pbr() -> (MultiProgress, ProgressStyle) {
@@ -324,10 +324,8 @@ pub fn estimate_direct(
             Vec3::ZERO
         };
         //计算光贡献
-        if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-            if !vis.is_vis(sence) {
-                li = Color::ZERO;
-            }
+        if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && !vis.is_vis(sence) {
+            li = Color::ZERO;
         }
         let scattle_pdf = if let Some(ref bsdf) = inter.bsdf {
             bsdf.pdf(&inter.common.w0, &-wi, bxdf_flags)
@@ -363,8 +361,8 @@ pub fn estimate_direct(
             ) * wi.dot(inter.shading.n).abs();
             sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
             if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
-                let weight = if !sampled_specular {
-                    let light_pdf = light.pdf_li(&inter, &wi);
+                let _weight = if !sampled_specular {
+                    let light_pdf = light.pdf_li(inter, &wi);
                     if light_pdf.abs() < f32::EPSILON {
                         return ld;
                     }
@@ -375,7 +373,7 @@ pub fn estimate_direct(
                 let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
                 let li =
                 if let Some(ref light_inter) = sence.interacect(ray) {
-                    light_inter.le_dir(ray.o.origin,-ray.o.dir)
+                    light_inter.le(ray)
                 }else{
                     Default::default()
                 };
@@ -399,7 +397,7 @@ pub fn get_light(
     sence: &Sence,
     mut sampler: Sampler,
 ) -> Color {
-    if sence.light.len() == 0 {
+    if sence.light.is_empty() {
         return Color::ZERO;
     }
     let num: usize = sampler.rand.gen_range(0..sence.light.len());

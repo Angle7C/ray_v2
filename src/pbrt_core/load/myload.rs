@@ -56,8 +56,8 @@ impl MyLoad {
         self.load_shape();
         let lights = self.load_light(unsafe { &SHAPE }, texture);
         let camera = self.load_camera();
-        let sence = Sence::new(primitive, camera, lights);
-        sence
+        
+        Sence::new(primitive, camera, lights)
     }
     //加载材质
     fn load_material(&self, texture: &'static [Arc<dyn Texture>]) -> Vec<Box<dyn Material>> {
@@ -80,8 +80,8 @@ impl MyLoad {
                     Box::new(Mirror::new(kr.clone()))
                 }
                 MaterialToml::Metal { eta, k, roughness } => {
-                    let eta = texture.get(*eta).clone().unwrap();
-                    let k = texture.get(*k).clone().unwrap();
+                    let eta = texture.get(*eta).unwrap();
+                    let k = texture.get(*k).unwrap();
                     let roughness = texture.get(*roughness).unwrap();
                     Box::new(MetalMaterial::new(
                         eta.clone(),
@@ -141,8 +141,8 @@ impl MyLoad {
         }
         vec
     }
-    fn load_light<'a>(
-        &'a self,
+    fn load_light(
+        &self,
         shape: &'static [Shape<'static>],
         texture: &'static [Arc<dyn Texture>],
     ) -> Vec<Light> {
@@ -166,7 +166,7 @@ impl MyLoad {
                     *world_center,
                     texture.get(*skybox).unwrap().clone(),
                     Mat4::default(),
-                    Vec3::ONE/255.0,
+                    Vec3::ONE,
                     index,
                 ))),
                 _ => todo!(),
