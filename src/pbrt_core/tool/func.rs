@@ -155,3 +155,16 @@ fn transform_shading(transform: Mat4, shading: Shading) -> Shading {
     let dndv = transform.transform_vector3(shading.dndv);
     Shading::new(dpdu, dpdv, dndu, dndv)
 }
+pub fn compute_d2(dpdu: Vec3, dpdv: Vec3, d2pduu: Vec3, d2pduv: Vec3, d2pdvv: Vec3) -> (Vec3, Vec3, Vec3) {
+    let e = dpdu.dot(dpdu);
+    let f = dpdu.dot(dpdv);
+    let g = dpdv.dot(dpdv);
+    let n = dpdu.cross(dpdv).normalize();
+    let ee = n.dot(d2pduu);
+    let ff = n.dot(d2pduv);
+    let gg = n.dot(d2pdvv);
+    let inv_egf = 1.0 / (e * g - f * f);
+    let dndu = (ff * f - ee * g) * inv_egf * dpdu + (ee * f - ff * e) * inv_egf * dpdv;
+    let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
+    (n, dndu, dndv)
+}

@@ -48,7 +48,7 @@ impl IntegratorAble for PathIntegrator {
         let mut ans = Color::ZERO;
         let mut dept = 0;
         let mut beta: Vec3 = Vec3::ONE;
-        let mut ray = ray.clone();
+        let mut ray = ray;
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;   
         while let Some(p) = self.is_next(&mut dept) {
             if let Some(mut item) = sence.interacect(ray) {

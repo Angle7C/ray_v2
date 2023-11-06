@@ -12,17 +12,20 @@ use super::{
 pub mod bvh;
 pub mod mesh;
 pub mod shape {
-    use self::rectangle::Rectangle;
+    use self::{rectangle::Rectangle, shpere::Shpere, cylinder::Cylinder};
     use super::Primitive;
     use crate::pbrt_core::tool::InteractionCommon;
     use glam::{Vec2, Vec3};
     pub mod rectangle;
     pub mod shpere;
     pub mod triangle;
+    pub mod cylinder;
+    pub mod disk;
     #[derive(Debug)]
     pub enum Shape<'a> {
         Rect(Rectangle<'a>),
-        // Shpere(Shpere<'a>),
+        Shpere(Shpere<'a>),
+        Cylinder(Cylinder<'a>)
     }
 
     impl<'a> Primitive for Shape<'a> {
@@ -33,6 +36,8 @@ pub mod shape {
         ) {
             match &self {
                 Shape::Rect(rect) => rect.compute_scattering(isct, mode),
+                Self::Shpere(sphere) => sphere.compute_scattering(isct, mode),
+                _=>todo!()
             }
         }
         fn interacect(
@@ -41,16 +46,22 @@ pub mod shape {
         ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
             match &self {
                 Shape::Rect(rect) => rect.interacect(ray),
+                Self::Shpere(sphere) => sphere.interacect(ray),
+                _=>todo!()
             }
         }
         fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
             match &self {
                 Shape::Rect(rect) => rect.world_bound(),
+                Self::Shpere(sphere) => sphere.world_bound(),   
+                _=>todo!()
             }
         }
         fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
             match &self {
                 Shape::Rect(rect) => rect.hit_p(ray),
+                Self::Shpere(sphere) => sphere.hit_p(ray),
+                _=>todo!()
             }
         }
     }
@@ -59,6 +70,8 @@ pub mod shape {
         pub fn agt_area(&self) -> f32 {
             match self {
                 Shape::Rect(rect) => rect.get_area(),
+                Shape::Shpere(sphere) => sphere.get_area(), 
+                _=>todo!()
             }
         }
         // 形状采样
@@ -66,6 +79,8 @@ pub mod shape {
             *pdf = 1.0 / self.agt_area();
             match self {
                 Self::Rect(rect) => rect.sample_interaction(common, smaple_point),
+                Self::Shpere(sphere) => sphere.sample_interaction(common, smaple_point),
+                _=>todo!()
             }
         }
         //对于在不同点采样的时，会存在不同pdf值。给定指定方向与点，确定是否有交点。
@@ -75,11 +90,15 @@ pub mod shape {
         pub fn get_mat(&self) -> glam::Mat4 {
             match self {
                 Self::Rect(rect) => rect.obj_to_world,
+                Self::Shpere(sphere) => sphere.obj_to_world,
+                _=>todo!()
             }
         }
         pub fn get_cos(&self,dir:Vec3)->Option<f32>{
             match self {
                 Self::Rect(rect) => rect.get_cos(dir),
+                Self::Shpere(sphere) => sphere.get_cos(dir),
+                _=>todo!()
             }
         }
     }

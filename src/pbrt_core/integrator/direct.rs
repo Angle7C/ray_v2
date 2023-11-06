@@ -1,5 +1,5 @@
 use glam::Vec3;
-use log::{info, warn};
+
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::{
@@ -32,7 +32,7 @@ impl DirectIntegrator {
         ray: RayDiff,
         sence: &Sence,
         sampler: &mut Sampler,
-        #[cfg(debug_assertions)] i: &mut i32,
+        #[cfg(debug_assertions)] _i: &mut i32,
     ) -> Color {
         let mut ans = Vec3::ZERO;
         let beta = Vec3::ONE;

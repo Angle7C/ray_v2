@@ -5,12 +5,12 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{func, Bound, Shading, SurfaceInteraction, InteractionCommon},
+    tool::{func, Bound, InteractionCommon, Shading, SurfaceInteraction},
 };
 #[derive(Debug)]
 pub struct Shpere<'a> {
     r: f32,
-    obj_to_world: Mat4,
+    pub obj_to_world: Mat4,
     material: Option<&'a dyn Material>,
 }
 impl<'a> Shpere<'a> {
@@ -20,6 +20,12 @@ impl<'a> Shpere<'a> {
             obj_to_world,
             material,
         }
+    }
+    pub fn sample_interaction(&self, _commom: &mut InteractionCommon, _sampler_point: Vec2) {
+        unimplemented!()
+    }
+    pub fn get_cos(&self, _dir: Vec3) -> Option<f32> {
+        unimplemented!()
     }
 }
 impl<'a> Primitive for Shpere<'a> {
@@ -89,17 +95,12 @@ impl<'a> Primitive for Shpere<'a> {
         let dndu = (ff * f - ee * g) * inv_egf * dpdu + (ee * f - ff * e) * inv_egf * dpdv;
         let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
         let shading = Shading::new(dpdu, dpdv, dndu, dndv);
-        let common=InteractionCommon::new(-dir, p, n, t, uv);
-        let mut item = SurfaceInteraction::new(
-            common,
-            shading,
-            Some(self),
-            None,
-        );
+        let common = InteractionCommon::new(-dir, p, n, t, uv);
+        let mut item = SurfaceInteraction::new(common, shading, Some(self), None);
         func::transform_interaction(self.obj_to_world, &mut item);
         Some(item)
     }
-    fn hit_p(&self,ray:&crate::pbrt_core::tool::RayDiff)->bool {
+    fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
         let o = self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let a = dir.dot(dir);
@@ -107,16 +108,16 @@ impl<'a> Primitive for Shpere<'a> {
         let c = o.dot(o) - self.r * self.r;
         let t: f32;
         if let Some((t1, t2)) = func::quadratic(a, b, c) {
-            t = if t1<0.0&&t2>0.0{
+            t = if t1 < 0.0 && t2 > 0.0 {
                 t2
-            }else if t2<0.0&&t1>0.0{
+            } else if t2 < 0.0 && t1 > 0.0 {
                 t1
-            }else if t1>0.0&&t2>0.0{
+            } else if t1 > 0.0 && t2 > 0.0 {
                 t1.min(t2)
-            }else{
+            } else {
                 return false;
             };
-            if t <ray.o.t_min||t> ray.o.t_max{
+            if t < ray.o.t_min || t > ray.o.t_max {
                 return false;
             }
         } else {

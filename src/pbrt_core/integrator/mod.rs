@@ -361,7 +361,7 @@ pub fn estimate_direct(
             ) * wi.dot(inter.shading.n).abs();
             sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
             if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
-                let _weight = if !sampled_specular {
+                let weight = if !sampled_specular {
                     let light_pdf = light.pdf_li(inter, &wi);
                     if light_pdf.abs() < f32::EPSILON {
                         return ld;
@@ -378,7 +378,7 @@ pub fn estimate_direct(
                     Default::default()
                 };
                 if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                    ld += li * f *weight / bsdf_pdf;
+                    ld += li * f * weight / bsdf_pdf;
                 }
             }
         }
