@@ -15,7 +15,7 @@ pub struct Matte {
     sigma:f32 
 }
 impl Matte {
-    pub fn new(kd: Arc<dyn Texture>,sigma:f32 )-> Self {
+    pub fn new<'a>(kd: Arc<dyn Texture+'a>,sigma:f32 )-> Self {
         Self {
             kd: kd.clone(),
             sigma,
