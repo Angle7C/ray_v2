@@ -14,25 +14,25 @@ use crate::pbrt_core::{
 
 use super::Material;
 #[derive(Debug)]
-pub struct MetalMaterial {
+pub struct MetalMaterial<'a> {
     //折射率
-    eta: Arc<dyn Texture>,
+    eta: Arc<dyn Texture+'a>,
     // 金属率
-    k: Arc<dyn Texture>,
+    k: Arc<dyn Texture+'a>,
     // roughness ,u_roughness,v_roughness
     // 粗糙度
-    roughness: Arc<dyn Texture>,
+    roughness: Arc<dyn Texture+'a>,
 
     remap: bool,
 }
-impl MetalMaterial {
+impl<'a> MetalMaterial<'a> {
     pub fn new(
-        eta: Arc<dyn Texture>,
+        eta: Arc<dyn Texture+'a>,
         // 金属率
-        k: Arc<dyn Texture>,
+        k: Arc<dyn Texture+'a>,
         // roughness ,u_roughness,v_roughness
         // 粗糙度
-        roughness: Arc<dyn Texture>,
+        roughness: Arc<dyn Texture+'a>,
         remap: bool,
     ) -> Self {
         Self {
@@ -43,7 +43,7 @@ impl MetalMaterial {
         }
     }
 }
-impl Material for MetalMaterial {
+impl<'a> Material for MetalMaterial<'a> {
     fn compute_scattering_functions(
         &self,
         surface: &mut crate::pbrt_core::tool::SurfaceInteraction,

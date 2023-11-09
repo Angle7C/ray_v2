@@ -42,6 +42,8 @@ impl GltfLoad {
                         let a = material.get(w);
                         shape.push(Box::new(Triangle::new(
                             i.truncate() + det_index,
+                            i.truncate() + det_index,
+                            i.truncate() + det_index,
                             mesh.clone(),
                             *transform,
                             a,

@@ -3,6 +3,7 @@ use std::sync::Arc;
 use glam::{Vec2, Vec3,Mat4,
     u32::UVec3,
 };
+use gltf::mesh::util::tex_coords;
 
 use crate::pbrt_core::{
     bxdf::TransportMode,
@@ -12,7 +13,9 @@ use crate::pbrt_core::{
 };
 #[derive(Debug)]
 pub struct Triangle<'a> {
-    index: [usize; 3],
+    point_index: [usize; 3],
+    noraml_index: [usize; 3],
+    tex_index: [usize; 3],
     mesh: Arc<Mesh>,
     obj_to_world: Mat4,
     materail: Option<&'a Box<dyn Material>>,
@@ -20,13 +23,17 @@ pub struct Triangle<'a> {
 #[allow(unused)]
 impl<'a> Triangle<'a> {
     pub fn new(
-        index: UVec3,
+        point_index: UVec3,
+        noraml_index:UVec3,
+        tex_index:UVec3,
         mesh: Arc<Mesh>,
         obj_to_world: Mat4,
         materail: Option<&'a Box<dyn Material>>,
     ) -> Self {
         Self {
-            index: [index.x as usize, index.y as usize, index.z as usize],
+            point_index: [point_index.x as usize, point_index.y as usize, point_index.z as usize],
+            noraml_index: [noraml_index.x as usize, noraml_index.y as usize, noraml_index.z as usize],
+            tex_index:  [tex_index.x as usize, tex_index.y as usize, tex_index.z as usize],
             mesh,
             materail,
             obj_to_world,
@@ -76,7 +83,7 @@ impl<'a> Triangle<'a> {
     }
     pub fn point(&self, i: u32) -> Vec3 {
         self.obj_to_world
-            .transform_point3(self.mesh.point[self.index[i as usize]])
+            .transform_point3(self.mesh.point[self.point_index[i as usize]])
     }
     pub fn normal(&self, i: u32) -> Vec3 {
         if self.mesh.normal.is_empty() {
@@ -85,7 +92,7 @@ impl<'a> Triangle<'a> {
             self.obj_to_world
                 .inverse()
                 .transpose()
-                .transform_vector3(self.mesh.normal[self.index[i as usize]])
+                .transform_vector3(self.mesh.normal[self.noraml_index[i as usize]])
         }
     }
     pub fn tangent(&self, i: u32) -> Vec3 {
@@ -100,7 +107,7 @@ impl<'a> Triangle<'a> {
         if self.mesh.uv.is_empty() {
             Vec2::ZERO
         } else {
-            self.mesh.uv[self.index[i as usize]]
+            self.mesh.uv[self.tex_index[i as usize]]
         }
     }
 }

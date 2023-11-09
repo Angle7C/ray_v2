@@ -54,7 +54,8 @@ impl Load {
         let mut buf = String::new();
         file.read_to_string(&mut buf)?;
         let loader: TomlLoader = toml::from_str(&buf)?;
-        loader.load_sence()
+        // loader.load_sence()
+        unimplemented!()
     }
     fn load_camera(camera: &CameraToml) -> Camera {
         let mode = camera.mode.as_str();

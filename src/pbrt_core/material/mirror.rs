@@ -6,16 +6,16 @@ use crate::pbrt_core::{texture::Texture, bxdf::{specular::SpecularReflection, fr
 
 use super::{Material, BSDF};
 #[derive(Debug)]
-pub struct Mirror{
-    kr:Arc<dyn Texture>,
+pub struct Mirror<'a>{
+    kr:Arc<dyn Texture+'a>,
 
 }
-impl Mirror{
-    pub fn new(kr:Arc<dyn Texture>)->Self{
+impl<'a> Mirror<'a>{
+    pub fn new(kr:Arc<dyn Texture+'a>)->Self{
         Self { kr }
     }
 }
-impl Material for Mirror{
+impl<'a> Material for Mirror<'a>{
     fn compute_scattering_functions(&self,suface:&mut crate::pbrt_core::tool::SurfaceInteraction,_mode:crate::pbrt_core::bxdf::TransportMode) {
         let r=self.kr.evaluate(&suface.common).clamp(Vec3::ZERO, Vec3::splat(f32::INFINITY));
         suface.bsdf=Some(BSDF::new(suface, 1.0));
