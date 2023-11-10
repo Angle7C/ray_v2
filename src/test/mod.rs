@@ -22,6 +22,6 @@ pub mod test {
     #[test]
     fn obj_load(){
         let path=Path::new("./object/box.obj");
-        ObjLoad::load(path.display().to_string().as_str(), Mat4::IDENTITY,None);
+        ObjLoad::load(path.display().to_string().as_str());
     }
 }

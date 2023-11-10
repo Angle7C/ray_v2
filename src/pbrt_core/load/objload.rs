@@ -1,58 +1,49 @@
-use std::{error::Error, any};
 
-use glam::{Mat4, UVec3, Vec3, Vec2};
+use anyhow::Ok;
+use glam::{UVec3, Vec2, Vec3};
 use obj::Obj;
 
-use crate::pbrt_core::{
-    material::Material,
-    primitive::{shape::triangle::Triangle, Primitive, mesh::Mesh},
-    tool::sence::Sence, texture,
-};
+use crate::pbrt_core::primitive::mesh::Mesh;
 
 pub struct ObjLoad;
 
 impl ObjLoad {
-    pub fn load<'a>(
-        path: &str,
-        trans: Mat4,
-        material: Option<&'a Box<dyn Material + 'a>>,
-    ) ->anyhow::Result<(Mesh, Vec<usize>)> {
+    pub fn load<'a>(path: &str) -> anyhow::Result<(Mesh, Vec<Vec<UVec3>>)> {
         let obj = Obj::load(path)?;
         let data = &obj.data;
-        let pos=data.position.iter().map(|item|
-            Vec3::new(item[0], item[1], item[2])
-        ).collect::<Vec<_>>();
-        let normal = data.normal.iter().map(|item|
-            Vec3::new(item[0], item[1], item[2])
-        ).collect::<Vec<_>>();
-        let tex=data.texture.iter().map(|item|
-            Vec2::new(item[0], item[1])
-        ).collect::<Vec<_>>();
-        let _ = obj.data
-            .objects
+        let point = data
+            .position
             .iter()
-            .map(|obj| {
-                obj.groups.iter().map(|group| {
-                    // 一个面
-                    group.polys.iter().map(|ploy| {
-                        //一个点的参数
-                        for item in &ploy.0 {
-                            let pos = item.0;
-                            let tex = item.1.unwrap();
-                            let norm = item.2.unwrap();
-                            let pos_i = data.position.get(pos);
-                            let tex_i = data.texture.get(tex);
-                            let norm_i = data.normal.get(norm);
-                            if let (Some(pos_i), Some(tex_i), Some(norm_i)) = (pos_i, tex_i, norm_i)
-                            {
-
-                            }
-                        }
-                        
-                    })
-                })
-            })
+            .map(|item| Vec3::new(item[0], item[1], item[2]))
             .collect::<Vec<_>>();
-        unimplemented!()
+        let normal = data
+            .normal
+            .iter()
+            .map(|item| Vec3::new(item[0], item[1], item[2]))
+            .collect::<Vec<_>>();
+        let tex = data
+            .texture
+            .iter()
+            .map(|item| Vec2::new(item[0], item[1]))
+            .collect::<Vec<_>>();
+        let mesh = Mesh::new(point, normal, tex, vec![]);
+        let mut index_vec = { vec![vec![], vec![], vec![]] };
+        for obj in &data.objects {
+            let iter = obj.groups.iter().flat_map(|group| group.polys.iter());
+            let mut pos_index = UVec3::new(0, 0, 0);
+            let mut tex_index = UVec3::new(0, 0, 0);
+            let mut norm_index = UVec3::new(0, 0, 0);
+            for item in iter {
+                for (index, i) in item.0.iter().enumerate() {
+                    pos_index[index] = i.0 as u32;
+                    tex_index[index] = i.1.unwrap() as u32;
+                    norm_index[index] = i.2.unwrap() as u32;
+                }
+                index_vec[0].push(pos_index);
+                index_vec[1].push(tex_index);
+                index_vec[2].push(norm_index);
+            }
+        }
+        Ok((mesh, index_vec))
     }
 }

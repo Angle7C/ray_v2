@@ -21,4 +21,22 @@ impl Mesh {
             tangents,
         }
     }
+    pub fn merge(&mut self, other:&mut Mesh) {
+        self.point.append(&mut other.point);
+        self.normal.append(&mut other.normal);
+        self.uv.append(&mut other.uv);
+        self.tangents.append(&mut other.tangents);
+    }
+    #[inline]
+    pub fn pos_size(&self) -> usize {
+        self.point.len()
+    }
+    #[inline]
+    pub fn norm_size(&self) -> usize {
+        self.normal.len() 
+    }
+    #[inline]
+    pub fn uv_size(&self) -> usize {
+        self.uv.len() 
+    }
 }

@@ -1,13 +1,15 @@
-use std::{path::Path, sync::Arc};
+use std::{ops::Add, path::Path, sync::Arc};
 
 use anyhow::Result;
+use glam::UVec3;
+use rand::seq::index;
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::{
     material::{
         self, matte::Matte, metal::MetalMaterial, mirror::Mirror, plastic::Plastic, Material,
     },
-    primitive::{self, Primitive},
+    primitive::{self, mesh::Mesh, shape::triangle::Triangle, Primitive},
     texture::{constant::ConstantTexture, image::ImageTexture, Texture},
     tool::mipmap::{ImageData, MipMap},
 };
@@ -39,6 +41,7 @@ impl TomlLoader {
     {
         let textures = Self::load_texture(self.texture).unwrap();
         let materials = Self::load_material(self.material, textures).unwrap();
+        let primitive=Self::load_object(self.object, materials).unwrap();
     }
     fn load_texture<'a>(textures: Vec<TextureToml>) -> Result<Vec<Arc<dyn Texture + 'a>>> {
         let mut vec = vec![];
@@ -101,26 +104,41 @@ impl TomlLoader {
         materials: Vec<Box<dyn material::Material + 'a>>,
     ) -> Result<Vec<Box<dyn Primitive + 'a>>> {
         let mut vec = vec![];
-        // for object in objects {
-
-        //     vec.push(a);
-        // };
+        let mut all_mesh = Default::default();
+        //先获取对应obj的mesh，index。并存储最后进行合并计算
+        for object in objects {
+            let obj_to_world = object.transform.get_mat();
+            let material = materials.get(object.material_index).unwrap();
+            let vec = Self::load_sigle_object(object, &mut all_mesh)?;
+        }
         Ok(vec)
     }
-    fn load_sigle_object<'a>(
-        object: ObjToml,
-        materials: Vec<Box<dyn material::Material + 'a>>,
-    ) -> Result<Box<dyn Primitive + 'a>> {
-        let trans = object.transform.get_mat();
-        let material = materials.get(object.material_index).unwrap();
+    fn load_sigle_object<'a>(object: ObjToml, all_mesh: &mut Mesh) -> Result<Vec<Vec<UVec3>>> {
         let object_path = object.path;
-        let objype = object.objtype;
-        // let a=match objype.as_str(){
-        //     // "obj"=>ObjLoad::load(&object_path,material,trans),
-        //     // _=>todo!(),
-        //     unimplemented!();
-        // };
-        // Ok(a)
-        unimplemented!()
+        let objtype = object.objtype;
+        let (mut mesh, vec) = match objtype.as_str() {
+            "obj" => ObjLoad::load(&object_path),
+            _ => unimplemented!(),
+        }?;
+        let mut ans_index = vec![];
+        for (index, item) in vec.iter().enumerate() {
+            let size = get_type_index(index, &all_mesh);
+            let item = item
+                .iter()
+                .map(|v| v.add(UVec3::splat(size as u32)))
+                .collect::<Vec<_>>();
+            ans_index.push(item);
+        }
+        all_mesh.merge(&mut mesh);
+        Ok(ans_index)
+    }
+}
+#[inline]
+fn get_type_index(index: usize, mesh: &Mesh) -> usize {
+    match index {
+        0 => mesh.pos_size(),
+        1 => mesh.norm_size(),
+        2 => mesh.uv_size(),
+        _ => panic!(),
     }
 }
