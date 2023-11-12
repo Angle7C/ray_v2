@@ -1,325 +1,104 @@
-use std::sync::Arc;
+use std::{fs::File, io::Read};
 
-use glam::{
-    u32::UVec3,
-    Mat4, Quat, UVec4, Vec2, Vec3, Vec4,
+use serde::{Deserialize, Serialize};
+
+use crate::pbrt_core::camera::Camera;
+
+use self::{
+    myload::{CameraToml, IntegratorToml},
+    tomlload::TomlLoader,
 };
-use gltf::{buffer::Data, import, Buffer};
-
-use crate::pbrt_core::primitive::{mesh::Mesh, shape::triangle::Triangle};
 
 use super::{
-    material::{matte::Matte, pbr::PbrMaterial, Material},
-    primitive::Primitive,
-    texture::{
-        constant::ConstantTexture,
-        image::ImageTexture,
-        Texture,
-    }, tool::mipmap::{MipMap, ImageData},
+    camera::CameraMode,
+    integrator::{direct::DirectIntegrator, path::PathIntegrator, Integrator},
+    sampler::Sampler,
+    tool::sence::Sence,
 };
 
-pub struct GltfLoad;
+pub mod gltfload;
 pub mod myload;
-impl GltfLoad {
-    pub fn load<'a, 'b>(
-        path: &str,
-        shape: &'b mut Vec<Box<dyn Primitive>>,
-    ) -> &'static [Box<dyn Material>]
-    where
-        'b: 'a,
-    {
-        let material;
-        if let Ok((gltf, buffer, images)) = import(path) {
-            //mesh几何
-            *shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
-            //加载材质
-            material = &*load_material(images, &gltf).leak();
-            //加载shape
-            let (all_point, all_normal, all_uv, index_vec, nodes, transform_vec, det_index_vec) =
-                load_node(material, &gltf, buffer);
-            let mesh = Mesh::new(all_point, all_normal, all_uv, vec![]);
-            let mesh = Arc::new(mesh);
-            {
-                for i in 0..nodes {
-                    let index = index_vec.get(i).unwrap();
-                    let det_index = det_index_vec[i];
-                    let transform = transform_vec.get(i).unwrap();
-                    for i in index {
-                        let w = i.w as usize;
-                        let a = material.get(w);
-                        shape.push(Box::new(Triangle::new(
-                            i.truncate() + det_index,
-                            mesh.clone(),
-                            *transform,
-                            a,
-                        )));
-                    }
-                }
-            };
-            return material;
+pub mod objload;
+pub mod tomlload;
+#[derive(Deserialize, Debug, Serialize)]
+struct LoadData {
+    pub path: String,
+    pub name: String,
+    pub camera: CameraToml,
+    pub intergator: IntegratorToml,
+}
+
+pub struct Load;
+impl Load {
+    pub fn load(path: &str) -> anyhow::Result<Sence> {
+        let mut file = File::open(path)?;
+        let mut buf = String::new();
+        file.read_to_string(&mut buf)?;
+        let data: LoadData = toml::from_str(&buf)?;
+        Self::load_camera(&data.camera);
+        Self::create_intergator(&data.intergator);
+        Self::build_sence(&data.path)
+    }
+    fn build_sence(path: &str) -> anyhow::Result<Sence> {
+        match path.split(".").last().unwrap() {
+            "toml" => {
+                Self::toml_load_sence(path);
+            }
+            _ => unimplemented!("文件toml类型暂不支持"),
         }
+        unimplemented!();
+        // Err("读取Sence失败");
+    }
+    fn toml_load_sence(path: &str) -> anyhow::Result<Sence> {
+        let mut file = File::open(path)?;
+        let mut buf = String::new();
+        file.read_to_string(&mut buf)?;
+        let loader: TomlLoader = toml::from_str(&buf)?;
+        // loader.load_sence()
         unimplemented!()
     }
-}
-
-fn load_mesh(
-    mesh: gltf::Mesh,
-    material_vec: &[Box<dyn Material>],
-    buffer: &Vec<Data>,
-    index: &mut Vec<UVec4>,
-    point: &mut Vec<Vec3>,
-    normal: &mut Vec<Vec3>,
-    uv: &mut Vec<Vec2>,
-) {
-    let get_buffer = |x: Buffer| Some(&*buffer[x.index()].0);
-    for primitive in mesh.primitives() {
-        let material = primitive.material();
-        let (_, material_index) = if let Some(material_index) = material.index() {
-            (material_vec.get(material_index).unwrap(), material_index)
-        } else {
-            //默认材质
-            (material_vec.last().unwrap(), material_vec.len() - 1)
-        };
-        let reader = primitive.reader(get_buffer);
-        *index = reader
-            .read_indices()
-            .unwrap()
-            .into_u32()
-            .collect::<Vec<_>>()
-            .chunks(3)
-            .map(UVec3::from_slice)
-            .map(|x| x.extend(material_index as u32))
-            .collect();
-
-        for (s, _) in primitive.attributes() {
-            match s {
-                gltf::Semantic::Positions => {
-                    *point = reader
-                        .read_positions()
-                        .unwrap()
-                        .map(Vec3::from_array)
-                        .collect::<Vec<_>>();
-                }
-                gltf::Semantic::Normals => {
-                    *normal = reader
-                        .read_normals()
-                        .unwrap()
-                        .map(Vec3::from_array)
-                        .collect::<Vec<_>>();
-                }
-                gltf::Semantic::Tangents => {}
-                gltf::Semantic::Colors(_) => {}
-                gltf::Semantic::TexCoords(coords) => {
-                    *uv = reader
-                        .read_tex_coords(coords)
-                        .unwrap()
-                        .into_f32()
-                        .map(Vec2::from_array)
-                        .collect::<Vec<_>>();
-                }
-                gltf::Semantic::Joints(_) => {}
-                gltf::Semantic::Weights(_) => {}
-            }
+    fn load_camera(camera: &CameraToml) -> Camera {
+        let mode = camera.mode.as_str();
+        match mode {
+            "P" => Camera::new(
+                camera.eye,
+                camera.target,
+                camera.up,
+                camera.size,
+                CameraMode::P,
+                camera.fov,
+            ),
+            "O" => Camera::new(
+                camera.eye,
+                camera.target,
+                camera.up,
+                camera.size,
+                CameraMode::O,
+                camera.fov,
+            ),
+            _ => unimplemented!("不支持其他类型Camera"),
         }
     }
-}
-
-fn load_material<'a, 'b>(
-    images: Vec<gltf::image::Data>,
-    gltf: &'b gltf::Document,
-) -> Vec<Box<dyn Material + 'a>>
-where
-    'a: 'b,
-{
-    let mut mip_vec: Vec<_> = vec![];
-    let mut material_vec = vec![];
-    for image in gltf.images() {
-        mip_vec.push(MipMap::new(ImageData::new(&images[image.index()])));
-    }
-    for material in gltf.materials() {
-        add_material(&material, &mip_vec, &mut material_vec);
-    }
-    material_vec.push(Box::new(Matte::new(Arc::new(ConstantTexture::new(
-        Vec3::splat(0.75)
-    )),0.0)));
-    material_vec
-}
-fn load_node(
-    material_vec: &[Box<dyn Material>],
-    gltf: &gltf::Document,
-    buffer: Vec<gltf::buffer::Data>,
-) -> (
-    Vec<Vec3>,
-    Vec<Vec3>,
-    Vec<Vec2>,
-    Vec<Vec<UVec4>>,
-    usize,
-    Vec<Mat4>,
-    Vec<UVec3>,
-) {
-    let mut transform_vec = vec![];
-    let mut index_vec = vec![];
-    let mut point_vec = vec![];
-    let mut normal_vec = vec![];
-    let mut uv_vec = vec![];
-    let mut nodes: usize = 0;
-    for (_, item) in gltf.nodes().enumerate() {
-        let transform = match item.transform() {
-            gltf::scene::Transform::Matrix { matrix } => {
-                Mat4::from_cols_array_2d(&matrix)
+    fn create_intergator(integrator: &IntegratorToml) -> Integrator {
+        match *integrator {
+            IntegratorToml::Direct {
+                core_num,
+                sample_num,
+                startegy,
+            } => {
+                let direct = Box::new(DirectIntegrator::new(0, startegy, Sampler::new(1)));
+                Integrator::Direct(direct, core_num, Sampler::new(sample_num))
             }
-            gltf::scene::Transform::Decomposed {
-                translation,
-                rotation,
-                scale,
-            } => Mat4::from_scale_rotation_translation(
-                Vec3::from_array(scale),
-                Quat::from_array(rotation),
-                Vec3::from(translation),
-            )
-        };
-
-        transform_vec.push(transform);
-        let mut point = vec![];
-        let mut normal = vec![];
-        let mut uv = vec![];
-        let mut index = vec![];
-        if let Some(mesh) = item.mesh() {
-            load_mesh(
-                mesh,
-                material_vec,
-                &buffer,
-                &mut index,
-                &mut point,
-                &mut normal,
-                &mut uv,
-            );
-        };
-        index_vec.push(index);
-        normal_vec.push(normal);
-        uv_vec.push(uv);
-        point_vec.push(point);
-        nodes += 1;
+            IntegratorToml::Path {
+                core_num,
+                sample_num,
+                q,
+                max_depth,
+            } => Integrator::Path(
+                Box::new(PathIntegrator::new(q, max_depth)),
+                core_num,
+                Sampler::new(sample_num),
+            ),
+        }
     }
-    let mut all_point = vec![];
-    let mut all_normal = vec![];
-    let mut all_uv = vec![];
-    let mut det_point = vec![UVec3::ZERO];
-    for i in 0..nodes {
-        let point = point_vec.get_mut(i).unwrap();
-        let normal = normal_vec.get_mut(i).unwrap();
-        let uv = uv_vec.get_mut(i).unwrap();
-        det_point.push(det_point[i] + UVec3::splat(point.len() as u32));
-        all_point.append(point);
-        all_normal.append(normal);
-        all_uv.append(uv);
-    }
-    (
-        all_point,
-        all_normal,
-        all_uv,
-        index_vec,
-        nodes,
-        transform_vec,
-        det_point,
-    )
-    // let mesh = Arc::new(Mesh::new(
-    //     all_point,
-    //     all_normal,
-    //     all_uv,
-    //     vec![],
-    //     material_vec.clone(),
-    // ));
-    // {
-    //     let mesh_slice = mesh.clone();
-    //     for i in 0..nodes {
-    //         let index = index_map.get(&i).unwrap();
-    //         let det_index = det_point[i];
-    //         let transform = transform_map.get(&i).unwrap();
-    //         for i in index {
-    //             let w = i.w as usize;
-    //             let material = unsafe { material_vec.get_unchecked(w) };
-    //             shape.push(Box::new(Triangle::new(
-    //                 i.truncate() + det_index,
-    //                 mesh.clone(),
-    //                 *transform,
-    //                 Some(material.clone()),
-    //             )));
-    //         }
-    //     }
-    // }
-}
-pub fn add_material(
-    material: &gltf::Material,
-    mip_map: &Vec<MipMap>,
-    material_vec: &mut Vec<Box<dyn Material>>,
-) {
-    if material_vec.get(material.index().unwrap()).is_some() {
-        return;
-    }
-    //透明度，不做处理
-    match material.alpha_mode() {
-        _ => (),
-    }
-    let _ = material.alpha_cutoff();
-    //双面贴图
-    let _ = material.double_sided();
-    //自发光
-    let _emissive_texture = material.emissive_factor();
-    //自发光贴图
-    material.emissive_texture();
-    //法线贴图
-    material.normal_texture();
-    //遮挡贴图
-    material.occlusion_texture();
-    //pbr材质
-    let pbr = material.pbr_metallic_roughness();
-    //base_color
-    let base_color: Arc<dyn Texture> =
-        if let Some(base_color_texture) = pbr.base_color_texture() {
-            let i = base_color_texture.texture().index();
-            Arc::new(ImageTexture::new(mip_map.get(i).unwrap().to_owned()))
-        } else {
-            Arc::new(ConstantTexture::new(
-                Vec4::from_array(pbr.base_color_factor())
-                    .truncate()
-            ))
-        };
-    //金属度
-    let metailc: Arc<dyn Texture> =
-        if let Some(metallic_roughness_texture) = pbr.metallic_roughness_texture() {
-            Arc::new(ImageTexture::new(
-                mip_map
-                    .get(metallic_roughness_texture.texture().index())
-                    .unwrap()
-                    .to_owned(),
-            ))
-        } else {
-            Arc::new(ConstantTexture::new(
-                Vec3::splat(pbr.metallic_factor())
-            ))
-        };
-    //粗糙度
-    let roughness: Arc<dyn Texture> =
-        if let Some(roughness_texture) = pbr.metallic_roughness_texture() {
-            Arc::new(ImageTexture::new(
-                mip_map
-                    .get(roughness_texture.texture().index())
-                    .unwrap()
-                    .to_owned(),
-            ))
-        } else {
-            Arc::new(ConstantTexture::new(
-                Vec3::splat(pbr.roughness_factor()),
-            ))
-        };
-    let pbr_material = Box::new(PbrMaterial::new(
-        Some(base_color),
-        Some(metailc),
-        Some(roughness),
-        None,
-        None,
-        None,
-    ));
-    material_vec.insert(material.index().unwrap(), pbr_material);
 }

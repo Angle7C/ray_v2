@@ -1,6 +1,10 @@
 #[cfg(test)]
 pub mod test {
     use std::path::Path;
+
+    use glam::Mat4;
+
+    use crate::pbrt_core::load::objload::ObjLoad;
     
 
 
@@ -14,5 +18,10 @@ pub mod test {
         // MipMap::new(ImageData::new_dynimage(image));
         image.save_with_format("skybox.png", image::ImageFormat::Png);
         
+    }
+    #[test]
+    fn obj_load(){
+        let path=Path::new("./object/box.obj");
+        ObjLoad::load(path.display().to_string().as_str());
     }
 }

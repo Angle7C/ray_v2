@@ -9,13 +9,13 @@ use crate::pbrt_core::{
 
 use super::{Material, BSDF};
 #[derive(Debug)]
-pub struct Matte {
-    kd: Arc<dyn Texture>,
-    _bump: Option<Arc<dyn Texture>>,
+pub struct Matte<'a> {
+    kd: Arc<dyn Texture+'a>,
+    _bump: Option<Arc<dyn Texture+'a>>,
     sigma:f32 
 }
-impl Matte {
-    pub fn new(kd: Arc<dyn Texture>,sigma:f32 )-> Self {
+impl<'a> Matte<'a> {
+    pub fn new(kd: Arc<dyn Texture+'a>,sigma:f32 )-> Self {
         Self {
             kd: kd.clone(),
             sigma,
@@ -23,7 +23,7 @@ impl Matte {
         }
     }
 }
-impl Material for Matte {
+impl<'a> Material for Matte<'a> {
     fn compute_scattering_functions(
         &self,
         suface: &mut crate::pbrt_core::tool::SurfaceInteraction,
