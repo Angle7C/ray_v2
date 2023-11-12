@@ -27,3 +27,5 @@ pub mod load;
 pub mod light;
 
 pub mod filter;
+
+pub mod bssrdf;

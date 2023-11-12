@@ -5,7 +5,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{func, Bound, InteractionCommon, Ray, SurfaceInteraction},
+    tool::{func, Bound, InteractionCommon, Ray, SurfaceInteraction}, sampler::concentric_sample_disk,
 };
 
 #[derive(Debug)]
@@ -32,6 +32,14 @@ impl<'a> Disk<'a> {
             material,
             height,
         }
+    }
+    pub fn sample_interaction(&self,common: &mut InteractionCommon,smaple_point: Vec2,pdf:&mut f32){
+        *pdf=1.0/self.get_area();
+        let pd=concentric_sample_disk(smaple_point);
+        let p= Vec3::new(pd.x*self.radius, pd.y*self.radius,self.height);
+        common.normal=self.obj_to_world.transform_vector3(Vec3::Z).normalize();
+        common.p=self.obj_to_world.transform_point3(p);
+        
     }
 }
 impl<'a> Primitive for Disk<'a> {

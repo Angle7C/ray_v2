@@ -12,7 +12,7 @@ use super::{
 pub mod bvh;
 pub mod mesh;
 pub mod shape {
-    use self::{rectangle::Rectangle, shpere::Shpere, cylinder::Cylinder};
+    use self::{rectangle::Rectangle, shpere::Shpere, cylinder::Cylinder, disk::Disk};
     use super::Primitive;
     use crate::pbrt_core::tool::InteractionCommon;
     use glam::{Vec2, Vec3};
@@ -25,7 +25,8 @@ pub mod shape {
     pub enum Shape<'a> {
         Rect(Rectangle<'a>),
         Shpere(Shpere<'a>),
-        Cylinder(Cylinder<'a>)
+        Cylinder(Cylinder<'a>),
+        Disk(Disk<'a>),
     }
 
     impl<'a> Primitive for Shape<'a> {
@@ -37,6 +38,8 @@ pub mod shape {
             match &self {
                 Shape::Rect(rect) => rect.compute_scattering(isct, mode),
                 Self::Shpere(sphere) => sphere.compute_scattering(isct, mode),
+                Shape::Cylinder(cylinder) => cylinder.compute_scattering(isct, mode),
+                Shape::Disk(disk) => disk.compute_scattering(isct, mode),
                 _=>todo!()
             }
         }
@@ -46,24 +49,28 @@ pub mod shape {
         ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
             match &self {
                 Shape::Rect(rect) => rect.interacect(ray),
-                Self::Shpere(sphere) => sphere.interacect(ray),
-                _=>todo!()
+                Shape::Shpere(sphere) => sphere.interacect(ray),
+                Shape::Cylinder(cylinder) => cylinder.interacect(ray),
+                Shape::Disk(disk)=>disk.interacect(ray)
             }
         }
         fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
             match &self {
                 Shape::Rect(rect) => rect.world_bound(),
-                Self::Shpere(sphere) => sphere.world_bound(),   
-                _=>todo!()
+                Shape::Shpere(sphere) => sphere.world_bound(),   
+                Shape::Cylinder(cylinder) => cylinder.world_bound(),
+                Shape::Disk(disk)=>disk.world_bound()
             }
         }
         fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
             match &self {
                 Shape::Rect(rect) => rect.hit_p(ray),
-                Self::Shpere(sphere) => sphere.hit_p(ray),
-                _=>todo!()
+                Shape::Shpere(sphere) => sphere.hit_p(ray),
+                Shape::Cylinder(cylinder) => cylinder.hit_p(ray),
+                Shape::Disk(disk)=>disk.hit_p(ray)
             }
         }
+        
     }
     impl<'a> Shape<'a> {
         // 获得面积
@@ -71,15 +78,17 @@ pub mod shape {
             match self {
                 Shape::Rect(rect) => rect.get_area(),
                 Shape::Shpere(sphere) => sphere.get_area(), 
-                _=>todo!()
+                Shape::Cylinder(cylinder) => cylinder.get_area(),
+                Shape::Disk(disk)=>disk.get_area(),
             }
         }
         // 形状采样
         pub fn sample(&self, smaple_point: Vec2, common: &mut InteractionCommon, pdf: &mut f32) {
-            *pdf = 1.0 / self.agt_area();
             match self {
-                Self::Rect(rect) => rect.sample_interaction(common, smaple_point),
-                Self::Shpere(sphere) => sphere.sample_interaction(common, smaple_point),
+                Self::Rect(rect) => rect.sample_interaction(common, smaple_point,pdf),
+                Self::Shpere(sphere) => sphere.sample_interaction(common, smaple_point,pdf),
+                Self::Cylinder(cylinder) => cylinder.sample_interaction(common, smaple_point,pdf),
+                Self::Disk(disk)=>disk.sample_interaction(common, smaple_point,pdf),
                 _=>todo!()
             }
         }

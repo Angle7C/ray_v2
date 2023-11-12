@@ -1,4 +1,10 @@
-use glam::{Mat4, Vec3};
+use std::f32::consts::PI;
+
+use glam::{Mat4, Vec2, Vec3};
+use rand::{
+    distributions::uniform::{SampleUniform, UniformSampler},
+    prelude::Distribution,
+};
 
 use crate::pbrt_core::bxdf::func::{cos_phi, cos_theta, sin_phi};
 
@@ -155,7 +161,13 @@ fn transform_shading(transform: Mat4, shading: Shading) -> Shading {
     let dndv = transform.transform_vector3(shading.dndv);
     Shading::new(dpdu, dpdv, dndu, dndv)
 }
-pub fn compute_d2(dpdu: Vec3, dpdv: Vec3, d2pduu: Vec3, d2pduv: Vec3, d2pdvv: Vec3) -> (Vec3, Vec3, Vec3) {
+pub fn compute_d2(
+    dpdu: Vec3,
+    dpdv: Vec3,
+    d2pduu: Vec3,
+    d2pduv: Vec3,
+    d2pdvv: Vec3,
+) -> (Vec3, Vec3, Vec3) {
     let e = dpdu.dot(dpdu);
     let f = dpdu.dot(dpdv);
     let g = dpdv.dot(dpdv);
@@ -167,4 +179,15 @@ pub fn compute_d2(dpdu: Vec3, dpdv: Vec3, d2pduu: Vec3, d2pduv: Vec3, d2pdvv: Ve
     let dndu = (ff * f - ee * g) * inv_egf * dpdu + (ee * f - ff * e) * inv_egf * dpdv;
     let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
     (n, dndu, dndv)
+}
+pub fn lerp(t: f32, a: f32, b: f32) -> f32 {
+    a + (b - a) * t
+}
+pub fn unifrom_sample_sphere(u: Vec2) -> Vec3 {
+    let phi = 2.0 * PI * u.x;
+    let theta = (2.0 * u.y - 1.0).acos();
+    let x = f32::sin(theta) * f32::cos(phi);
+    let y = f32::sin(theta) * f32::sin(phi);
+    let z = f32::cos(theta);
+    Vec3 { x, y, z }
 }
