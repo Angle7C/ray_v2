@@ -1,23 +1,33 @@
 use std::{ops::Add, path::Path, sync::Arc};
 
 use anyhow::Result;
-use glam::UVec3;
-use rand::seq::index;
+use glam::{UVec3, Mat4, Vec3};
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::{
+    self,
+    camera::Camera,
     material::{
         self, matte::Matte, metal::MetalMaterial, mirror::Mirror, plastic::Plastic, Material,
     },
-    primitive::{self, mesh::Mesh, shape::triangle::Triangle, Primitive},
+    primitive::{
+        self,
+        mesh::Mesh,
+        shape::{self, rectangle::Rectangle, shpere::Shpere, triangle::Triangle, Shape},
+        Primitive,
+    },
     texture::{constant::ConstantTexture, image::ImageTexture, Texture},
-    tool::mipmap::{ImageData, MipMap},
+    tool::{
+        mipmap::{ImageData, MipMap},
+        sence::Sence,
+    }, light::{Light, area::DiffuseAreaLight, point::Point, inf::InfiniteLight},
 };
 
 use super::{
     myload::{LightToml, MaterialToml, ShapeToml, TextureToml, TransformToml},
     objload::ObjLoad,
 };
+static mut SHAPE: Vec<Shape> = vec![];
 #[derive(Deserialize, Debug, Serialize, Default)]
 struct ObjToml {
     pub transform: TransformToml,
@@ -35,15 +45,17 @@ pub struct TomlLoader {
     shape: Vec<ShapeToml>,
 }
 impl TomlLoader {
-    pub fn load_sence<'b, 'a>(self)
-    where
-        'b: 'a,
-    {
-        let textures = Self::load_texture(self.texture).unwrap();
-        let materials = Self::load_material(self.material, textures).unwrap();
-        let primitive=Self::load_object(self.object, materials).unwrap();
+    pub fn load_sence(self, camera: Camera) -> Sence {
+        let textures = Self::load_texture(self.texture).unwrap().leak();
+        let materials = Self::load_material(self.material, textures).unwrap().leak();
+        let primitive = Self::load_object(self.object, materials).unwrap();
+        Self::load_shape( self.shape);
+        let light=Self::load_light(self.light,unsafe {
+            &SHAPE
+        },textures);
+        Sence::new(primitive, camera,light)
     }
-    fn load_texture<'a>(textures: Vec<TextureToml>) -> Result<Vec<Arc<dyn Texture + 'a>>> {
+    fn load_texture(textures: Vec<TextureToml>) -> Result<Vec<Arc<dyn Texture>>> {
         let mut vec = vec![];
         for texture in textures {
             let box_texture: Arc<dyn Texture> = match texture {
@@ -60,10 +72,10 @@ impl TomlLoader {
         }
         Ok(vec)
     }
-    fn load_material<'a>(
+    fn load_material(
         materials: Vec<MaterialToml>,
-        texture: Vec<Arc<dyn Texture + 'a>>,
-    ) -> Result<Vec<Box<dyn material::Material + 'a>>> {
+        texture: &'static [Arc<dyn Texture>],
+    ) -> Result<Vec<Box<dyn material::Material>>> {
         let mut vec = vec![];
         for material in materials {
             let a: Box<dyn Material> = match material {
@@ -99,10 +111,10 @@ impl TomlLoader {
         }
         Ok(vec)
     }
-    fn load_object<'a>(
+    fn load_object(
         objects: Vec<ObjToml>,
-        materials: Vec<Box<dyn material::Material + 'a>>,
-    ) -> Result<Vec<Box<dyn Primitive + 'a>>> {
+        materials: &'static mut [Box<dyn material::Material>],
+    ) -> Result<Vec<Box<dyn Primitive>>> {
         let mut vec = vec![];
         let mut all_mesh = Default::default();
         //先获取对应obj的mesh，index。并存储最后进行合并计算
@@ -113,7 +125,7 @@ impl TomlLoader {
         }
         Ok(vec)
     }
-    fn load_sigle_object<'a>(object: ObjToml, all_mesh: &mut Mesh) -> Result<Vec<Vec<UVec3>>> {
+    fn load_sigle_object(object: ObjToml, all_mesh: &mut Mesh) -> Result<Vec<Vec<UVec3>>> {
         let object_path = object.path;
         let objtype = object.objtype;
         let (mut mesh, vec) = match objtype.as_str() {
@@ -131,6 +143,63 @@ impl TomlLoader {
         }
         all_mesh.merge(&mut mesh);
         Ok(ans_index)
+    }
+
+    fn load_shape(shapes: Vec<ShapeToml>) {
+        // let mut vec = vec![];
+        for item in &shapes {
+            let shape: Shape = match item {
+                ShapeToml::Rect {
+                    trans,
+                    material_index: _,
+                } => Shape::Rect(Rectangle::new(trans.get_mat(), None)),
+
+                ShapeToml::Shpere {
+                    trans,
+                    r,
+                    material_index: _,
+                } => pbrt_core::primitive::shape::Shape::Shpere(Shpere::new(
+                    *r,
+                    None,
+                    trans.get_mat(),
+                )),
+            };
+            unsafe { SHAPE.push(shape) }
+        }
+    }
+    fn load_light(
+        lights:Vec<LightToml>,
+        shape: &'static [Shape<'static>],
+        texture: &'static [Arc<dyn Texture>],
+    ) -> Vec<Light> {
+        let mut vec = vec![];
+        for (index, item) in lights.iter().enumerate() {
+            let light: Light = match item {
+                LightToml::Point {
+                    // trans,
+                    point,
+                    lemit,
+                } => Light::PointLight(Box::new(Point::new(*lemit, *point, index))),
+                LightToml::Area { lemit, shape_index } => Light::AreaLight(Box::new(
+                    DiffuseAreaLight::new(*lemit, shape.get(*shape_index).take().unwrap(), index),
+                )),
+                LightToml::Infinite {
+                    world_center,
+                    world_radius,
+                    skybox,
+                } => Light::Infinite(Box::new(InfiniteLight::new(
+                    *world_radius,
+                    *world_center,
+                    texture.get(*skybox).unwrap().clone(),
+                    Mat4::default(),
+                    Vec3::ONE,
+                    index,
+                ))),
+                _ => todo!(),
+            };
+            vec.push(light)
+        }
+        vec
     }
 }
 #[inline]

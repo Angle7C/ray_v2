@@ -18,7 +18,7 @@ pub struct Triangle<'a> {
     tex_index: [usize; 3],
     mesh: Arc<Mesh>,
     obj_to_world: Mat4,
-    materail: Option<&'a Box<dyn Material>>,
+    materail: Option<&'a Box<dyn Material+'a>>,
 }
 #[allow(unused)]
 impl<'a> Triangle<'a> {
@@ -28,7 +28,7 @@ impl<'a> Triangle<'a> {
         tex_index:UVec3,
         mesh: Arc<Mesh>,
         obj_to_world: Mat4,
-        materail: Option<&'a Box<dyn Material>>,
+        materail: Option<&'a Box<dyn Material+'a>>,
     ) -> Self {
         Self {
             point_index: [point_index.x as usize, point_index.y as usize, point_index.z as usize],

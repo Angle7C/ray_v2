@@ -13,7 +13,7 @@ fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 16
+core_num = 6
 sample_num = 1
 q = 0.1
 max_depth = 3
