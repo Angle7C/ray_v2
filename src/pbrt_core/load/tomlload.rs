@@ -1,12 +1,14 @@
 use std::{ops::Add, path::Path, sync::Arc};
 
 use anyhow::Result;
-use glam::{UVec3, Mat4, Vec3};
+use glam::{Mat4, UVec3, Vec3};
+use obj::Object;
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::{
     self,
     camera::Camera,
+    light::{area::DiffuseAreaLight, inf::InfiniteLight, point::Point, Light},
     material::{
         self, matte::Matte, metal::MetalMaterial, mirror::Mirror, plastic::Plastic, Material,
     },
@@ -20,7 +22,7 @@ use crate::pbrt_core::{
     tool::{
         mipmap::{ImageData, MipMap},
         sence::Sence,
-    }, light::{Light, area::DiffuseAreaLight, point::Point, inf::InfiniteLight},
+    },
 };
 
 use super::{
@@ -42,18 +44,16 @@ pub struct TomlLoader {
     material: Vec<MaterialToml>,
     texture: Vec<TextureToml>,
     light: Vec<LightToml>,
-    shape: Vec<ShapeToml>,
+    shapes: Vec<ShapeToml>,
 }
 impl TomlLoader {
     pub fn load_sence(self, camera: Camera) -> Sence {
         let textures = Self::load_texture(self.texture).unwrap().leak();
         let materials = Self::load_material(self.material, textures).unwrap().leak();
         let primitive = Self::load_object(self.object, materials).unwrap();
-        Self::load_shape( self.shape);
-        let light=Self::load_light(self.light,unsafe {
-            &SHAPE
-        },textures);
-        Sence::new(primitive, camera,light)
+        Self::load_shape(self.shapes);
+        let light = Self::load_light(self.light, unsafe { &SHAPE }, textures);
+        Sence::new(primitive, camera, light)
     }
     fn load_texture(textures: Vec<TextureToml>) -> Result<Vec<Arc<dyn Texture>>> {
         let mut vec = vec![];
@@ -117,17 +117,33 @@ impl TomlLoader {
     ) -> Result<Vec<Box<dyn Primitive>>> {
         let mut vec = vec![];
         let mut all_mesh = Default::default();
+        let mut primitives = vec![];
         //先获取对应obj的mesh，index。并存储最后进行合并计算
-        for object in objects {
-            let obj_to_world = object.transform.get_mat();
-            let material = materials.get(object.material_index).unwrap();
-            let vec = Self::load_sigle_object(object, &mut all_mesh)?;
+        for object in objects.iter() {
+            let sub_vec = Self::load_sigle_object(&object, &mut all_mesh)?;
+            vec.push(sub_vec);
         }
-        Ok(vec)
+        let mesh = Arc::new(all_mesh);
+        for index in 0..vec.len() {
+            let obj = objects.get(index).unwrap();
+            let mat4 = obj.transform.get_mat();
+            let material = materials.get(obj.material_index);
+            let sub_primitive = vec.get(index).unwrap();
+            let len = sub_primitive[0].len();
+            for i in 0..len {
+                let pos = sub_primitive[0][i];
+                let normal = sub_primitive[1][i];
+                let uv = sub_primitive[2][i];
+                let t: Box<dyn Primitive> =
+                    Box::new(Triangle::new(pos, normal, uv, mesh.clone(), mat4, material));
+                primitives.push(t);
+            }
+        }
+        Ok(primitives)
     }
-    fn load_sigle_object(object: ObjToml, all_mesh: &mut Mesh) -> Result<Vec<Vec<UVec3>>> {
-        let object_path = object.path;
-        let objtype = object.objtype;
+    fn load_sigle_object(object: &ObjToml, all_mesh: &mut Mesh) -> Result<Vec<Vec<UVec3>>> {
+        let object_path = &object.path;
+        let objtype = &object.objtype;
         let (mut mesh, vec) = match objtype.as_str() {
             "obj" => ObjLoad::load(&object_path),
             _ => unimplemented!(),
@@ -168,7 +184,7 @@ impl TomlLoader {
         }
     }
     fn load_light(
-        lights:Vec<LightToml>,
+        lights: Vec<LightToml>,
         shape: &'static [Shape<'static>],
         texture: &'static [Arc<dyn Texture>],
     ) -> Vec<Light> {

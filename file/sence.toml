@@ -1,4 +1,4 @@
-[[obj]]
+[[object]]
 transform = { t = [
     0.0,
     0.0,
@@ -9,25 +9,6 @@ transform = { t = [
     0.0,
     1.0,
 ], s = [
-    1.0,
-    1.0,
-    1.0,
-] }
-objtype = "gltf"
-path = "object/a.gltf"
-material_index = 0
-
-[[obj]]
-transform = { translation = [
-    0.0,
-    0.0,
-    0.0,
-], rotation = [
-    0.0,
-    0.0,
-    0.0,
-    1.0,
-], scale = [
     1.0,
     1.0,
     1.0,

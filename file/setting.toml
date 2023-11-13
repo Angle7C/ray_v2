@@ -1,5 +1,5 @@
 name = "image"
-senceAssert="./sence.toml" 
+path="./file/sence.toml" 
 
 [camera]
 mode = "P"

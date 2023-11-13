@@ -26,7 +26,7 @@ pub mod objload;
 
 pub mod jsonload;
 pub mod tomlload;
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Serialize,Default)]
 struct LoadData {
     pub path: String,
     pub name: String,
@@ -136,5 +136,18 @@ impl Load {
                 "path".to_ascii_lowercase(),
             ),
         }
+    }
+}
+#[cfg(test)]
+mod test{
+    use crate::pbrt_core::camera::Camera;
+
+    use super::LoadData;
+    #[test]
+    pub fn test_data(){
+        let mut data = LoadData::default();
+        data.name=String::from("value");
+        let str = toml::to_string(&data).unwrap();
+        println!("{:?}",data)
     }
 }
