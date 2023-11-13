@@ -5,8 +5,9 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
+    sampler::concentric_sample_disk,
     tool::{
-        func::{self, quadratic, compute_d2},
+        func::{self, compute_d2, lerp, quadratic},
         Bound, InteractionCommon, Ray, Shading, SurfaceInteraction,
     },
 };
@@ -32,6 +33,19 @@ impl<'a> Cylinder<'a> {
             obj_to_world,
             material,
         }
+    }
+    pub fn sample_interaction(&self, common: &mut InteractionCommon, smaple_point: Vec2,pdf:&mut f32) {
+        let z = lerp(smaple_point.x, 0.0, self.height);
+        let pi = smaple_point.y * 2.0 * PI;
+        let mut p_obj = Vec3::new(self.radius * pi.cos(), self.radius * pi.sin(), z);
+        common.normal = self
+            .obj_to_world
+            .transform_vector3(Vec3::new(p_obj.x, p_obj.y, 0.0))
+            .normalize();
+        let hit_rad = (p_obj.x * p_obj.x + p_obj.y * p_obj.y).sqrt();
+        p_obj.x *= self.radius / hit_rad;
+        p_obj.y *= self.radius / hit_rad;
+        common.p = self.obj_to_world.transform_point3(p_obj);
     }
 }
 impl<'a> Primitive for Cylinder<'a> {
@@ -113,5 +127,3 @@ impl<'a> Primitive for Cylinder<'a> {
         self.height * 2.0 * PI * self.radius
     }
 }
-
-

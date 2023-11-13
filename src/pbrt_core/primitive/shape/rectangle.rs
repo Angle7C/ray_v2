@@ -23,7 +23,8 @@ impl<'a> Rectangle<'a> {
         p1.cross(p2).length()
         // DMat2::from_cols(self.obj_to_world.x_axis.xy(), self.obj_to_world.y_axis.xy()).determinant()
     }
-    pub fn sample_interaction(&self, commom: &mut InteractionCommon, sampler_point: Vec2) {
+    pub fn sample_interaction(&self, commom: &mut InteractionCommon, sampler_point: Vec2,pdf:&mut f32) {
+        *pdf=1.0/self.get_area();
         let p = self
             .obj_to_world
             .transform_point3(sampler_point.extend(0.0));

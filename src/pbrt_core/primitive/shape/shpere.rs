@@ -5,7 +5,7 @@ use glam::{Mat4, Vec2, Vec3};
 use crate::pbrt_core::{
     material::Material,
     primitive::Primitive,
-    tool::{func, Bound, InteractionCommon, Shading, SurfaceInteraction},
+    tool::{func::{self, unifrom_sample_sphere}, Bound, InteractionCommon, Shading, SurfaceInteraction},
 };
 #[derive(Debug)]
 pub struct Shpere<'a> {
@@ -21,8 +21,12 @@ impl<'a> Shpere<'a> {
             material,
         }
     }
-    pub fn sample_interaction(&self, _commom: &mut InteractionCommon, _sampler_point: Vec2) {
-        unimplemented!()
+    pub fn sample_interaction(&self,commom: &mut InteractionCommon, sampler_point: Vec2,pdf:&mut f32) {
+        *pdf=1.0/self.get_area();
+        let p=self.r*unifrom_sample_sphere(sampler_point);
+        commom.normal=self.obj_to_world.transform_vector3(p).normalize();
+        commom.p=self.obj_to_world.transform_point3(p);
+
     }
     pub fn get_cos(&self, _dir: Vec3) -> Option<f32> {
         unimplemented!()
