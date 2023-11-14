@@ -89,7 +89,7 @@ pub mod shape {
                 Self::Shpere(sphere) => sphere.sample_interaction(common, smaple_point,pdf),
                 Self::Cylinder(cylinder) => cylinder.sample_interaction(common, smaple_point,pdf),
                 Self::Disk(disk)=>disk.sample_interaction(common, smaple_point,pdf),
-                _=>todo!()
+                _=>todo!(),
             }
         }
         //对于在不同点采样的时，会存在不同pdf值。给定指定方向与点，确定是否有交点。

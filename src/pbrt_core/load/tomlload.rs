@@ -1,7 +1,7 @@
 use std::{ops::Add, path::Path, sync::Arc};
 
 use anyhow::Result;
-use glam::{Mat4, UVec3, Vec3};
+use glam::{Mat4, UVec3, Vec3, Vec2, Vec4, Quat};
 use obj::Object;
 use serde::{Deserialize, Serialize};
 
@@ -22,12 +22,11 @@ use crate::pbrt_core::{
     tool::{
         mipmap::{ImageData, MipMap},
         sence::Sence,
-    },
+    }, integrator::direct::LightStartegy,
 };
 
 use super::{
-    myload::{LightToml, MaterialToml, ShapeToml, TextureToml, TransformToml},
-    objload::ObjLoad,
+    objload::ObjLoad, gltfload::GltfLoad,
 };
 static mut SHAPE: Vec<Shape> = vec![];
 #[derive(Deserialize, Debug, Serialize, Default)]
@@ -43,7 +42,9 @@ pub struct TomlLoader {
     object: Vec<ObjToml>,
     material: Vec<MaterialToml>,
     texture: Vec<TextureToml>,
+    #[serde(default)]
     light: Vec<LightToml>,
+    #[serde(default)]
     shapes: Vec<ShapeToml>,
 }
 impl TomlLoader {
@@ -132,8 +133,8 @@ impl TomlLoader {
             let len = sub_primitive[0].len();
             for i in 0..len {
                 let pos = sub_primitive[0][i];
-                let normal = sub_primitive[1][i];
-                let uv = sub_primitive[2][i];
+                let uv = sub_primitive[1][i];
+                let normal = sub_primitive[2][i];
                 let t: Box<dyn Primitive> =
                     Box::new(Triangle::new(pos, normal, uv, mesh.clone(), mat4, material));
                 primitives.push(t);
@@ -146,7 +147,8 @@ impl TomlLoader {
         let objtype = &object.objtype;
         let (mut mesh, vec) = match objtype.as_str() {
             "obj" => ObjLoad::load(&object_path),
-            _ => unimplemented!(),
+            "gltf" => GltfLoad::load(&object_path),
+            _=>unimplemented!("obj type not support")
         }?;
         let mut ans_index = vec![];
         for (index, item) in vec.iter().enumerate() {
@@ -227,3 +229,155 @@ fn get_type_index(index: usize, mesh: &Mesh) -> usize {
         _ => panic!(),
     }
 }
+
+
+#[derive(Deserialize, Debug, Serialize, Default)]
+pub struct MyLoad {
+    camera: CameraToml,
+    primitive: Vec<ShapeToml>,
+    #[serde(default)]
+    shapes: Vec<ShapeToml>,
+    material: Vec<MaterialToml>,
+    #[serde(default)]
+    light: Vec<LightToml>,
+    // env_light: Vec<LightToml>,
+    texture: Vec<TextureToml>,
+    pub intergator: IntegratorToml,
+    name: String,
+}
+
+
+
+#[derive(Deserialize, Debug, Serialize, Default)]
+pub struct CameraToml {
+    pub mode: String,
+    pub size: Vec2,
+    pub far: f32,
+    pub near: f32,
+    pub eye: Vec3,
+    pub target: Vec3,
+    pub up: Vec3,
+    pub fov: f32,
+}
+
+#[derive(Deserialize, Debug, Serialize, Default)]
+pub struct TransformToml {
+    r: Vec4,
+    s: Vec3,
+    t: Vec3,
+}
+
+impl TransformToml {
+    pub fn get_mat(&self) -> Mat4 {
+        let angle = self.r.w.to_radians();
+        let quat = Quat::from_axis_angle(self.r.truncate(), angle);
+        Mat4::from_scale_rotation_translation(self.s, quat, self.t)
+    }
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+#[serde(tag = "mode")]
+pub enum ShapeToml {
+    Rect {
+        trans: TransformToml,
+        material_index: usize,
+    },
+    Shpere {
+        trans: TransformToml,
+        r: f32,
+        material_index: usize,
+    },
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+#[serde(tag = "mode")]
+pub enum MaterialToml {
+    Matte {
+        kd: usize,
+        sigma: f32,
+    },
+    Plastic {
+        kd: usize,
+        ks: usize,
+        roughness: usize,
+    },
+    Mirror {
+        kr: usize,
+    },
+    Metal {
+        eta: usize,
+        k: usize,
+        roughness: usize,
+    },
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+#[serde(tag = "mode")]
+pub enum TextureToml {
+    Image { path: String },
+    Constant { value: Vec3 },
+    // Value{value:f32}
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+#[serde(tag = "mode")]
+pub enum LightToml {
+    Point {
+        point: Vec3,
+        lemit: Vec3,
+    },
+    Spot {
+        trans: TransformToml,
+        point: Vec3,
+        lemit: Vec3,
+        end_angle: f32,
+        start_angle: f32,
+    },
+    Texture {
+        lemit: Vec3,
+        texture: TextureToml,
+    },
+    Distant {
+        lemit: Vec3,
+        dir: Vec3,
+        world_center: Vec3,
+        world_radius: Vec3,
+    },
+    Area {
+        lemit: Vec3,
+        shape_index: usize,
+    },
+    Infinite {
+        skybox: usize,
+        world_center: Vec3,
+        world_radius: f32,
+    },
+}
+
+#[derive(Deserialize, Debug, Serialize, Clone, Copy)]
+#[serde(tag = "mode")]
+pub enum IntegratorToml {
+    Path {
+        core_num: usize,
+        sample_num: usize,
+        q: f32,
+        max_depth: usize,
+    },
+    Direct {
+        core_num: usize,
+        sample_num: usize,
+        startegy: LightStartegy,
+    },
+}
+
+impl Default for IntegratorToml {
+    fn default() -> Self {
+        Self::Path {
+            core_num: 8,
+            sample_num: 1,
+            q: 0.9,
+            max_depth: 5,
+        }
+    }
+}
+

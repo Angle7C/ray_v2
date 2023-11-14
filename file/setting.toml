@@ -6,14 +6,14 @@ mode = "P"
 size = [1024.0, 1024.0]
 far = 1000.0
 near = 0.01
-eye = [0.0, 4.0, 4.0]
+eye = [0.0, 10.0, 10.0]
 target = [0.0, 0.0, 0.0]
 up = [0.0, 1.0, 0.0]
 fov = 110.0
 
 [intergator]
 mode = "Path"
-core_num = 6
-sample_num = 1
+core_num = 7
+sample_num = 8
 q = 0.1
 max_depth = 3

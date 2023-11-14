@@ -15,7 +15,7 @@ transform = { t = [
 ] }
 objtype = "obj"
 path = "object/box.obj"
-material_index = 0
+material_index = 1
 
 [[material]]
 mode = "Matte"
@@ -52,12 +52,12 @@ world_center = [0.0, 0.0, 0.0]
 world_radius = 1000.0
 skybox = 1
 
-[[shapes]]
-mode = "Rect"
-trans = { r = [1.0, 0.0, 0.0, 180.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 1.0] }
-material_index = 0
+# [[shapes]]
+# mode = "Rect"
+# trans = { r = [1.0, 0.0, 0.0, 180.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 10.0] }
+# material_index = 0
 
-[[light]]
-mode = "Area"
-lemit = [100.0, 100.0, 100.0]
-shape_index = 0
+# [[light]]
+# mode = "Area"
+# lemit = [100.0, 100.0, 100.0]
+# shape_index = 0

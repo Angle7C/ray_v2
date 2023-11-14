@@ -2,11 +2,10 @@ use std::{fs::File, io::Read};
 
 use serde::{Deserialize, Serialize};
 
-use crate::pbrt_core::{camera::Camera, load::objload::ObjLoad};
+use crate::pbrt_core::{camera::Camera};
 
 use self::{
-    myload::{CameraToml, IntegratorToml},
-    tomlload::TomlLoader,
+    tomlload::{TomlLoader, CameraToml, IntegratorToml},
 };
 
 use super::{
@@ -21,7 +20,7 @@ use super::{
 };
 
 pub mod gltfload;
-pub mod myload;
+// pub mod myload;
 pub mod objload;
 
 pub mod jsonload;
@@ -50,9 +49,6 @@ impl Load {
     fn build_sence(path: &str, camera: Camera) -> anyhow::Result<Sence> {
         let sence = match path.split(".").last().unwrap() {
             "toml" => Self::toml_load_sence(path, camera),
-            "json" => {
-                unimplemented!()
-            }
             _ => unimplemented!("文件类型暂不支持"),
         };
         sence

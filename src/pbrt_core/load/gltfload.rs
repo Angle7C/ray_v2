@@ -1,10 +1,9 @@
-use crate::pbrt_core::primitive::Primitive;
 use std::sync::Arc;
 
 use glam::{u32::UVec3, Mat4, Quat, UVec4, Vec2, Vec3, Vec4};
 use gltf::{buffer::Data, import, Buffer};
 
-use crate::pbrt_core::primitive::{mesh::Mesh, shape::triangle::Triangle};
+use crate::pbrt_core::primitive::mesh::Mesh;
 
 use super::super::{
     material::{matte::Matte, pbr::PbrMaterial, Material},
@@ -14,24 +13,22 @@ use super::super::{
 
 pub struct GltfLoad;
 impl GltfLoad {
-    pub fn load<'a, 'b>(
-        path: &str,
-        shape: &'b mut Vec<Box<dyn Primitive>>,
-    ) -> &'static [Box<dyn Material>]
+    pub fn load<'a, 'b>(path: &str) -> anyhow::Result<(Mesh, Vec<Vec<UVec3>>)>
     where
         'b: 'a,
     {
         let material;
         if let Ok((gltf, buffer, images)) = import(path) {
-            //mesh几何
-            *shape = Vec::<Box<dyn Primitive>>::with_capacity(1000);
+            let mut pos_index = vec![];
+            let mut norm_index = vec![];
+            let mut uv_index = vec![];
             //加载材质
             material = &*load_material(images, &gltf).leak();
             //加载shape
             let (all_point, all_normal, all_uv, index_vec, nodes, transform_vec, det_index_vec) =
                 load_node(material, &gltf, buffer);
             let mesh = Mesh::new(all_point, all_normal, all_uv, vec![]);
-            let mesh = Arc::new(mesh);
+            // let mesh = Arc::new(mesh);
             {
                 for i in 0..nodes {
                     let index = index_vec.get(i).unwrap();
@@ -40,18 +37,13 @@ impl GltfLoad {
                     for i in index {
                         let w = i.w as usize;
                         let a = material.get(w);
-                        shape.push(Box::new(Triangle::new(
-                            i.truncate() + det_index,
-                            i.truncate() + det_index,
-                            i.truncate() + det_index,
-                            mesh.clone(),
-                            *transform,
-                            a,
-                        )));
+                        pos_index.push(i.truncate() + det_index);
+                        norm_index.push(i.truncate() + det_index);
+                        uv_index.push(i.truncate() + det_index);
                     }
                 }
             };
-            return material;
+            return Ok((mesh, vec![pos_index, norm_index, uv_index]));
         }
         unimplemented!()
     }
@@ -217,31 +209,6 @@ fn load_node(
         transform_vec,
         det_point,
     )
-    // let mesh = Arc::new(Mesh::new(
-    //     all_point,
-    //     all_normal,
-    //     all_uv,
-    //     vec![],
-    //     material_vec.clone(),
-    // ));
-    // {
-    //     let mesh_slice = mesh.clone();
-    //     for i in 0..nodes {
-    //         let index = index_map.get(&i).unwrap();
-    //         let det_index = det_point[i];
-    //         let transform = transform_map.get(&i).unwrap();
-    //         for i in index {
-    //             let w = i.w as usize;
-    //             let material = unsafe { material_vec.get_unchecked(w) };
-    //             shape.push(Box::new(Triangle::new(
-    //                 i.truncate() + det_index,
-    //                 mesh.clone(),
-    //                 *transform,
-    //                 Some(material.clone()),
-    //             )));
-    //         }
-    //     }
-    // }
 }
 pub fn add_material(
     material: &gltf::Material,

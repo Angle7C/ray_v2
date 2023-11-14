@@ -1,15 +1,13 @@
 use std::sync::Arc;
 
-use glam::{Vec2, Vec3,Mat4,
-    u32::UVec3,
-};
+use glam::{u32::UVec3, Mat4, Vec2, Vec3};
 use gltf::mesh::util::tex_coords;
 
 use crate::pbrt_core::{
     bxdf::TransportMode,
     material::Material,
     primitive::{mesh::Mesh, Primitive},
-    tool::{Bound, RayDiff, Shading, SurfaceInteraction},
+    tool::{Bound, RayDiff, Shading, SurfaceInteraction, InteractionCommon},
 };
 #[derive(Debug)]
 pub struct Triangle<'a> {
@@ -18,22 +16,34 @@ pub struct Triangle<'a> {
     tex_index: [usize; 3],
     mesh: Arc<Mesh>,
     obj_to_world: Mat4,
-    materail: Option<&'a Box<dyn Material+'a>>,
+    materail: Option<&'a Box<dyn Material + 'a>>,
 }
 #[allow(unused)]
 impl<'a> Triangle<'a> {
     pub fn new(
         point_index: UVec3,
-        noraml_index:UVec3,
-        tex_index:UVec3,
+        noraml_index: UVec3,
+        tex_index: UVec3,
         mesh: Arc<Mesh>,
         obj_to_world: Mat4,
-        materail: Option<&'a Box<dyn Material+'a>>,
+        materail: Option<&'a Box<dyn Material + 'a>>,
     ) -> Self {
         Self {
-            point_index: [point_index.x as usize, point_index.y as usize, point_index.z as usize],
-            noraml_index: [noraml_index.x as usize, noraml_index.y as usize, noraml_index.z as usize],
-            tex_index:  [tex_index.x as usize, tex_index.y as usize, tex_index.z as usize],
+            point_index: [
+                point_index.x as usize,
+                point_index.y as usize,
+                point_index.z as usize,
+            ],
+            noraml_index: [
+                noraml_index.x as usize,
+                noraml_index.y as usize,
+                noraml_index.z as usize,
+            ],
+            tex_index: [
+                tex_index.x as usize,
+                tex_index.y as usize,
+                tex_index.z as usize,
+            ],
             mesh,
             materail,
             obj_to_world,
@@ -79,7 +89,7 @@ impl<'a> Triangle<'a> {
                 (-dp_12[0] * dn1 + duv_02[0] * dn2) * inv_det,
             )
         };
-        Shading::new( dpdu, dpdv, Vec3::ZERO, Vec3::ZERO)
+        Shading::new(dpdu, dpdv, Vec3::ZERO, Vec3::ZERO)
     }
     pub fn point(&self, i: u32) -> Vec3 {
         self.obj_to_world
@@ -146,15 +156,21 @@ impl<'a> Primitive for Triangle<'a> {
         let b = s2.dot(ray.o.dir) / s1_e1;
         let c = 1.0 - a - b;
 
-        if t < 0.0 || !(0.0..=1.0).contains(&b) || !(0.0..=1.0).contains(&a) || !(0.0..=1.0).contains(&c) {
+        if t < 0.0
+            || !(0.0..=1.0).contains(&b)
+            || !(0.0..=1.0).contains(&a)
+            || !(0.0..=1.0).contains(&c)
+        {
             None
         } else {
             let (a, b, c) = (c, a, b);
-            let _p = p0 * a + p1 * b + p2 * c;
+            let p = p0 * a + p1 * b + p2 * c;
             let normal = (n0 * a + n1 * b + n2 * c).normalize();
-            let _uv = uv0 * a + uv1 * b + uv2 * c;
-            let _shading = self.compute_dnuv(normal.normalize());
-            unimplemented!();
+            let uv = uv0 * a + uv1 * b + uv2 * c;
+            let shading = self.compute_dnuv(normal.normalize());
+            let common = InteractionCommon::new(ray.o.dir,p , normal, t, uv);
+            let item = SurfaceInteraction::new(common, shading, Some(self), None);
+            Some(item)
         }
     }
     fn compute_scattering(&self, surface: &mut SurfaceInteraction, mode: TransportMode) {
@@ -163,7 +179,7 @@ impl<'a> Primitive for Triangle<'a> {
             None => (),
         }
     }
-    fn hit_p(&self,_ray:&RayDiff)->bool {
+    fn hit_p(&self, _ray: &RayDiff) -> bool {
         false
     }
 }
