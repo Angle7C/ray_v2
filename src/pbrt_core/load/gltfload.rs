@@ -17,29 +17,28 @@ impl GltfLoad {
     where
         'b: 'a,
     {
-        let material;
-        if let Ok((gltf, buffer, images)) = import(path) {
+        if let Ok((gltf, buffer, _)) = import(path) {
             let mut pos_index = vec![];
             let mut norm_index = vec![];
             let mut uv_index = vec![];
             //加载材质
-            material = &*load_material(images, &gltf).leak();
+            // material = &*load_material(images, &gltf).leak();
             //加载shape
             let (all_point, all_normal, all_uv, index_vec, nodes, transform_vec, det_index_vec) =
-                load_node(material, &gltf, buffer);
+                load_node(&gltf, buffer);
             let mesh = Mesh::new(all_point, all_normal, all_uv, vec![]);
             // let mesh = Arc::new(mesh);
             {
                 for i in 0..nodes {
                     let index = index_vec.get(i).unwrap();
                     let det_index = det_index_vec[i];
-                    let transform = transform_vec.get(i).unwrap();
+                    // let transform = transform_vec.get(i).unwrap();
                     for i in index {
-                        let w = i.w as usize;
-                        let a = material.get(w);
-                        pos_index.push(i.truncate() + det_index);
-                        norm_index.push(i.truncate() + det_index);
-                        uv_index.push(i.truncate() + det_index);
+                        // let w = i.w as usize;
+                        // let a = material.get(w);
+                        pos_index.push(*i + det_index);
+                        norm_index.push(*i + det_index);
+                        uv_index.push(*i + det_index);
                     }
                 }
             };
@@ -51,9 +50,9 @@ impl GltfLoad {
 
 fn load_mesh(
     mesh: gltf::Mesh,
-    material_vec: &[Box<dyn Material>],
+    // material_vec: &[Box<dyn Material>],
     buffer: &Vec<Data>,
-    index: &mut Vec<UVec4>,
+    index: &mut Vec<UVec3>,
     point: &mut Vec<Vec3>,
     normal: &mut Vec<Vec3>,
     uv: &mut Vec<Vec2>,
@@ -61,12 +60,12 @@ fn load_mesh(
     let get_buffer = |x: Buffer| Some(&*buffer[x.index()].0);
     for primitive in mesh.primitives() {
         let material = primitive.material();
-        let (_, material_index) = if let Some(material_index) = material.index() {
-            (material_vec.get(material_index).unwrap(), material_index)
-        } else {
-            //默认材质
-            (material_vec.last().unwrap(), material_vec.len() - 1)
-        };
+        // let (_, material_index) = if let Some(material_index) = material.index() {
+        //     (material_vec.get(material_index).unwrap(), material_index)
+        // } else {
+        //     //默认材质
+        //     (material_vec.last().unwrap(), material_vec.len() - 1)
+        // };
         let reader = primitive.reader(get_buffer);
         *index = reader
             .read_indices()
@@ -75,7 +74,7 @@ fn load_mesh(
             .collect::<Vec<_>>()
             .chunks(3)
             .map(UVec3::from_slice)
-            .map(|x| x.extend(material_index as u32))
+            // .map(|x| x.extend(material_index as u32))
             .collect();
 
         for (s, _) in primitive.attributes() {
@@ -133,14 +132,14 @@ where
     material_vec
 }
 fn load_node(
-    material_vec: &[Box<dyn Material>],
+    // material_vec: &[Box<dyn Material>],
     gltf: &gltf::Document,
     buffer: Vec<gltf::buffer::Data>,
 ) -> (
     Vec<Vec3>,
     Vec<Vec3>,
     Vec<Vec2>,
-    Vec<Vec<UVec4>>,
+    Vec<Vec<UVec3>>,
     usize,
     Vec<Mat4>,
     Vec<UVec3>,
@@ -173,7 +172,7 @@ fn load_node(
         if let Some(mesh) = item.mesh() {
             load_mesh(
                 mesh,
-                material_vec,
+                // material_vec,
                 &buffer,
                 &mut index,
                 &mut point,

@@ -35,6 +35,7 @@ impl ObjLoad {
             let mut norm_index = UVec3::new(0, 0, 0);
             for item in iter {
                 for (index, i) in item.0.iter().enumerate() {
+                    assert!(index < 3);
                     pos_index[index] = i.0 as u32;
                     tex_index[index] = i.1.unwrap() as u32;
                     norm_index[index] = i.2.unwrap() as u32;

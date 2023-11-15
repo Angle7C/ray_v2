@@ -1,0 +1,127 @@
+Date : 2023-11-14 08:52:58
+Directory : e:\Project\Rust\ray_v2
+Total : 75 files,  7571 codes, 355 comments, 661 blanks, all 8587 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Rust     |         62 |      5,875 |        296 |        437 |      6,608 |
+| TOML     |          6 |      1,470 |         59 |        220 |      1,749 |
+| JSON     |          3 |        204 |          0 |          3 |        207 |
+| XML      |          3 |         22 |          0 |          0 |         22 |
+| Log      |          1 |          0 |          0 |          1 |          1 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                 | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                    |         75 |      7,571 |        355 |        661 |      8,587 |
+| . (Files)                                                            |          2 |      1,286 |          3 |        166 |      1,455 |
+| .idea                                                                |          3 |         22 |          0 |          0 |         22 |
+| file                                                                 |          7 |        388 |         56 |         57 |        501 |
+| object                                                               |          1 |          0 |          0 |          1 |          1 |
+| object\log                                                           |          1 |          0 |          0 |          1 |          1 |
+| src                                                                  |         62 |      5,875 |        296 |        437 |      6,608 |
+| src (Files)                                                          |          1 |          8 |          0 |          6 |         14 |
+| src\pbrt_core                                                        |         60 |      5,848 |        295 |        423 |      6,566 |
+| src\pbrt_core (Files)                                                |          2 |         38 |          8 |         11 |         57 |
+| src\pbrt_core\bsdf                                                   |          1 |          0 |          0 |          1 |          1 |
+| src\pbrt_core\bssrdf                                                 |          1 |          5 |          0 |          1 |          6 |
+| src\pbrt_core\bxdf                                                   |          8 |        883 |         69 |         57 |      1,009 |
+| src\pbrt_core\camera                                                 |          1 |         69 |          7 |          7 |         83 |
+| src\pbrt_core\integrator                                             |          3 |        542 |         13 |         35 |        590 |
+| src\pbrt_core\light                                                  |          5 |        514 |         10 |         54 |        578 |
+| src\pbrt_core\load                                                   |          6 |      1,174 |         33 |         65 |      1,272 |
+| src\pbrt_core\material                                               |          7 |        386 |        101 |         41 |        528 |
+| src\pbrt_core\primitive                                              |          8 |        892 |         15 |         58 |        965 |
+| src\pbrt_core\primitive (Files)                                      |          3 |        278 |          9 |         16 |        303 |
+| src\pbrt_core\primitive\shape                                        |          5 |        614 |          6 |         42 |        662 |
+| src\pbrt_core\sampler                                                |          2 |        143 |          1 |          5 |        149 |
+| src\pbrt_core\texture                                                |          5 |         69 |          0 |         12 |         81 |
+| src\pbrt_core\tool                                                   |         11 |      1,133 |         38 |         76 |      1,247 |
+| src\test                                                             |          1 |         19 |          1 |          8 |         28 |
++----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                             | language | code       | comment    | blank      | total      |
++----------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| e:\Project\Rust\ray_v2\.idea\modules.xml                             | XML      |          8 |          0 |          0 |          8 |
+| e:\Project\Rust\ray_v2\.idea\ray_v2.iml                              | XML      |          8 |          0 |          0 |          8 |
+| e:\Project\Rust\ray_v2\.idea\vcs.xml                                 | XML      |          6 |          0 |          0 |          6 |
+| e:\Project\Rust\ray_v2\Cargo.lock                                    | TOML     |      1,268 |          2 |        161 |      1,431 |
+| e:\Project\Rust\ray_v2\Cargo.toml                                    | TOML     |         18 |          1 |          5 |         24 |
+| e:\Project\Rust\ray_v2\file\box.json                                 | JSON     |         68 |          0 |          1 |         69 |
+| e:\Project\Rust\ray_v2\file\box.toml                                 | TOML     |         75 |         18 |         20 |        113 |
+| e:\Project\Rust\ray_v2\file\sence.json                               | JSON     |         68 |          0 |          1 |         69 |
+| e:\Project\Rust\ray_v2\file\sence.toml                               | TOML     |         45 |          8 |         10 |         63 |
+| e:\Project\Rust\ray_v2\file\setting.toml                             | TOML     |         17 |          0 |          3 |         20 |
+| e:\Project\Rust\ray_v2\file\skybox.toml                              | TOML     |         47 |         30 |         21 |         98 |
+| e:\Project\Rust\ray_v2\file\sphere.json                              | JSON     |         68 |          0 |          1 |         69 |
+| e:\Project\Rust\ray_v2\object\log\output.log                         | Log      |          0 |          0 |          1 |          1 |
+| e:\Project\Rust\ray_v2\src\main.rs                                   | Rust     |          8 |          0 |          6 |         14 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bsdf\mod.rs                     | Rust     |          0 |          0 |          1 |          1 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bssrdf\mod.rs                   | Rust     |          5 |          0 |          1 |          6 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\disney.rs                  | Rust     |         57 |          2 |          8 |         67 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\frensnel.rs                | Rust     |        107 |         20 |          9 |        136 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\microfacet.rs              | Rust     |          0 |          0 |          1 |          1 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\microfacet_distribution.rs | Rust     |        149 |         11 |         10 |        170 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\mod.rs                     | Rust     |        297 |         28 |         11 |        336 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\pbr.rs                     | Rust     |         85 |          1 |          7 |         93 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\reflection.rs              | Rust     |        135 |          0 |          8 |        143 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\bxdf\specular.rs                | Rust     |         53 |          7 |          3 |         63 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\camera\mod.rs                   | Rust     |         69 |          7 |          7 |         83 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\filter.rs                       | Rust     |         26 |          0 |          0 |         26 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\integrator\direct.rs            | Rust     |         52 |          2 |          5 |         59 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\integrator\mod.rs               | Rust     |        398 |          6 |         22 |        426 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\integrator\path.rs              | Rust     |         92 |          5 |          8 |        105 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\light\area.rs                   | Rust     |        121 |          0 |          9 |        130 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\light\inf.rs                    | Rust     |        117 |          7 |         13 |        137 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\light\mod.rs                    | Rust     |        199 |          2 |         22 |        223 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\light\point.rs                  | Rust     |         77 |          1 |          9 |         87 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\light\spot.rs                   | Rust     |          0 |          0 |          1 |          1 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\load\gltfload.rs                | Rust     |        258 |         14 |          9 |        281 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\load\jsonload.rs                | Rust     |          0 |          0 |          1 |          1 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\load\mod.rs                     | Rust     |        140 |          1 |          8 |        149 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\load\myload.rs                  | Rust     |        374 |         12 |         21 |        407 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\load\objload.rs                 | Rust     |         45 |          0 |          5 |         50 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\load\tomlload.rs                | Rust     |        357 |          6 |         21 |        384 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\material\disney.rs              | Rust     |          0 |         73 |          6 |         79 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\material\matte.rs               | Rust     |         44 |          0 |          6 |         50 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\material\metal.rs               | Rust     |         56 |          7 |          5 |         68 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\material\mirror.rs              | Rust     |         23 |          0 |          5 |         28 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\material\mod.rs                 | Rust     |        149 |         10 |         10 |        169 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\material\pbr.rs                 | Rust     |         79 |         11 |          4 |         94 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\material\plastic.rs             | Rust     |         35 |          0 |          5 |         40 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\mod.rs                          | Rust     |         12 |          8 |         11 |         31 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\bvh.rs                | Rust     |         46 |          0 |          8 |         54 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\mesh.rs               | Rust     |         41 |          0 |          2 |         43 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\mod.rs                | Rust     |        191 |          9 |          6 |        206 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\shape\cylinder.rs     | Rust     |        121 |          0 |          9 |        130 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\shape\disk.rs         | Rust     |         93 |          0 |         12 |        105 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\shape\rectangle.rs    | Rust     |        105 |          1 |          2 |        108 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\shape\shpere.rs       | Rust     |        124 |          4 |          5 |        133 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\primitive\shape\triangle.rs     | Rust     |        171 |          1 |         14 |        186 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\sampler\distribution_1d.rs      | Rust     |         55 |          1 |          2 |         58 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\sampler\mod.rs                  | Rust     |         88 |          0 |          3 |         91 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\texture\constant.rs             | Rust     |         21 |          0 |          3 |         24 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\texture\image.rs                | Rust     |         21 |          0 |          6 |         27 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\texture\mix.rs                  | Rust     |          0 |          0 |          1 |          1 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\texture\mod.rs                  | Rust     |         10 |          0 |          2 |         12 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\texture\scale.rs                | Rust     |         17 |          0 |          0 |         17 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\build.rs                   | Rust     |         21 |          0 |          4 |         25 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\color.rs                   | Rust     |        141 |          1 |          6 |        148 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\error.rs                   | Rust     |         10 |          0 |          1 |         11 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\film.rs                    | Rust     |         91 |          6 |          6 |        103 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\func.rs                    | Rust     |        169 |          8 |         17 |        194 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\log.rs                     | Rust     |         20 |          0 |          3 |         23 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\mipmap.rs                  | Rust     |        195 |          8 |          5 |        208 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\mod.rs                     | Rust     |        272 |          9 |         12 |        293 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\sence.rs                   | Rust     |        105 |          3 |         13 |        121 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\setting.rs                 | Rust     |         21 |          0 |          5 |         26 |
+| e:\Project\Rust\ray_v2\src\pbrt_core\tool\tile.rs                    | Rust     |         88 |          3 |          4 |         95 |
+| e:\Project\Rust\ray_v2\src\test\mod.rs                               | Rust     |         19 |          1 |          8 |         28 |
+| Total                                                                |          |      7,571 |        355 |        661 |      8,587 |
++----------------------------------------------------------------------+----------+------------+------------+------------+------------+

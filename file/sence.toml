@@ -14,7 +14,7 @@ transform = { t = [
     1.0,
 ] }
 objtype = "obj"
-path = "object/box.obj"
+path = "object/room/Room #1.obj"
 material_index = 1
 
 [[material]]

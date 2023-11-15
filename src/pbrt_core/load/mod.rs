@@ -2,11 +2,9 @@ use std::{fs::File, io::Read};
 
 use serde::{Deserialize, Serialize};
 
-use crate::pbrt_core::{camera::Camera};
+use crate::pbrt_core::camera::Camera;
 
-use self::{
-    tomlload::{TomlLoader, CameraToml, IntegratorToml},
-};
+use self::tomlload::{TomlLoader, CameraToml, IntegratorToml};
 
 use super::{
     camera::CameraMode,
@@ -15,7 +13,7 @@ use super::{
     tool::{
         build::Context,
         sence::Sence,
-        setting::{self, Setting},
+        setting::Setting,
     },
 };
 
