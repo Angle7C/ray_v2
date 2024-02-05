@@ -281,7 +281,7 @@ pub struct CameraToml {
     pub fov: f32,
 }
 
-#[derive(Deserialize, Debug, Serialize, Default)]
+#[derive(Deserialize, Debug, Serialize, Default,Copy,Clone)]
 pub struct TransformToml {
     r: Vec4,
     s: Vec3,

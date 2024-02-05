@@ -17,12 +17,15 @@ pub mod specular;
 pub mod reflection;
 //溦表面模型
 pub mod microfacet;
-//
+//微表面分布模型
 pub mod microfacet_distribution;
-
+//pbr模型
 pub mod pbr;
-
+//disney模型
 pub mod disney;
+//媒介
+pub mod medium;
+
 //基本模型
 pub trait BxDFAble {
     //匹配BxDF类型
