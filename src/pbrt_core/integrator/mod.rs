@@ -108,12 +108,13 @@ impl Integrator {
         Self::output(receiver, size, name, num);
         m.clear().unwrap();
     }
+    //核心渲染函数
     fn render_core<'a, 'b>(
         &'b self,
         film: &'a Film,
         camera: &'a Camera,
         send: Sender<Vec<Tile>>,
-        sence: &'a Scene,
+        scene: &'a Scene,
         mut sampler: Sampler,
         pb: ProgressBar,
         index:usize
@@ -131,16 +132,17 @@ impl Integrator {
                 for (u, v) in item {
                     let mut color = Color::ZERO;
                     i=0;
+                    //ssp 抗锯齿
                     for _ in 0..n {
+                        //相机采样
                         let camera_sample = CameraSample::new(u, v, &mut sampler);
+                        //光线采样
                         let ray = camera.generate_ray(camera_sample);
-                        color += self.fi(ray, sence, &mut sampler,
+                        //颜色生成
+                        color += self.fi(ray, scene, &mut sampler,
                             #[cfg(debug_assertions)]
                             &mut i
                         );
-                    }
-                    if i>0 {
-                        info!("{}",color);
                     }
                     tile.push(color);
                 }

@@ -13,15 +13,15 @@ use super::LightAble;
 
 #[derive(Debug)]
 pub struct DiffuseAreaLight {
-    lemit: Vec3,
+    emit: Vec3,
     shape: Arc<dyn Primitive>,
     index: usize,
 }
 
 impl DiffuseAreaLight {
-    pub fn new(lemit: Vec3, shape: Arc<dyn Primitive>, index: usize) -> Self {
+    pub fn new(emit: Vec3, shape: Arc<dyn Primitive>, index: usize) -> Self {
         Self {
-            lemit,
+            emit,
             shape,
             index,
         }
@@ -57,7 +57,7 @@ impl LightAble for DiffuseAreaLight {
     }
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
         if inter.normal.dot(*w) > 0.0 {
-            self.lemit
+            self.emit
         } else {
             Vec3::ZERO
         }
@@ -72,13 +72,12 @@ impl LightAble for DiffuseAreaLight {
         self.index
     }
     fn le(&self, ray: &RayDiff) -> Color {
-        // let cos=self.get_shape().get_cos(-ray.o.dir);
-        // if cos.is_some(){
-        //     self.lemit
-        // } else {
-        //     Color::ZERO
-        // }
-        todo!()
+        let cos=self.get_cos(-ray.o.dir,Vec2::default());
+        if cos.is_some(){
+            self.emit
+        } else {
+            Color::ZERO
+        }
     }
 }
 

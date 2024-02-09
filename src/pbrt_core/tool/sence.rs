@@ -2,8 +2,7 @@ use std::borrow::Borrow;
 use std::default::Default;
 use std::fmt::Debug;
 use std::ops::Deref;
-use std::rc::{Rc, Weak};
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 
 use crate::pbrt_core::light::{Light, LightAble};
 use crate::pbrt_core::{
@@ -17,7 +16,7 @@ use super::{Bound, RayDiff};
 pub struct Scene {
     pub camera: Camera,
     pub light:Vec<Arc<Light>>,
-    pub env:Vec<Weak<Arc<Light>>>,
+    pub env:Vec<Weak<Light>>,
     bound: Bound<3>,
     accel: Option<Box<dyn Aggregate>>,
 }
@@ -30,23 +29,34 @@ impl Scene {
 
         //场景集合
         // let light = light.leak();
-        let geoemtry = primitive.iter()
+        let mut geometry = primitive.iter()
             .map(|ele| GeometricPrimitive::new(ele.clone()))
             .collect::<Vec<_>>();
-    
-        let bound = geoemtry
+
+        light.iter().for_each(|item|{
+            let index   = item.get_index();
+            if let Some(geo)= geometry.get_mut(index){
+               geo.set_light(item.clone());
+            };
+        });
+        let light = light.iter()
+            .map(|item| item.clone())
+            .collect::<Vec<_>>();
+
+
+        let bound = geometry
             .iter()
             .map(|ele| ele.world_bound())
             .fold(Bound::<3>::default(), |a, b| a.merage(b));
         let mut env = vec![];
         light.iter().for_each(|i| {
             match i.as_ref() {
-                Light::Infinite(_) => env.push(Rc::downgrade(&Rc::new(i.clone()))),
+                Light::Infinite(_) => env.push(Arc::downgrade(&i)),
                 _ => (),
             };
         });
 
-        let accel = Box::new(BVH::new(geoemtry));
+        let accel = Box::new(BVH::new(geometry));
         Self {
             camera,
             bound,
@@ -64,9 +74,9 @@ impl Scene {
         }
         let mut ans = Color::default();
         for env_light in &self.env {
-
+            //究极解引用
             {
-                ans+=LightAble::le(env_light.upgrade().as_ref().unwrap().deref(),ray);
+                ans+=LightAble::le(env_light.upgrade().as_ref().unwrap().deref().deref(),ray);
             }
         }
         ans
@@ -83,7 +93,7 @@ impl Primitive for Scene {
     fn interact(&self, ray: super::RayDiff) -> Option<super::SurfaceInteraction> {
         if self.interact_bound(&ray) {
             if let Some(accel) = &self.accel {
-                accel.interacect(&ray)
+                accel.interact(&ray)
             } else {
                 None
             }

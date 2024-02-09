@@ -1,7 +1,10 @@
 use std::{fmt::Debug, sync::Arc};
+use std::ops::Deref;
+use std::rc::Weak;
 
 use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
 use glam::{Vec2, Vec3};
+use crate::pbrt_core::light::Light;
 use crate::pbrt_core::tool::InteractionCommon;
 
 use super::{
@@ -9,7 +12,6 @@ use super::{
     light::LightAble,
     tool::{Bound, RayDiff, SurfaceInteraction},
 };
-// use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
 
 pub mod bvh;
 pub mod mesh;
@@ -107,7 +109,7 @@ pub mod shape {
         }
         pub fn get_cos(&self,dir:Vec3)->Option<f32>{
             match self {
-                Self::Rect(rect) => rect.get_cos(dir),
+                Self::Rect(rect) => rect.get_cos(dir,Vec2::default()),
                 Self::Sphere(sphere) => sphere.get_cos(dir),
                 _=>todo!()
             }
@@ -144,21 +146,26 @@ pub trait Primitive: Debug {
     fn pdf(&self,interaction_common: &InteractionCommon,wi:&Vec3)->f32{
         1.0
     }
+
+    fn get_cos(&self,dir:Vec3,uv:Vec2)->Option<f32>{
+        None
+    }
+
 }
 pub trait Aggregate: Sync {
-    fn interacect(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
+    fn interact(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
     fn hit_p(&self, ray: &RayDiff) -> bool;
 }
 #[derive(Debug)]
 pub enum ObjectType {
     Light,
-    Sence,
+    Scene,
 }
 impl PartialEq for ObjectType {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (ObjectType::Light, ObjectType::Light) => true,
-            (ObjectType::Sence, ObjectType::Sence) => true,
+            (ObjectType::Scene, ObjectType::Scene) => true,
             _ => false,
         }
     }
@@ -166,7 +173,7 @@ impl PartialEq for ObjectType {
 #[derive(Debug)]
 pub struct GeometricPrimitive {
     primitive: Arc<dyn Primitive>,
-    light: Option<Arc< dyn LightAble>>,
+    light: Option<Arc<Light>>,
     node_index: usize,
 }
 unsafe impl Sync for GeometricPrimitive {}
@@ -178,6 +185,9 @@ impl GeometricPrimitive {
             node_index: 0,
             light: None,
         }
+    }
+    pub fn set_light(&mut self,light: Arc<Light>){
+        self.light=Some(light);
     }
 }
 impl Bounded for GeometricPrimitive {
@@ -199,7 +209,12 @@ impl Primitive for GeometricPrimitive {
         self.primitive.world_bound()
     }
     fn interact(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
-        self.primitive.interact(ray)
+        let mut option = self.primitive.interact(ray);
+        if let (Some(ref mut surface),Some(light))=(&mut option,&self.light){
+                surface.light= Some(light.deref());
+
+        };
+        option
     }
     fn interact_bound(&self, ray: &RayDiff) -> bool {
         self.primitive.interact_bound(ray)
@@ -208,7 +223,12 @@ impl Primitive for GeometricPrimitive {
         self.primitive.compute_scattering(isct, mode)
     }
     fn get_light(&self) -> Option<&dyn LightAble> {
-        self.primitive.get_light()
+        if let Some(light)=&self.light{
+            Some(light.deref() as &dyn LightAble)
+        }else{
+            None
+        }
+
     }
     fn hit_p(&self, ray: &RayDiff) -> bool {
         self.primitive.hit_p(ray)

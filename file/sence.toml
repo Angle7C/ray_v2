@@ -1,5 +1,5 @@
 [[primitive]]
-mode = "Sphere"
+mode = "Rect"
 transform = { t = [
     0.0,
     0.0,
@@ -14,9 +14,25 @@ transform = { t = [
     1.0,
     1.0,
 ] }
-r=1.0
 material_index = 0
-
+#[[primitive]]
+#mode = "Sphere"
+#transform = { t = [
+#    2.0,
+#    2.0,
+#    0.0,
+#], r = [
+#    0.0,
+#    0.0,
+#    0.0,
+#    1.0,
+#], s = [
+#    1.0,
+#    1.0,
+#    1.0,
+#] }
+#r=1.0
+#material_index = 0
 
 [[material]]
 mode = "Matte"
@@ -47,11 +63,11 @@ mode = "Constant"
 value = [0.1, 0.1, 0.1]
 
 
-[[light]]
-mode = "Infinite"
-world_center = [0.0, 0.0, 0.0]
-world_radius = 1000.0
-skybox = 1
+#[[light]]
+#mode = "Infinite"
+#world_center = [0.0, 0.0, 0.0]
+#world_radius = 1000.0
+#skybox = 1
 
 
 [[light]]

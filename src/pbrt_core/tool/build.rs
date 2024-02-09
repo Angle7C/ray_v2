@@ -27,6 +27,7 @@ impl Context {
     }
     pub fn render(self) {
         self.integrator
-            .render_process(&self.name, &self.scene, self.size)
+            // .render_process_(&self.name, &self.scene, self.size)
+            .render_process_debug(&self.name,1,&self.scene,self.size);
     }
 }

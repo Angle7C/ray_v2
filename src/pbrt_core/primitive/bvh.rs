@@ -19,7 +19,7 @@ impl BVH {
 }
 
 impl Aggregate for BVH {
-    fn interacect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
+    fn interact(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let o_ray = *ray;
         let bvh_ray = bvh::ray::Ray::new(ray.o.origin, ray.o.dir);
         let iter = self.accel.traverse_iterator(&bvh_ray, &self.geo);

@@ -38,10 +38,11 @@ impl IntegratorAble for PathIntegrator {
             Some(1.0)
         }
     }
+    //光追算法
     fn fi(
         &self,
         ray: RayDiff,
-        sence: &Scene,
+        scene: &Scene,
         sampler: &mut Sampler,
         #[cfg(debug_assertions)] i: &mut i32,
     ) -> Color {
@@ -49,19 +50,23 @@ impl IntegratorAble for PathIntegrator {
         let mut dept = 0;
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray;
-        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;   
+        let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
+        //蒙特卡洛
         while let Some(p) = self.is_next(&mut dept) {
-            if let Some(mut item) = sence.interact(ray) {
+            //光线求交
+            if let Some(mut item) = scene.interact(ray) {
+                //击中光源，立即返回
                 if item.light.is_some() {
                     ans += beta * item.le(ray);
                     return ans;
                 }
+                //计算该点的材质
                 item.compute_scattering(ray, mode);
-
+                //计算BSDF
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
                     ans +=
-                        beta * unifrom_sample_one_light(&item, sence, sampler.clone(), false) / p;
+                        beta * unifrom_sample_one_light(&item, scene, sampler.clone(), false) / p;
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = Vec3::default();
@@ -87,7 +92,7 @@ impl IntegratorAble for PathIntegrator {
                     }
                 }
             } else {
-                ans += beta * sence.sample_env_light(&ray);
+                ans += beta * scene.sample_env_light(&ray);
                 //环境光采样
                 break;
             }

@@ -73,41 +73,7 @@ impl Light {
     }
 }
 
-impl Primitive for Arc<Light> {
-    fn world_bound(&self) -> Bound<3> {
-        self.as_ref().world_bound()
-    }
 
-    fn hit_p(&self, ray: &RayDiff) -> bool {
-        todo!()
-    }
-}
-
-impl LightAble for Arc<Light>{
-    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
-        todo!()
-    }
-
-    fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32 {
-        todo!()
-    }
-
-    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
-        todo!()
-    }
-
-    fn get_type(&self) -> LightType {
-        todo!()
-    }
-
-    fn get_n_sample(&self) -> usize {
-        todo!()
-    }
-
-    fn get_index(&self) -> usize {
-        todo!()
-    }
-}
 impl LightAble for Light {
     fn sample_li(
         &self,

@@ -36,25 +36,12 @@ impl Rectangle {
             .transpose()
             .transform_vector3(Vec3::Z);
     }
-    pub fn get_cos(&self,dir:Vec3)->Option<f32>{
-        let dir = self.obj_to_world.inverse().transform_vector3(dir);
-        let cos = Vec3::Z.dot(dir);
-        if cos>0.0{
-            Some(cos)
-        }else{
-            None
-        }
-    }
 }
 impl Primitive for Rectangle {
-    fn compute_scattering(
-        &self,
-        isct: &mut crate::pbrt_core::tool::SurfaceInteraction,
-        mode: crate::pbrt_core::bxdf::TransportMode,
-    ) {
-        if let Some(materil) = &self.material {
-            materil.compute_scattering_functions(isct, mode)
-        }
+    fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
+        let min = self.obj_to_world.transform_point3(Vec3::ZERO) - Vec3::splat(0.003);
+        let max = self.obj_to_world.transform_point3(Vec3::ONE) + Vec3::splat(0.003);
+        Bound::<3>::new(min, max)
     }
     fn interact(
         &self,
@@ -84,10 +71,14 @@ impl Primitive for Rectangle {
         transform_interaction(self.obj_to_world, &mut surface);
         Some(surface)
     }
-    fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-        let min = self.obj_to_world.transform_point3(Vec3::ZERO) - Vec3::splat(0.003);
-        let max = self.obj_to_world.transform_point3(Vec3::ONE) + Vec3::splat(0.003);
-        Bound::<3>::new(min, max)
+    fn compute_scattering(
+        &self,
+        isct: &mut crate::pbrt_core::tool::SurfaceInteraction,
+        mode: crate::pbrt_core::bxdf::TransportMode,
+    ) {
+        if let Some(materil) = &self.material {
+            materil.compute_scattering_functions(isct, mode)
+        }
     }
     fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
         let o = self.obj_to_world.inverse().transform_point3(ray.o.origin);
@@ -104,5 +95,14 @@ impl Primitive for Rectangle {
             return false;
         }
         true
+    }
+    fn get_cos(&self,dir: Vec3, _uv: Vec2) -> Option<f32> {
+        let dir = self.obj_to_world.inverse().transform_vector3(dir);
+        let cos = Vec3::Z.dot(dir);
+        if cos>0.0{
+            Some(cos)
+        }else{
+            None
+        }
     }
 }
