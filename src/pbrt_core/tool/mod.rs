@@ -4,7 +4,7 @@ use bvh::aabb::AABB;
 // use bvh::aabb::AABB;
 use glam::{Vec2, Vec3};
 
-use self::sence::Sence;
+use self::sence::Scene;
 
 use super::{bxdf::TransportMode, light::LightAble, material::BSDF, primitive::Primitive};
 
@@ -254,7 +254,7 @@ pub struct Visibility {
 impl Visibility {
     const DET:f32=0.0001;
     //是否可视
-    pub fn is_vis(&self, sence: &Sence) -> bool {
+    pub fn is_vis(&self, sence: &Scene) -> bool {
         let a={
             let w=(self.b.p-self.a.p).normalize();
             let sign=self.a.normal.dot(w).signum();
@@ -272,7 +272,7 @@ impl Visibility {
         !sence.hit_p(&ray_diff)
     }
     #[inline]
-    pub fn g(&self, sence: &Sence) -> f32 {
+    pub fn g(&self, sence: &Scene) -> f32 {
         let vis = if self.is_vis(sence) { 1.0 } else { 0.0 };
         let dir = self.a.p - self.b.p;
         let value = vis
@@ -281,7 +281,7 @@ impl Visibility {
         value / dir.length_squared()
     }
     #[inline]
-    pub fn g_inf(&self, sence: &Sence) -> f32 {
+    pub fn g_inf(&self, sence: &Scene) -> f32 {
         let vis = self.is_vis(sence);
         if vis {
             1.0

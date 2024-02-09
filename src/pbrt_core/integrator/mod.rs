@@ -22,7 +22,7 @@ use super::{
     camera::{Camera, CameraSample},
     primitive::Primitive,
     sampler::Sampler,
-    tool::{color::Color, film::Film, sence::Sence, tile::Tile, Ray, RayDiff},
+    tool::{color::Color, film::Film, sence::Scene, tile::Tile, Ray, RayDiff},
 };
 
 pub mod direct;
@@ -35,8 +35,8 @@ pub enum Integrator {
 
 pub trait IntegratorAble {
     fn is_next(&self, dept: &mut usize) -> Option<f32>;
-    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler,
-        #[cfg(debug_assertions)]
+    fn fi(&self, ray: RayDiff, sence: &Scene, sampler: &mut Sampler,
+          #[cfg(debug_assertions)]
         i:&mut i32
     ) -> Color;
 }
@@ -49,8 +49,8 @@ impl IntegratorAble for Integrator {
         }
     }
 
-    fn fi(&self, ray: RayDiff, sence: &Sence, sampler: &mut Sampler,
-        #[cfg(debug_assertions)]
+    fn fi(&self, ray: RayDiff, sence: &Scene, sampler: &mut Sampler,
+          #[cfg(debug_assertions)]
         i:&mut i32
     ) -> Color {
         match &self {
@@ -77,10 +77,10 @@ impl Integrator {
             Integrator::Direct(_, _, sampler) => sampler.clone(),
         }
     }
-    pub fn render_process(self, name: &str, sence: &Sence, size: UVec2) {
+    pub fn render_process(self, name: &str, scene: &Scene, size: UVec2) {
         let (sender, receiver) = mpsc::channel::<Vec<Tile>>();
         let film = Film::new(size);
-        let camera = sence.camera;
+        let camera = scene.camera;
         let t1 = Instant::now();
         let (m, style) = pbr();
         let core = self.get_num();
@@ -94,7 +94,7 @@ impl Integrator {
                     &film,
                     &camera,
                     sender.clone(),
-                    sence,
+                    scene,
                     self.get_sample(),
                     pb,
                     i
@@ -113,7 +113,7 @@ impl Integrator {
         film: &'a Film,
         camera: &'a Camera,
         send: Sender<Vec<Tile>>,
-        sence: &'a Sence,
+        sence: &'a Scene,
         mut sampler: Sampler,
         pb: ProgressBar,
         index:usize
@@ -166,7 +166,7 @@ impl Integrator {
         buffer.write(image::ImageFormat::Jpeg, num as f32, path);
     }
 
-    pub fn render_process_debug(self, name: &str, num: u64, sence: &Sence, size: UVec2) {
+    pub fn render_process_debug(self, name: &str, num: u64, sence: &Scene, size: UVec2) {
         let film = Film::new(size);
         let bar_size = size.x * size.y;
         let n = 1;
@@ -223,7 +223,7 @@ pub fn pbr() -> (MultiProgress, ProgressStyle) {
 
 pub fn uniform_sample_all_light(
     common: &SurfaceInteraction,
-    sence: &Sence,
+    sence: &Scene,
     mut sampler: Sampler,
     n_light_sample: Vec<usize>,
     handle_media: bool,
@@ -264,7 +264,7 @@ pub fn uniform_sample_all_light(
 
 pub fn unifrom_sample_one_light(
     common: &SurfaceInteraction,
-    sence: &Sence,
+    sence: &Scene,
     mut sampler: Sampler,
     handle_media: bool,
 ) -> Color {
@@ -291,7 +291,7 @@ pub fn estimate_direct(
     inter: &SurfaceInteraction,
     light: &Light,
     u_light: Vec2,
-    sence: &Sence,
+    sence: &Scene,
     mut sampler: Sampler,
     _handle_media: bool,
     specular: bool,
@@ -372,7 +372,7 @@ pub fn estimate_direct(
                 };
                 let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
                 let li =
-                if let Some(ref light_inter) = sence.interacect(ray) {
+                if let Some(ref light_inter) = sence.interact(ray) {
                     light_inter.le(ray)
                 }else{
                     Default::default()
@@ -394,7 +394,7 @@ pub fn power_heuristic(nf: f32, f_pdf: f32, ng: f32, g_pdf: f32) -> f32 {
 
 pub fn get_light(
     inter: &SurfaceInteraction,
-    sence: &Sence,
+    sence: &Scene,
     mut sampler: Sampler,
 ) -> Color {
     if sence.light.is_empty() {

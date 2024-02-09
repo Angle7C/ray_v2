@@ -1,5 +1,6 @@
 
 use glam::{Mat4, Vec2, Vec3, Vec4};
+use serde::{Deserialize, Serialize};
 
 use super::{tool::{RayDiff, Ray}, sampler::Sampler};
 
@@ -15,7 +16,7 @@ pub struct Camera {
     mode:CameraMode
 }
 
-#[derive(Debug,Default,Clone, Copy)]
+#[derive(Debug,Default,Clone, Copy,Deserialize,Serialize)]
 pub enum CameraMode {
     #[default]
     P,

@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use glam::{Mat4, Vec2, Vec3};
 
 use crate::pbrt_core::{
@@ -6,12 +7,12 @@ use crate::pbrt_core::{
     tool::{func::transform_interaction, Bound, InteractionCommon, SurfaceInteraction, Shading},
 };
 #[derive(Debug)]
-pub struct Rectangle<'a> {
+pub struct Rectangle {
     pub obj_to_world: Mat4,
-    material: Option<&'a dyn Material>,
+    material: Option<Arc<dyn Material>>,
 }
-impl<'a> Rectangle<'a> {
-    pub fn new(obj_to_world: Mat4, material: Option<&'a dyn Material>) -> Self {
+impl Rectangle {
+    pub fn new(obj_to_world: Mat4, material: Option<Arc<dyn Material>>) -> Self {
         Self {
             obj_to_world,
             material,
@@ -45,7 +46,7 @@ impl<'a> Rectangle<'a> {
         }
     }
 }
-impl<'a> Primitive for Rectangle<'a> {
+impl Primitive for Rectangle {
     fn compute_scattering(
         &self,
         isct: &mut crate::pbrt_core::tool::SurfaceInteraction,
@@ -55,7 +56,7 @@ impl<'a> Primitive for Rectangle<'a> {
             materil.compute_scattering_functions(isct, mode)
         }
     }
-    fn interacect(
+    fn interact(
         &self,
         ray: crate::pbrt_core::tool::RayDiff,
     ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {

@@ -70,7 +70,7 @@ impl Primitive for Point {
     fn get_light(&self) -> Option<&dyn super::LightAble> {
         Some(self)
     }
-    fn interacect(
+    fn interact(
         &self,
         _ray: crate::pbrt_core::tool::RayDiff,
     ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {

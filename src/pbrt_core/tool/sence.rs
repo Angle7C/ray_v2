@@ -1,64 +1,53 @@
+use std::borrow::Borrow;
 use std::default::Default;
 use std::fmt::Debug;
+use std::ops::Deref;
+use std::rc::{Rc, Weak};
+use std::sync::Arc;
 
 use crate::pbrt_core::light::{Light, LightAble};
 use crate::pbrt_core::{
     camera::Camera,
-    primitive::{bvh::BVH, Aggregate, GeometricePrimitive, Primitive},
+    primitive::{bvh::BVH, Aggregate, GeometricPrimitive, Primitive},
 };
 
 use super::color::Color;
 use super::{Bound, RayDiff};
 
-pub struct Sence {
-    shape: &'static [Box<dyn Primitive>],
+pub struct Scene {
     pub camera: Camera,
-    pub light: &'static [Light],
-    pub env: Vec<&'static Light>,
+    pub light:Vec<Arc<Light>>,
+    pub env:Vec<Weak<Arc<Light>>>,
     bound: Bound<3>,
-    // material: Vec<Box<dyn Material>>,
     accel: Option<Box<dyn Aggregate>>,
 }
 
-unsafe impl Sync for Sence {}
+unsafe impl Sync for Scene {}
 
-impl Sence {
-    pub fn new(primitive: Vec<Box<dyn Primitive>>, camera: Camera, light: Vec<Light>) -> Self {
-        let primitive = primitive.leak();
+impl Scene {
+    pub fn new(primitive: Vec<Arc<dyn Primitive>>, camera: Camera, light: Vec<Arc<Light>>) -> Self {
+        // let primitive = primitive.leak();
 
         //场景集合
-        let light = light.leak();
-        let mut geoemtry = primitive
-            .iter()
-            .map(|ele| GeometricePrimitive::new(ele.as_ref()))
+        // let light = light.leak();
+        let geoemtry = primitive.iter()
+            .map(|ele| GeometricPrimitive::new(ele.clone()))
             .collect::<Vec<_>>();
-        let mut geoemtry_light = light
-            .iter()
-            .map(|item| GeometricePrimitive::new(item))
-            .collect::<Vec<_>>();
-        geoemtry.append(&mut geoemtry_light);
+    
         let bound = geoemtry
             .iter()
             .map(|ele| ele.world_bound())
             .fold(Bound::<3>::default(), |a, b| a.merage(b));
-        let mut env: Vec<&Light> = vec![];
-        let mut t = vec![];
+        let mut env = vec![];
         light.iter().for_each(|i| {
-            if match i {
-                Light::Infinite(_) => true,
-                _ => false,
-            } {
-                env.push(i);
-            } else {
-                t.push(i);
-            }
+            match i.as_ref() {
+                Light::Infinite(_) => env.push(Rc::downgrade(&Rc::new(i.clone()))),
+                _ => (),
+            };
         });
 
-        let accel = Box::new(BVH::new(geoemtry.leak()));
-        // let x = t.leak();
-        
+        let accel = Box::new(BVH::new(geoemtry));
         Self {
-            shape: primitive,
             camera,
             bound,
             light,
@@ -68,28 +57,31 @@ impl Sence {
     }
 }
 
-impl Sence {
+impl Scene {
     pub fn sample_env_light(&self, ray: &RayDiff) -> Color {
         if self.env.is_empty(){
             return Color::default();
         }
         let mut ans = Color::default();
         for env_light in &self.env {
-            ans += env_light.le(ray);
+
+            {
+                ans+=LightAble::le(env_light.upgrade().as_ref().unwrap().deref(),ray);
+            }
         }
         ans
     }
 }
 
-impl Debug for Sence {
+impl Debug for Scene {
     fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }
 
-impl Primitive for Sence {
-    fn interacect(&self, ray: super::RayDiff) -> Option<super::SurfaceInteraction> {
-        if self.interacect_bound(&ray) {
+impl Primitive for Scene {
+    fn interact(&self, ray: super::RayDiff) -> Option<super::SurfaceInteraction> {
+        if self.interact_bound(&ray) {
             if let Some(accel) = &self.accel {
                 accel.interacect(&ray)
             } else {
@@ -100,7 +92,7 @@ impl Primitive for Sence {
         }
     }
     fn hit_p(&self, ray: &super::RayDiff) -> bool {
-        if self.interacect_bound(ray) {
+        if self.interact_bound(ray) {
             if let Some(accel) = &self.accel {
                 accel.hit_p(ray)
             } else {
@@ -114,7 +106,7 @@ impl Primitive for Sence {
         self.bound
     }
 
-    fn interacect_bound(&self, ray: &super::RayDiff) -> bool {
+    fn interact_bound(&self, ray: &super::RayDiff) -> bool {
         self.world_bound().intesect(ray)
     }
 }

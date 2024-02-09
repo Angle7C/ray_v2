@@ -4,7 +4,7 @@ use crate::pbrt_core::{
     bxdf::BxDFType,
     primitive::Primitive,
     sampler::Sampler,
-    tool::{color::Color, sence::Sence, RayDiff},
+    tool::{color::Color, sence::Scene, RayDiff},
 };
 
 use super::{unifrom_sample_one_light, IntegratorAble};
@@ -41,7 +41,7 @@ impl IntegratorAble for PathIntegrator {
     fn fi(
         &self,
         ray: RayDiff,
-        sence: &Sence,
+        sence: &Scene,
         sampler: &mut Sampler,
         #[cfg(debug_assertions)] i: &mut i32,
     ) -> Color {
@@ -51,7 +51,7 @@ impl IntegratorAble for PathIntegrator {
         let mut ray = ray;
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;   
         while let Some(p) = self.is_next(&mut dept) {
-            if let Some(mut item) = sence.interacect(ray) {
+            if let Some(mut item) = sence.interact(ray) {
                 if item.light.is_some() {
                     ans += beta * item.le(ray);
                     return ans;

@@ -11,21 +11,21 @@ use crate::pbrt_core::texture::Texture;
 use super::Material;
 
 #[derive(Debug)]
-pub struct Plastic<'a> {
-    kd: Arc<dyn Texture+'a>,
-    ks: Arc<dyn Texture+'a>,
-    sigma: Arc<dyn Texture+'a>,
+pub struct Plastic {
+    kd: Arc<dyn Texture>,
+    ks: Arc<dyn Texture>,
+    sigma: Arc<dyn Texture>,
 }
 
-impl<'a> Plastic<'a> {
-    pub fn new(kd: Arc<dyn Texture+'a>,
-               ks: Arc<dyn Texture+'a>,
-               sigma: Arc<dyn Texture+'a>) -> Self {
+impl Plastic {
+    pub fn new(kd: Arc<dyn Texture>,
+               ks: Arc<dyn Texture>,
+               sigma: Arc<dyn Texture>) -> Self {
         Self { kd, ks, sigma }
     }
 }
 
-impl<'a> Material for Plastic<'a> {
+impl Material for Plastic {
     fn compute_scattering_functions(&self, suface: &mut crate::pbrt_core::tool::SurfaceInteraction, _mode: crate::pbrt_core::bxdf::TransportMode) {
         let kd = self.kd.evaluate(&suface.common);
         let mut bsdf = BSDF::new(suface, 1.0);

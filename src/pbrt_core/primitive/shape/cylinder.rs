@@ -77,7 +77,7 @@ impl<'a> Primitive for Cylinder<'a> {
             false
         }
     }
-    fn interacect(
+    fn interact(
         &self,
         ray: crate::pbrt_core::tool::RayDiff,
     ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {

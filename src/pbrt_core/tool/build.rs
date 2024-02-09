@@ -1,31 +1,32 @@
 use std::{fs::File, io::Read};
+use glam::UVec2;
 
-use crate::pbrt_core::{integrator::Integrator, load::myload::MyLoad};
+use crate::pbrt_core::{integrator::Integrator};
 
-use super::{sence::Sence, setting::Setting};
+use super::{sence::Scene, setting::Setting};
 
 pub struct Context {
-    sence: Sence,
-    intergator: Integrator,
-    setting: Setting,
+    //场景
+    scene: Scene,
+    //渲染器
+    integrator: Integrator,
+    //输出图片名称
+    name:String,
+    //图片大小
+    size:UVec2
 }
 impl Context {
-    pub fn new(path: &str) -> Self {
-        let mut file = File::open(path).unwrap();
-        let mut buf = String::new();
-        let _ = file.read_to_string(&mut buf);
-        let load = toml::from_str::<MyLoad>(&buf).unwrap();
-        let intergator = load.create_intergator();
-        let sence = load.load_sence();
-        let setting = load.create_setting();
-        Self {
-            sence,
-            intergator,
-            setting,
+    //通过工厂创建sence，
+    pub fn new( integrator: Integrator,
+                name:String,
+                size:UVec2,
+    scene: Scene) -> Self {
+        Self{
+            scene,name,integrator,size
         }
     }
     pub fn render(self) {
-        self.intergator
-            .render_process(&self.setting.name, &self.sence, self.setting.size)
+        self.integrator
+            .render_process(&self.name, &self.scene, self.size)
     }
 }

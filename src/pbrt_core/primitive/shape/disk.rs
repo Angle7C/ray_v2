@@ -61,7 +61,7 @@ impl<'a> Primitive for Disk<'a> {
         self.radius * self.radius * std::f32::consts::PI
             - self.inner_radius * self.inner_radius * std::f32::consts::PI
     }
-    fn interacect(
+    fn interact(
         &self,
         ray: crate::pbrt_core::tool::RayDiff,
     ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {

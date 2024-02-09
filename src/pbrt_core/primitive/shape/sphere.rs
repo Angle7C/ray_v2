@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use std::sync::Arc;
 
 use glam::{Mat4, Vec2, Vec3};
 
@@ -8,13 +9,13 @@ use crate::pbrt_core::{
     tool::{func::{self, unifrom_sample_sphere}, Bound, InteractionCommon, Shading, SurfaceInteraction},
 };
 #[derive(Debug)]
-pub struct Shpere<'a> {
+pub struct Sphere {
     r: f32,
     pub obj_to_world: Mat4,
-    material: Option<&'a dyn Material>,
+    material: Option<Arc<dyn Material>>,
 }
-impl<'a> Shpere<'a> {
-    pub fn new(r: f32, material: Option<&'a dyn Material>, obj_to_world: Mat4) -> Self {
+impl Sphere {
+    pub fn new(r: f32, material: Option<Arc<dyn Material>>, obj_to_world: Mat4) -> Self {
         Self {
             r,
             obj_to_world,
@@ -32,7 +33,7 @@ impl<'a> Shpere<'a> {
         unimplemented!()
     }
 }
-impl<'a> Primitive for Shpere<'a> {
+impl Primitive for Sphere {
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let min = Vec3::splat(-self.r);
         let max = Vec3::splat(self.r);
@@ -49,7 +50,7 @@ impl<'a> Primitive for Shpere<'a> {
             material.compute_scattering_functions(isct, mode)
         }
     }
-    fn interacect(
+    fn interact(
         &self,
         ray: crate::pbrt_core::tool::RayDiff,
     ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {

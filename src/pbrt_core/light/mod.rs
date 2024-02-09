@@ -1,14 +1,13 @@
 use std::{
-    fmt::Debug,
-    ops::{BitAnd, BitOr},
-    todo,
+    fmt::Debug, ops::{BitAnd, BitOr}, sync::Arc, todo
 };
 
 use crate::pbrt_core::tool::color::Color;
-use crate::pbrt_core::tool::RayDiff;
+use crate::pbrt_core::tool::{Bound, RayDiff};
 use glam::{Vec2, Vec3};
+use crate::pbrt_core::light::area::DiffuseAreaLight;
 
-use self::{area::AreaLight, inf::InfiniteLight, point::Point};
+use self::{inf::InfiniteLight, point::Point};
 
 use super::{
     primitive::{shape::Shape, Primitive},
@@ -22,7 +21,7 @@ pub mod spot;
 
 #[derive(Debug)]
 pub enum Light {
-    AreaLight(Box<dyn AreaLight>),
+    AreaLight(Box<DiffuseAreaLight>),
     PointLight(Box<Point>),
     Infinite(Box<InfiniteLight>),
 }
@@ -42,11 +41,11 @@ impl Primitive for Light {
             Light::Infinite(ref infinite) => infinite.compute_scattering(isct, mode),
         }
     }
-    fn interacect(&self, ray: super::tool::RayDiff) -> Option<SurfaceInteraction> {
+    fn interact(&self, ray: super::tool::RayDiff) -> Option<SurfaceInteraction> {
         match &self {
-            Light::AreaLight(area) => area.interacect(ray),
-            Light::PointLight(point) => point.interacect(ray),
-            Light::Infinite(ref infinite) => infinite.interacect(ray),
+            Light::AreaLight(area) => area.interact(ray),
+            Light::PointLight(point) => point.interact(ray),
+            Light::Infinite(ref infinite) => infinite.interact(ray),
         }
     }
     fn world_bound(&self) -> super::tool::Bound<3> {
@@ -68,9 +67,45 @@ impl Primitive for Light {
 impl Light {
     pub fn get_shape(&self) -> &Shape {
         match &self {
-            Self::AreaLight(area) => area.get_shape(),
+            Self::AreaLight(area) => todo!(),
             _ => todo!(),
         }
+    }
+}
+
+impl Primitive for Arc<Light> {
+    fn world_bound(&self) -> Bound<3> {
+        self.as_ref().world_bound()
+    }
+
+    fn hit_p(&self, ray: &RayDiff) -> bool {
+        todo!()
+    }
+}
+
+impl LightAble for Arc<Light>{
+    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
+        todo!()
+    }
+
+    fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32 {
+        todo!()
+    }
+
+    fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
+        todo!()
+    }
+
+    fn get_type(&self) -> LightType {
+        todo!()
+    }
+
+    fn get_n_sample(&self) -> usize {
+        todo!()
+    }
+
+    fn get_index(&self) -> usize {
+        todo!()
     }
 }
 impl LightAble for Light {

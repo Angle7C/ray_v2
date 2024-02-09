@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use glam::{Vec2, Vec3};
 use log::info;
 
@@ -10,22 +11,15 @@ use crate::pbrt_core::{
 
 use super::LightAble;
 
-pub trait AreaLight: LightAble + Primitive {
-    fn l(&self, _surface: &InteractionCommon, _w: &Vec3) -> Vec3 {
-        todo!()
-    }
-    fn get_shape(&self) -> &Shape;
-}
-
 #[derive(Debug)]
-pub struct DiffuseAreaLight<'a> {
+pub struct DiffuseAreaLight {
     lemit: Vec3,
-    shape: &'a Shape<'a>,
+    shape: Arc<dyn Primitive>,
     index: usize,
 }
 
-impl<'a> DiffuseAreaLight<'a> {
-    pub fn new(lemit: Vec3, shape: &'a Shape<'a>, index: usize) -> Self {
+impl DiffuseAreaLight {
+    pub fn new(lemit: Vec3, shape: Arc<dyn Primitive>, index: usize) -> Self {
         Self {
             lemit,
             shape,
@@ -33,21 +27,7 @@ impl<'a> DiffuseAreaLight<'a> {
         }
     }
 }
-
-impl<'a> AreaLight for DiffuseAreaLight<'a> {
-    fn l(&self, surface: &InteractionCommon, w: &Vec3) -> Vec3 {
-        if surface.normal.dot(*w) > 0.0 {
-            self.lemit
-        } else {
-            Vec3::ZERO
-        }
-    }
-    fn get_shape(&self) -> &Shape {
-        self.shape
-    }
-}
-
-impl<'a> LightAble for DiffuseAreaLight<'a> {
+impl LightAble for DiffuseAreaLight {
     fn get_n_sample(&self) -> usize {
         64
     }
@@ -72,7 +52,7 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
                 a: *light_common,
                 b: *surface_common,
             };
-            self.l(light_common, wi)
+            self.li(light_common, wi)
         }
     }
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
@@ -92,21 +72,22 @@ impl<'a> LightAble for DiffuseAreaLight<'a> {
         self.index
     }
     fn le(&self, ray: &RayDiff) -> Color {
-        let cos=self.get_shape().get_cos(-ray.o.dir);
-        if cos.is_some(){
-            self.lemit
-        } else {
-            Color::ZERO
-        }
+        // let cos=self.get_shape().get_cos(-ray.o.dir);
+        // if cos.is_some(){
+        //     self.lemit
+        // } else {
+        //     Color::ZERO
+        // }
+        todo!()
     }
 }
 
-impl<'a> Primitive for DiffuseAreaLight<'a> {
+impl Primitive for DiffuseAreaLight {
     fn world_bound(&self) -> Bound<3> {
         self.shape.world_bound()
     }
-    fn interacect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
-        let mut inter = self.shape.interacect(ray);
+    fn interact(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
+        let mut inter = self.shape.interact(ray);
         if let Some(ref mut suface) = inter {
             info!("{:?}",self.index);
             suface.light = Some(self);

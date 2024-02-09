@@ -121,7 +121,7 @@ impl<'a> Primitive for Triangle<'a> {
 
         Bound::<3>::new(min, max)
     }
-    fn interacect(&self, ray: RayDiff) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
+    fn interact(&self, ray: RayDiff) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
         let p0 = self.point(0);
         let p1 = self.point(1);
         let p2 = self.point(2);
