@@ -105,4 +105,7 @@ impl Primitive for Rectangle {
             None
         }
     }
+    fn sample(&self,uv:Vec2, surface_common: &mut InteractionCommon,pdf:&mut f32){
+        self.sample_interaction(surface_common, uv, pdf);
+    }
 }

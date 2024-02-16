@@ -72,7 +72,7 @@ impl LightAble for DiffuseAreaLight {
         self.index
     }
     fn le(&self, ray: &RayDiff) -> Color {
-        let cos=self.get_cos(-ray.o.dir,Vec2::default());
+        let cos=self.shape.get_cos(-ray.o.dir,Vec2::default());
         if cos.is_some(){
             self.emit
         } else {

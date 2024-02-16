@@ -26,8 +26,17 @@ impl Context {
         }
     }
     pub fn render(self) {
-        self.integrator
-            // .render_process_(&self.name, &self.scene, self.size)
+        #[cfg(not(debug_assertions))]{
+            self.integrator     
+            .render_process(&self.name, &self.scene, self.size);
+        
+        }
+        #[cfg(debug_assertions)]
+        {
+            self.integrator     
             .render_process_debug(&self.name,1,&self.scene,self.size);
+        }
+       
+        
     }
 }

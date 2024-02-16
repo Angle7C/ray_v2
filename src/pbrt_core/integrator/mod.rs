@@ -84,7 +84,7 @@ impl Integrator {
         let t1 = Instant::now();
         let (m, style) = pbr();
         let core = self.get_num();
-        let len = film.render_size() / (core * 2) as u32;
+        let len = film.render_size() / (core*4) as u32;
         let num = self.get_sample().num;
         thread::scope(|scope| {
             for i in 0..core {
@@ -163,9 +163,10 @@ impl Integrator {
         let buffer = merage_tile(list, size);
         let path =
             Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
-        format!("渲染完成，图像输出:{}", path.display());
-        println!("{}", path.display());
-        buffer.write(image::ImageFormat::Jpeg, num as f32, path);
+        
+        buffer.write(image::ImageFormat::Jpeg, num as f32, &path);
+        println!("{}", format!("渲染完成，图像输出:{}", path.display()));
+
     }
 
     pub fn render_process_debug(self, name: &str, num: u64, sence: &Scene, size: UVec2) {

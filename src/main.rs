@@ -1,6 +1,6 @@
 use std::{fs::File, path::Path};
 use std::io::Read;
-use pbrt_core::tool::{log::log_init, build::Context};
+use pbrt_core::tool::log::log_init;
 use crate::pbrt_core::load::{FactoryType, LoadSceneFactory};
 
 pub mod pbrt_core;

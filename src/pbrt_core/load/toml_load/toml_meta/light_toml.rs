@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use glam::{Mat4, Vec3, vec3};
+use glam::{Mat4, Vec3};
 use serde::{Deserialize, Serialize};
 use crate::pbrt_core::light::area::DiffuseAreaLight;
 use crate::pbrt_core::light::inf::InfiniteLight;
@@ -10,7 +10,7 @@ use crate::pbrt_core::load::toml_load::toml_meta::texture_toml::TextureToml;
 use crate::pbrt_core::primitive::Primitive;
 use crate::pbrt_core::texture::Texture;
 
-use super::{base_toml::TransformToml};
+use super::base_toml::TransformToml;
 
 #[derive(Deserialize, Debug, Serialize)]
 #[serde(tag = "mode")]
@@ -62,7 +62,7 @@ impl LightToml{
                                    world_center,
                                    textures.get(skybox).expect("获取天空盒失败").clone(),
                                    Mat4::IDENTITY,
-                                   Vec3::splat(10.0),usize::MAX)))
+                                   Vec3::splat(1.0),usize::MAX)))
             }
             LightToml::Spot { .. } => {todo!()}
             LightToml::Texture { .. } => {todo!()}

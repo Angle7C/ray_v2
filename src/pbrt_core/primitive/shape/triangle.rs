@@ -3,7 +3,6 @@ use std::sync::Arc;
 use glam::{Vec2, Vec3,Mat4,
     u32::UVec3,
 };
-use gltf::mesh::util::tex_coords;
 
 use crate::pbrt_core::{
     bxdf::TransportMode,

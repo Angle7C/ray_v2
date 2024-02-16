@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::sync::Arc;
-use gltf::mesh::iter::Primitives;
 use serde::{Deserialize, Serialize};
 use crate::pbrt_core::camera::Camera;
 use crate::pbrt_core::light::Light;

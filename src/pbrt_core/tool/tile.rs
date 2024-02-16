@@ -26,7 +26,7 @@ impl Buffer {
             height: size.y,
         }
     }
-    pub fn write(self, format: ImageFormat, ssp: f32, name: impl AsRef<Path>) {
+    pub fn write(self, format: ImageFormat, ssp: f32, name:& impl AsRef<Path>) {
         let mut rbg_buffer = RgbImage::new(self.width, self.height);
         for (_, tile) in self.buffer.into_iter().enumerate() {
             let x_start = tile.index.0 * Film::BLOCK_SIZE.x;

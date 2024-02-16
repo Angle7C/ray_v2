@@ -1,4 +1,4 @@
-use glam::Vec3;
+
 use serde::{Deserialize, Serialize};
 use self::base_toml::TransformToml;
 

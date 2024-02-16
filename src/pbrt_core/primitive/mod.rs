@@ -139,8 +139,8 @@ pub trait Primitive: Debug {
     }
     fn hit_p(&self, ray: &RayDiff) -> bool;
     //在图元上进行采样
-    fn sample(&self,uv:Vec2, surface_common: &mut InteractionCommon,pdf:&mut f32)->Vec3{
-        Vec3::default()
+    fn sample(&self,uv:Vec2, surface_common: &mut InteractionCommon,pdf:&mut f32){
+        
     }
 
     fn pdf(&self,interaction_common: &InteractionCommon,wi:&Vec3)->f32{
