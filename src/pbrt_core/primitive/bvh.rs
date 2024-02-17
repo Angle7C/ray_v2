@@ -1,4 +1,6 @@
 
+use std::sync::Arc;
+
 use crate::pbrt_core::tool::SurfaceInteraction;
 
 use super::{Aggregate, GeometricPrimitive, Primitive};
@@ -7,7 +9,7 @@ pub struct BVH {
     geo: Vec<GeometricPrimitive>,
     accel: bvh::bvh::BVH,
 }
-
+unsafe impl Sync for BVH{}
 impl BVH {
     pub fn new(mut shape: Vec<GeometricPrimitive>) -> Self {
         let bvh = bvh::bvh::BVH::build(&mut shape);
@@ -19,7 +21,7 @@ impl BVH {
 }
 
 impl Aggregate for BVH {
-    fn interact(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
+    fn intersect(&self, ray: &crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
         let o_ray = *ray;
         let bvh_ray = bvh::ray::Ray::new(ray.o.origin, ray.o.dir);
         let iter = self.accel.traverse_iterator(&bvh_ray, &self.geo);
@@ -28,7 +30,7 @@ impl Aggregate for BVH {
         let t_min = o_ray.o.t_min;
         let mut t = f32::MAX;
         for shape in iter {
-            match shape.interact(o_ray) {
+            match shape.intersect(o_ray) {
                 Some(v) if v.common.time > t_min && v.common.time < t_max && t > v.common.time => {
                     t = v.common.time;
                     ans = Some(v);
@@ -39,11 +41,11 @@ impl Aggregate for BVH {
         }
         ans
     }
-    fn hit_p(&self,ray: &crate::pbrt_core::tool::RayDiff)->bool {
+    fn intersect_p(&self,ray: &crate::pbrt_core::tool::RayDiff)->bool {
         let bvh_ray = bvh::ray::Ray::new(ray.o.origin, ray.o.dir);
         let iter = self.accel.traverse_iterator(&bvh_ray, &self.geo);
         for shape in iter {
-           if shape.hit_p(ray) {
+           if shape.intersect_p(ray) {
                 return true
            }
             

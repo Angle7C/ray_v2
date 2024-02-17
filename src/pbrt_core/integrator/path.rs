@@ -2,7 +2,6 @@ use glam::Vec3;
 
 use crate::pbrt_core::{
     bxdf::BxDFType,
-    primitive::Primitive,
     sampler::Sampler,
     tool::{color::Color, sence::Scene, RayDiff},
 };
@@ -23,8 +22,7 @@ impl Default for PathIntegrator {
         }
     }
 }
-
-impl IntegratorAble for PathIntegrator {
+impl PathIntegrator{
     fn is_next(&self, dept: &mut usize) -> Option<f32> {
         *dept += 1;
         if *dept > self.max_path {
@@ -38,6 +36,10 @@ impl IntegratorAble for PathIntegrator {
             Some(1.0)
         }
     }
+}
+
+impl IntegratorAble for PathIntegrator {
+
     //光追算法
     fn fi(
         &self,
@@ -54,10 +56,10 @@ impl IntegratorAble for PathIntegrator {
         //蒙特卡洛
         while let Some(p) = self.is_next(&mut dept) {
             //光线求交
-            if let Some(mut item) = scene.interact(ray) {
+            if let Some(mut item) = scene.intersect(ray) {
                 //击中光源，立即返回
                 if item.light.is_some() {
-                    ans += beta * item.le(ray);
+                    ans +=  item.le(ray)*beta;
                     return ans;
                 }
                 //计算该点的材质
@@ -66,7 +68,7 @@ impl IntegratorAble for PathIntegrator {
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
                     ans +=
-                        beta * unifrom_sample_one_light(&item, scene, sampler.clone(), false) / p;
+                         unifrom_sample_one_light(&item, scene, sampler.clone(), false)*beta / p;
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
                     let mut w_in = Vec3::default();
@@ -92,7 +94,7 @@ impl IntegratorAble for PathIntegrator {
                     }
                 }
             } else {
-                ans += beta * scene.sample_env_light(&ray);
+                ans +=  scene.sample_env_light(&ray)*beta;
                 //环境光采样
                 break;
             }

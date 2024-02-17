@@ -2,7 +2,8 @@ use std::f32::consts::*;
 
 use glam::f32::Vec3;
 
-use crate::pbrt_core::tool::{color::Color, func::same_hemisphere};
+
+use crate::pbrt_core::tool::{color::{Color, RGB}, func::same_hemisphere};
 
 use super::{
     frensnel::Fresnel,
@@ -11,10 +12,10 @@ use super::{
 };
 
 pub struct LambertianReflection {
-    r: Vec3,
+    r: Color,
 }
 impl BxDFAble for LambertianReflection {
-    fn f(&self, _w_in: &glam::Vec3, _w_out: &glam::Vec3) -> glam::Vec3 {
+    fn f(&self, _w_in: &glam::Vec3, _w_out: &glam::Vec3) -> Color {
         self.r * FRAC_1_PI
     }
     fn match_type(&self, flag: u32) -> bool {
@@ -32,18 +33,18 @@ impl BxDFAble for LambertianReflection {
     }
 }
 impl LambertianReflection {
-    pub fn new(r: Vec3) -> Self {
+    pub fn new(r: Color) -> Self {
         Self { r }
     }
 }
 
 pub struct OrenNayar {
-    r: Vec3,
+    r: Color,
     a: f32,
     b: f32,
 }
 impl OrenNayar {
-    pub fn new(r: Vec3, sigma: f32) -> Self {
+    pub fn new(r: Color, sigma: f32) -> Self {
         let sigma = sigma.to_radians();
         let sigma_2 = sigma * sigma;
         let a = 1.0 - (sigma_2 / (2.0 * sigma_2 + 0.33));
@@ -56,7 +57,7 @@ impl BxDFAble for OrenNayar {
         ((BxDFType::Reflection | BxDFType::Diffuse) & flag) != 0
     }
     #[inline]
-    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Color {
         let sin_i = func::sin_theta(w_in);
         let sin_o = func::sin_theta(w_out);
         let mut max_cos: f32 = 0.0;
@@ -97,15 +98,15 @@ impl BxDFAble for MicrofacetReflection {
         (BxDFType::Reflection | BxDFType::Glossy) & flag > 0
     }
 
-    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Color {
         let cos_o = cos_theta(w_out).abs();
         let cos_i = cos_theta(w_in).abs();
         let mut wh = *w_in + *w_out;
         if cos_i == 0.0 || cos_o == 0.0 {
-            return Vec3::ZERO;
+            return Color::ZERO;
         }
         if wh.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-            return Vec3::ZERO;
+            return Color::ZERO;
         }
         wh = wh.normalize();
         let dot = w_out.dot(wh);
@@ -127,7 +128,7 @@ impl BxDFAble for MicrofacetReflection {
         w_out: &Vec3,
         sample_point: glam::Vec2,
         pdf: &mut f32,
-    ) -> Vec3 {
+    ) -> Color {
         if w_out.z == 0.0 {
             return Color::ZERO;
         }

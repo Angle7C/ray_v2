@@ -1,7 +1,7 @@
-use glam::{Vec3, Vec2};
+use glam::{Vec2};
 
 
-use crate::pbrt_core::{filter::Filter, tool::mipmap::MipMap};
+use crate::pbrt_core::{filter::Filter, tool::{color::Color, mipmap::MipMap}};
 
 use super::Texture;
 #[derive(Default, Debug)]
@@ -19,8 +19,8 @@ impl ImageTexture {
 }
 
 impl Texture for ImageTexture {
-    fn evaluate(&self, inter: &crate::pbrt_core::tool::InteractionCommon) -> Vec3 {
-        self.mipmap.lookup(inter.uv,Vec2::ZERO,Vec2::ZERO)
+    fn evaluate(&self, inter: &crate::pbrt_core::tool::InteractionCommon) -> Color {
+        self.mipmap.lookup(inter.uv,Vec2::ZERO,Vec2::ZERO).into()
         
     }
 }

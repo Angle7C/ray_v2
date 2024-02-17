@@ -3,9 +3,10 @@ use glam::{Vec2, Vec3};
 use log::info;
 
 use crate::pbrt_core::light::LightType;
+use crate::pbrt_core::primitive::shape::ShapeAble;
 use crate::pbrt_core::tool::color::Color;
 use crate::pbrt_core::{
-    primitive::{shape::Shape, Primitive},
+    primitive::{Primitive},
     tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction, Visibility},
 };
 
@@ -14,96 +15,68 @@ use super::LightAble;
 #[derive(Debug)]
 pub struct DiffuseAreaLight {
     emit: Vec3,
-    shape: Arc<dyn Primitive>,
-    index: usize,
 }
 
 impl DiffuseAreaLight {
-    pub fn new(emit: Vec3, shape: Arc<dyn Primitive>, index: usize) -> Self {
-        Self {
-            emit,
-            shape,
-            index,
-        }
+    pub fn new(emit: Vec3) -> Self {
+        Self {emit}
     }
 }
 impl LightAble for DiffuseAreaLight {
-    fn get_n_sample(&self) -> usize {
-        64
+    fn get_samples(&self) -> usize {
+        32
     }
-    fn sample_li(
-        &self,
-        surface_common: &InteractionCommon,
-        light_common: &mut InteractionCommon,
-        u: Vec2,
-        wi: &mut Vec3,
-        pdf: &mut f32,
-        vis: &mut Visibility,
-    ) -> Vec3 {
-        self.shape.sample(u, light_common, pdf);
-        if pdf.abs() < f32::EPSILON
-            || (light_common.p - surface_common.p).length_squared().abs() < f32::EPSILON
-        {
-            *pdf = 0.0;
-            Vec3::ZERO
-        } else {
-            *wi = (surface_common.p - light_common.p).normalize();
-            *vis = Visibility {
-                a: *light_common,
-                b: *surface_common,
-            };
-            self.li(light_common, wi)
-        }
+    fn sample_li(&self,surface:&InteractionCommon,
+            light_face:&mut InteractionCommon,
+            shape:Option<&dyn ShapeAble>,
+            u:Vec2,
+            wi:&mut Vec3,
+            pdf:&mut f32,
+            vis:&mut Visibility
+            )->Color {
+                let mut ans=Color::ZERO;
+                if let Some(shape) =  shape {
+                     *light_face=shape.sample(u, pdf);
+                    ans=if(pdf.abs()<f32::EPSILON)||(surface.p-light_face.p).length_squared().abs()<f32::EPSILON{
+                        *pdf=0.0;
+                        Color::ZERO
+                     }else{
+                        *wi=(surface.p-light_face.p).normalize();
+                        *vis=Visibility{
+                            a:*light_face,
+                            b:*surface
+                        };
+                        self.li(&light_face, wi)
+                     }
+                }
+                ans
     }
     fn li(&self, inter: &InteractionCommon, w: &Vec3) -> Color {
         if inter.normal.dot(*w) > 0.0 {
-            self.emit
-        } else {
-            Vec3::ZERO
-        }
-    }
-    fn pdf_li(&self, surface: &SurfaceInteraction, wi: &Vec3) -> f32 {
-        self.shape.pdf(&surface.common, wi)
-    }
-    fn get_type(&self) -> LightType {
-        LightType::Area
-    }
-    fn get_index(&self) -> usize {
-        self.index
-    }
-    fn le(&self, ray: &RayDiff) -> Color {
-        let cos=self.shape.get_cos(-ray.o.dir,Vec2::default());
-        if cos.is_some(){
-            self.emit
+            self.emit.into()
         } else {
             Color::ZERO
         }
     }
-}
+    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3)->f32 {
+        todo!()
+    }
+    fn get_type(&self) -> LightType {
+        LightType::Area
+    }
+    fn le(&self, ray: &RayDiff) -> Color {
+        unimplemented!()
+    }
 
-impl Primitive for DiffuseAreaLight {
-    fn world_bound(&self) -> Bound<3> {
-        self.shape.world_bound()
+    fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32) {
+        todo!()
     }
-    fn interact(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<SurfaceInteraction> {
-        let mut inter = self.shape.interact(ray);
-        if let Some(ref mut suface) = inter {
-            info!("{:?}",self.index);
-            suface.light = Some(self);
-        }
-        inter
+
+    fn power(&self)->Color{
+        Color::ONE
     }
-    fn compute_scattering(
-        &self,
-        isct: &mut SurfaceInteraction,
-        mode: crate::pbrt_core::bxdf::TransportMode,
-    ) {
-        self.shape.compute_scattering(isct, mode)
-    }
-    fn get_light(&self) -> Option<&dyn LightAble> {
-        Some(self)
-    }
-    fn hit_p(&self,ray:&RayDiff)->bool {
-        self.shape.hit_p(ray)
+
+    fn sample_le(&self,u1:Vec2,u2:Vec2,t:f32)->Option<bvh::ray::Ray>{
+        None
     }
 }

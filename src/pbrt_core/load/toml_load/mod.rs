@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use crate::pbrt_core::camera::Camera;
-use crate::pbrt_core::light::Light;
+use crate::pbrt_core::light::LightAble;
 use crate::pbrt_core::load::LoadSceneAble;
 use crate::pbrt_core::load::toml_load::toml_meta::base_toml::{CameraToml, IntegratorToml};
 use crate::pbrt_core::load::toml_load::toml_meta::light_toml::LightToml;
@@ -12,12 +12,15 @@ use crate::pbrt_core::load::toml_load::toml_meta::material_toml::MaterialToml;
 use crate::pbrt_core::load::toml_load::toml_meta::primitive_toml::PrimitiveToml;
 use crate::pbrt_core::load::toml_load::toml_meta::texture_toml::TextureToml;
 use crate::pbrt_core::material::Material;
-use crate::pbrt_core::primitive::Primitive;
+use crate::pbrt_core::primitive::shape::ShapeAble;
+use crate::pbrt_core::primitive::{GeometricPrimitive, Primitive};
 use crate::pbrt_core::texture::Texture;
 use crate::pbrt_core::tool::build::Context;
 use crate::pbrt_core::tool::sence::Scene;
 
-mod toml_meta;
+use self::toml_meta::shape_toml::ShapeToml;
+
+pub mod toml_meta;
 
 pub struct TomlLoader;
 
@@ -40,6 +43,8 @@ struct  TomlMetalData{
     material:Vec<MaterialToml>,
     //光源设置
     light:Vec<LightToml>,
+    //几何设置
+    shape:Vec<ShapeToml>,
     //图元设置
     primitive:Vec<PrimitiveToml>
 }
@@ -68,11 +73,12 @@ impl TomlLoader{
         file.read_to_string(&mut buf).expect("读取scene资源失败");
         let toml_metal = toml::from_str::<TomlMetalData>(&buf).expect("scene文件内容不合法");
 
-        let texture = self.load_texture(toml_metal.texture);
-        let material=self.load_material(toml_metal.material,&texture);
-        let primitive=self.load_primitive(toml_metal.primitive,material);
-        let light=self.load_light(toml_metal.light,&primitive,&texture);
-        Scene::new(primitive,camera,light)
+        let textures = self.load_texture(toml_metal.texture);
+        let materials=self.load_material(toml_metal.material,&textures);
+        let shapes=self.load_shape(toml_metal.shape);
+        let lights=self.load_light(toml_metal.light, &textures);
+        let primitive = self.build_primitive(toml_metal.primitive, &materials, &lights, &shapes);
+        Scene::new(primitive,camera)
 
 
     }
@@ -88,15 +94,20 @@ impl TomlLoader{
             .map(|item|item.get(textures))
             .collect::<Vec<_>>()
     }
-    fn load_light(&self,lights:Vec<LightToml>,primitives: &[Arc<dyn Primitive>],textures:&[Arc<dyn Texture>])->Vec<Arc<Light>>{
+    fn load_light(&self,lights:Vec<LightToml>,textures:&[Arc<dyn Texture>])->Vec<Arc<dyn LightAble>>{
         lights.into_iter()
-            .map(|item|item.get(primitives,textures))
+            .map(|item|item.get(textures))
             .collect::<Vec<_>>()
     }
-    fn load_primitive(&self,primitives: Vec<PrimitiveToml>,materials:Vec<Arc<dyn Material>>)->Vec<Arc<dyn Primitive>>{
-            primitives.into_iter()
-                .map(|item|item.get(&materials))
+    fn load_shape(&self,shapes: Vec<ShapeToml>,)->Vec<Arc<dyn ShapeAble>>{
+        shapes.into_iter()
+                .map(|item|item.get())
                 .collect::<Vec<_>>()
+    }
+    fn build_primitive(&self,primitives: Vec<PrimitiveToml>,materials:&[Arc<dyn Material>],lights:&[Arc<dyn LightAble>], shapes: &[Arc<dyn ShapeAble>])->Vec<GeometricPrimitive>{
+        primitives.iter()
+        .map(|item|item.get(&materials, shapes, lights))
+        .collect::<Vec<_>>()
     }
 
 }

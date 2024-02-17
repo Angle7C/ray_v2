@@ -8,33 +8,32 @@ use crate::pbrt_core::{
     bxdf::TransportMode,
     material::Material,
     primitive::{mesh::Mesh, Primitive},
-    tool::{Bound, RayDiff, Shading, SurfaceInteraction},
+    tool::{Bound, InteractionCommon, RayDiff, Shading, SurfaceInteraction},
 };
+
+use super::ShapeAble;
 #[derive(Debug)]
-pub struct Triangle<'a> {
+pub struct Triangle {
     point_index: [usize; 3],
     noraml_index: [usize; 3],
     tex_index: [usize; 3],
     mesh: Arc<Mesh>,
     obj_to_world: Mat4,
-    materail: Option<&'a Box<dyn Material>>,
 }
 #[allow(unused)]
-impl<'a> Triangle<'a> {
+impl Triangle {
     pub fn new(
         point_index: UVec3,
         noraml_index:UVec3,
         tex_index:UVec3,
         mesh: Arc<Mesh>,
         obj_to_world: Mat4,
-        materail: Option<&'a Box<dyn Material>>,
     ) -> Self {
         Self {
             point_index: [point_index.x as usize, point_index.y as usize, point_index.z as usize],
             noraml_index: [noraml_index.x as usize, noraml_index.y as usize, noraml_index.z as usize],
             tex_index:  [tex_index.x as usize, tex_index.y as usize, tex_index.z as usize],
             mesh,
-            materail,
             obj_to_world,
         }
     }
@@ -110,7 +109,17 @@ impl<'a> Triangle<'a> {
         }
     }
 }
-impl<'a> Primitive for Triangle<'a> {
+impl ShapeAble for Triangle {
+    
+    fn bound(&self)->Bound<3> {
+        let p0 = self.point(0);
+        let p1 = self.point(1);
+        let p2 = self.point(2);
+        let min = p0.min(p1).min(p2);
+        let max = p0.max(p1).max(p2);
+
+        Bound::<3>::new(min, max)
+    }
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let p0 = self.point(0);
         let p1 = self.point(1);
@@ -120,7 +129,7 @@ impl<'a> Primitive for Triangle<'a> {
 
         Bound::<3>::new(min, max)
     }
-    fn interact(&self, ray: RayDiff) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
+    fn intersect(&self, ray: RayDiff) -> Option<InteractionCommon> {
         let p0 = self.point(0);
         let p1 = self.point(1);
         let p2 = self.point(2);
@@ -156,13 +165,49 @@ impl<'a> Primitive for Triangle<'a> {
             unimplemented!();
         }
     }
-    fn compute_scattering(&self, surface: &mut SurfaceInteraction, mode: TransportMode) {
-        match &self.materail {
-            Some(material) => material.compute_scattering_functions(surface, mode),
-            None => (),
-        }
+
+
+    fn intersect_p(&self, ray: &RayDiff) -> bool {
+        let p0 = self.point(0);
+        let p1 = self.point(1);
+        let p2 = self.point(2);
+
+        let n0 = self.normal(0);
+        let n1 = self.normal(1);
+        let n2 = self.normal(2);
+
+        let uv0 = self.uv(0);
+        let uv1 = self.uv(1);
+        let uv2 = self.uv(2);
+
+        let e1 = p1 - p0;
+        let e2 = p2 - p0;
+        let s = ray.o.origin - p0;
+        let s1 = ray.o.dir.cross(e2);
+        let s2 = s.cross(e1);
+        let s1_e1 = s1.dot(e1);
+
+        let t = s2.dot(e2) / s1_e1;
+        let a = s1.dot(s) / s1_e1;
+        let b = s2.dot(ray.o.dir) / s1_e1;
+        let c = 1.0 - a - b;
+
+        !(t < 0.0 || !(0.0..=1.0).contains(&b) || !(0.0..=1.0).contains(&a) || !(0.0..=1.0).contains(&c))
     }
-    fn hit_p(&self,_ray:&RayDiff)->bool {
-        false
+
+    fn area(&self)->f32 {
+        todo!()
+    }
+
+    fn sample(&self,u:Vec2,pdf:&mut f32)->crate::pbrt_core::tool::InteractionCommon {
+        todo!()
+    }
+
+    fn sample_with_ref_point(&self,common:&crate::pbrt_core::tool::InteractionCommon,u:Vec2,pdf:&mut f32)->crate::pbrt_core::tool::InteractionCommon {
+        todo!()
+    }
+
+    fn pdf_with_ref_point(&self,common:&crate::pbrt_core::tool::InteractionCommon,w_in:&Vec3)->f32 {
+        todo!()
     }
 }

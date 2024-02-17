@@ -16,7 +16,7 @@ impl PbrDiff {
     }
 }
 impl BxDFAble for PbrDiff {
-    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Color {
         let fo = func::schlick_weight(cos_theta(w_out).abs());
         let fi = func::schlick_weight(cos_theta(w_in).abs());
 
@@ -44,15 +44,15 @@ impl BxDFAble for PbrReflection{
         (BxDFType::Reflection | BxDFType::Glossy) &flag >0
     }
 
-    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Color {
         let cos_o=cos_theta(w_out).abs();
         let cos_i=cos_theta(w_in).abs();
         let mut wh=*w_in+*w_out;
         if cos_i==0.0 || cos_o==0.0{
-            return Vec3::ZERO;
+            return Color::ZERO;
         }
         if wh.abs_diff_eq(Vec3::ZERO, f32::EPSILON){
-            return Vec3::ZERO;
+            return Color::ZERO;
         }
         wh=wh.normalize();
         let dot=w_in.dot(wh);
@@ -75,7 +75,7 @@ impl BxDFAble for PbrReflection{
             w_out: &Vec3,
             sample_point: glam::Vec2,
             pdf: &mut f32,
-        ) -> Vec3 {
+        ) -> Color {
         if w_out.z==0.0{
             return Color::ZERO;
         }

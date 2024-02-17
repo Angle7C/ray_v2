@@ -2,18 +2,20 @@ use std::fmt::Debug;
 
 use glam::Vec3;
 
+use crate::pbrt_core::tool::color::Color;
+
 use super::Texture;
 
 pub struct ConstantTexture{
-    value:Vec3
+    value:Color
 }
 impl Texture for ConstantTexture{
-    fn  evaluate(&self,_inter:&crate::pbrt_core::tool::InteractionCommon)->Vec3 {
+    fn  evaluate(&self,_inter:&crate::pbrt_core::tool::InteractionCommon)->Color {
         self.value
     }
 }
 impl ConstantTexture{
-    pub fn new(value:Vec3)->Self{
+    pub fn new(value:Color)->Self{
         Self { value }
     }
 }

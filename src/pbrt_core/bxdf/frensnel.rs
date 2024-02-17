@@ -1,5 +1,7 @@
 use glam::f32::Vec3;
 
+use crate::pbrt_core::tool::color::Color;
+
 use super::{
     func::{fr_conductor, fr_dielectric, fr_schlick_spectrum},
     TransportMode,
@@ -31,19 +33,19 @@ impl Fresnel {
 //迪尼斯
 #[allow(unused)]
 pub struct DisneyFrenel {
-    r0: Vec3,
+    r0: Color,
     metallic: f32,
     eta: f32,
 }
 #[allow(unused)]
 
 impl DisneyFrenel {
-    pub fn new(r0: Vec3, metallic: f32, eta: f32) -> Self {
+    pub fn new(r0: Color, metallic: f32, eta: f32) -> Self {
         Self { r0, metallic, eta }
     }
     pub fn evaluate(&self, cos_i: f32) -> Vec3 {
         let r = fr_dielectric(cos_i, 1.0, self.eta);
-        let a = fr_schlick_spectrum(self.r0, cos_i);
+        let a = fr_schlick_spectrum(self.r0.into(), cos_i);
         Vec3::lerp(Vec3::splat(r), a, self.metallic)
     }
 }

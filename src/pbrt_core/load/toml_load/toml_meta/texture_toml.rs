@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::pbrt_core::texture::constant::ConstantTexture;
 use crate::pbrt_core::texture::image::ImageTexture;
 use crate::pbrt_core::texture::Texture;
+use crate::pbrt_core::tool::color::RGB;
 use crate::pbrt_core::tool::mipmap::{ImageData, MipMap};
 
 
@@ -13,7 +14,7 @@ use crate::pbrt_core::tool::mipmap::{ImageData, MipMap};
 #[serde(tag = "mode")]
 pub enum TextureToml {
     Image { path: String },
-    Constant { value: Vec3 },
+    Constant { value: RGB },
 }
 impl TextureToml{
     pub fn get(self)->Arc<dyn Texture>{

@@ -4,9 +4,9 @@ use bvh::aabb::AABB;
 // use bvh::aabb::AABB;
 use glam::{Vec2, Vec3};
 
-use self::sence::Scene;
+use self::{color::Color, sence::Scene};
 
-use super::{bxdf::TransportMode, light::LightAble, material::BSDF, primitive::Primitive};
+use super::{ bxdf::TransportMode, light::LightAble, material::BSDF, primitive::{shape::ShapeAble, Primitive}};
 
 pub mod build;
 pub mod color;
@@ -91,34 +91,40 @@ impl From<Bound<3>> for AABB {
 }
 
 impl Bound<2> {
+    #[inline]
     pub fn new(min: Vec2, max: Vec2) -> Self {
         Self {
             min: min.min(max).extend(0.0),
             max: min.max(max).extend(0.0),
         }
     }
+    #[inline]
     pub fn merage(&self, bound: Bound<2>) -> Self {
         let min = self.min.min(bound.min);
         let max = self.max.max(bound.max);
         Self { min, max }
     }
+    #[inline]
     pub fn center(&self) -> Vec2 {
         let center = (self.min + self.max) / 2.0;
         center.truncate()
     }
 }
 impl Bound<3> {
+    #[inline]
     pub fn new(min: Vec3, max: Vec3) -> Self {
         Self {
             min: min.min(max),
             max: max.max(min),
         }
     }
+    #[inline]
     pub fn merage(&self, bound: Bound<3>) -> Self {
         let min = self.min.min(bound.min);
         let max = self.max.max(bound.max);
         Self { min, max }
     }
+    #[inline]
     pub fn center(&self) -> Vec3 {
         
         (self.min + self.max) / 2.0
@@ -182,20 +188,26 @@ impl InteractionCommon {
 pub struct SurfaceInteraction<'a> {
     pub common: InteractionCommon,
     //求交的图元信息
-    pub shape: Option<&'a dyn Primitive>,
+    pub shape: Option<&'a dyn ShapeAble>,
     // 渲染信息与几何信息
     pub shading: Shading,
     // BSDF采样值。表示表面的对光的作用。
     pub bsdf: Option<BSDF>,
     //该交点是不是光源。
     pub light: Option<&'a dyn LightAble>,
+
+    pub primitive:Option<&'a dyn Primitive>
+    //交点的两边的介质
+    // pub medium:MediumInterface
 }
 impl<'a> SurfaceInteraction<'a> {
     pub fn new(
         common:InteractionCommon,
         shading:Shading,
-        shape: Option<&'a dyn Primitive>,
+        shape: Option<&'a dyn ShapeAble>,
         light: Option<&'a dyn LightAble>,
+        primitive:Option<&'a dyn Primitive>
+        // medium:MediumInterface
     ) -> Self {
         Self {
             common,
@@ -203,11 +215,13 @@ impl<'a> SurfaceInteraction<'a> {
             shading,
             bsdf: None,
             light,
+            primitive
+            // medium,
         }
     }
     pub fn compute_scattering(&mut self, _ray: RayDiff, _mode: TransportMode) {
-        if let Some(shape) = self.shape {
-            shape.compute_scattering(self, TransportMode::Importance);
+        if let Some(primitive) = self.primitive {
+            primitive.compute_scattering(self, TransportMode::Importance);
         }
     }
     #[inline]
@@ -215,14 +229,14 @@ impl<'a> SurfaceInteraction<'a> {
         let ray = Ray::new(self.common.p, *wi);
         RayDiff::new(ray)
     }
-    pub fn le(&self, ray: RayDiff) -> Vec3 {
+    pub fn le(&self, ray: RayDiff) -> Color {
         if let Some(light) = self.light {
             light.le(&ray)
         } else {
-            Vec3::ZERO
+            Color::ZERO
         }
     }
-    pub fn le_dir(&self,o:Vec3,dir:Vec3)->Vec3{
+    pub fn le_dir(&self,o:Vec3,dir:Vec3)->Color{
         let ray=RayDiff::new(Ray::new(o, dir));
         self.le(ray)
     }
@@ -269,7 +283,7 @@ impl Visibility {
         let ray_diff = RayDiff::new(
             Ray::from_with_t(b, dir,0.0001,dir.length()-0.0001)
         );
-        !sence.hit_p(&ray_diff)
+        !sence.intersect_p(&ray_diff)
     }
     #[inline]
     pub fn g(&self, sence: &Scene) -> f32 {

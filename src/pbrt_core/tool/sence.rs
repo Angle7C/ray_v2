@@ -1,85 +1,67 @@
-use std::borrow::Borrow;
 use std::default::Default;
 use std::fmt::Debug;
-use std::ops::Deref;
-use std::sync::{Arc, Weak};
-
-use crate::pbrt_core::light::{Light, LightAble};
+use std::sync::Arc;
+use crate::pbrt_core::light::{LightAble, LightType};
+use crate::pbrt_core::primitive::GeometricPrimitive;
 use crate::pbrt_core::{
     camera::Camera,
-    primitive::{bvh::BVH, Aggregate, GeometricPrimitive, Primitive},
+    primitive::{bvh::BVH, Aggregate,Primitive},
 };
 
 use super::color::Color;
-use super::{Bound, RayDiff};
+use super::{Bound, RayDiff, SurfaceInteraction};
 
 pub struct Scene {
     pub camera: Camera,
-    pub light:Vec<Arc<Light>>,
-    pub env:Vec<Weak<Light>>,
+    pub lights:Vec<Arc<dyn LightAble>>,
+    pub env:Vec<Arc<dyn LightAble>>,
     bound: Bound<3>,
-    accel: Option<Box<dyn Aggregate>>,
+    accel: Box<dyn Aggregate>
 }
 
 unsafe impl Sync for Scene {}
 
 impl Scene {
-    pub fn new(primitive: Vec<Arc<dyn Primitive>>, camera: Camera, light: Vec<Arc<Light>>) -> Self {
-        // let primitive = primitive.leak();
-
-        //场景集合
-        // let light = light.leak();
-        let mut geometry = primitive.iter()
-            .map(|ele| GeometricPrimitive::new(ele.clone()))
-            .collect::<Vec<_>>();
-
-        light.iter().for_each(|item|{
-            let index   = item.get_index();
-            if let Some(geo)= geometry.get_mut(index){
-               geo.set_light(item.clone());
-            };
+    pub fn new(primitive: Vec<GeometricPrimitive>,camera:Camera) -> Self {
+        
+        let mut env=Vec::new();
+        let mut lights=vec![];
+        primitive.iter()
+        .for_each(|item|{
+            if let Some(light)=item.get_arc_light() {
+                if LightType::is_inf(light.get_type()){
+                    env.push(light.clone())
+                }
+                lights.push(light.clone())
+            }
         });
-        let light = light.iter()
-            .map(|item| item.clone())
-            .collect::<Vec<_>>();
-
-
-        let bound = geometry
-            .iter()
-            .map(|ele| ele.world_bound())
-            .fold(Bound::<3>::default(), |a, b| a.merage(b));
-        let mut env = vec![];
-        light.iter().for_each(|i| {
-            match i.as_ref() {
-                Light::Infinite(_) => env.push(Arc::downgrade(&i)),
-                _ => (),
-            };
-        });
-
-        let accel = Box::new(BVH::new(geometry));
-        Self {
-            camera,
-            bound,
-            light,
-            env,
-            accel: Some(accel),
-        }
+       let bound=primitive.iter()
+        .map(|primitive|primitive.world_bound())
+        .fold(Bound::<3>::default(), |a,b| b.merage(a));
+        assert_ne!(primitive.len(),0);
+        let accel=BVH::new(primitive);
+       
+        Scene { camera, lights, bound,env, accel: Box::new(accel) }
     }
 }
 
 impl Scene {
     pub fn sample_env_light(&self, ray: &RayDiff) -> Color {
+       
         if self.env.is_empty(){
-            return Color::default();
+            return Color::ZERO
         }
         let mut ans = Color::default();
         for env_light in &self.env {
-            //究极解引用
-            {
-                ans+=LightAble::le(env_light.upgrade().as_ref().unwrap().deref().deref(),ray);
-            }
+                ans+=env_light.le(ray);
         }
         ans
+    }
+    pub fn intersect_p(&self,ray:&RayDiff)->bool{
+        self.accel.intersect_p(ray)
+    }
+    pub fn intersect(&self,ray:RayDiff)->Option<SurfaceInteraction>{
+        self.accel.intersect(&ray)
     }
 }
 
@@ -89,34 +71,3 @@ impl Debug for Scene {
     }
 }
 
-impl Primitive for Scene {
-    fn interact(&self, ray: super::RayDiff) -> Option<super::SurfaceInteraction> {
-        if self.interact_bound(&ray) {
-            if let Some(accel) = &self.accel {
-                accel.interact(&ray)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-    fn hit_p(&self, ray: &super::RayDiff) -> bool {
-        if self.interact_bound(ray) {
-            if let Some(accel) = &self.accel {
-                accel.hit_p(ray)
-            } else {
-                false
-            }
-        } else {
-            false
-        }
-    }
-    fn world_bound(&self) -> Bound<3> {
-        self.bound
-    }
-
-    fn interact_bound(&self, ray: &super::RayDiff) -> bool {
-        self.world_bound().intesect(ray)
-    }
-}

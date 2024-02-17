@@ -2,13 +2,14 @@ use std::f32::consts::FRAC_1_PI;
 
 use glam::{Vec2, Vec3};
 
+
 use self::{
     pbr::{PbrDiff, PbrReflection},
     reflection::{LambertianReflection, MicrofacetReflection, OrenNayar},
     specular::SpecularReflection,
 };
 
-use super::sampler::cosine_sample_hemisphere;
+use super::{sampler::cosine_sample_hemisphere, tool::color::Color};
 // 菲涅尔反射率
 pub mod frensnel;
 // 高光
@@ -31,9 +32,9 @@ pub trait BxDFAble {
     //匹配BxDF类型
     fn match_type(&self, flag: u32) -> bool;
     //计算，从wi射入，到wo射出时，光线被反射了多少回去[Vec3::ZERO,Vec3::ONE]
-    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3;
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Color;
     //根据采样点sample_point计算，从wi射入，到wo射出时，的双向分布函数值。
-    fn sample_f(&self, w_in: &mut Vec3, w_out: &Vec3, sample_point: Vec2, pdf: &mut f32) -> Vec3 {
+    fn sample_f(&self, w_in: &mut Vec3, w_out: &Vec3, sample_point: Vec2, pdf: &mut f32) -> Color {
         *w_in = cosine_sample_hemisphere(sample_point).normalize();
         if w_out.z < 0.0 {
             w_in.z *= -1.0
@@ -92,7 +93,7 @@ impl BxDF {
             _ => todo!(),
         }
     }
-    pub fn f(&self, w_out: &Vec3, w_in: &Vec3) -> Vec3 {
+    pub fn f(&self, w_out: &Vec3, w_in: &Vec3) -> Color {
         match &self {
             Self::LambertianReflection(lam) => lam.f(w_in, w_out),
             Self::SpecularReflection(spec_ref) => spec_ref.f(w_in, w_out),
@@ -105,7 +106,7 @@ impl BxDF {
             _ => todo!(),
         }
     }
-    pub fn sample_f(&self, w_out: &Vec3, wi: &mut Vec3, u: Vec2, pdf: &mut f32) -> Vec3 {
+    pub fn sample_f(&self, w_out: &Vec3, wi: &mut Vec3, u: Vec2, pdf: &mut f32) -> Color {
         match &self {
             Self::LambertianReflection(lambert) => lambert.sample_f(wi, w_out, u, pdf),
             Self::SpecularReflection(spec_ref) => spec_ref.sample_f(wi, w_out, u, pdf),

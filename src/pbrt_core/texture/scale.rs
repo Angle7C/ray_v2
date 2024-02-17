@@ -1,4 +1,6 @@
 use std::sync::Arc;
+use crate::pbrt_core::tool::color::Color;
+
 use super::Texture;
 pub struct ScaleTexture{
     tex1:Arc<dyn Texture>,
@@ -6,8 +8,8 @@ pub struct ScaleTexture{
 }
 impl Texture for ScaleTexture
 {
-    fn  evaluate(&self,inter:&crate::pbrt_core::tool::InteractionCommon)->glam::Vec3{
-        self.tex1.evaluate(inter)*self.tex2.evaluate(inter)        
+    fn  evaluate(&self,inter:&crate::pbrt_core::tool::InteractionCommon)->Color{
+        (self.tex1.evaluate(inter)*self.tex2.evaluate(inter)).into()
     }
 }
 impl std::fmt::Debug for ScaleTexture{

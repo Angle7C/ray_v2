@@ -1,12 +1,13 @@
 use std::{fmt::Debug, sync::Arc};
 use std::ops::Deref;
-use std::rc::Weak;
 
 use ::bvh::{aabb::Bounded, bounding_hierarchy::BHShape};
-use glam::{Vec2, Vec3};
 use crate::pbrt_core::light::Light;
-use crate::pbrt_core::tool::InteractionCommon;
 
+use self::shape::ShapeAble;
+
+use super::bssdf::MediumInterface;
+use super::material::Material;
 use super::{
     bxdf::TransportMode,
     light::LightAble,
@@ -15,146 +16,40 @@ use super::{
 
 pub mod bvh;
 pub mod mesh;
-pub mod shape {
-    use self::{rectangle::Rectangle, sphere::Sphere, cylinder::Cylinder, disk::Disk};
-    use super::Primitive;
-    use crate::pbrt_core::tool::InteractionCommon;
-    use glam::{Vec2, Vec3};
-    pub mod rectangle;
-    pub mod sphere;
-    pub mod triangle;
-    pub mod cylinder;
-    pub mod disk;
-    #[derive(Debug)]
-    pub enum Shape<'a> {
-        Rect(Rectangle),
-        Sphere(Sphere),
-        Cylinder(Cylinder<'a>),
-        Disk(Disk<'a>),
-    }
 
-    impl<'a> Primitive for Shape<'a> {
-        fn compute_scattering(
-            &self,
-            isct: &mut crate::pbrt_core::tool::SurfaceInteraction,
-            mode: crate::pbrt_core::bxdf::TransportMode,
-        ) {
-            match &self {
-                Shape::Rect(rect) => rect.compute_scattering(isct, mode),
-                Self::Sphere(sphere) => sphere.compute_scattering(isct, mode),
-                Shape::Cylinder(cylinder) => cylinder.compute_scattering(isct, mode),
-                Shape::Disk(disk) => disk.compute_scattering(isct, mode),
-                _=>todo!()
-            }
-        }
-        fn interact(
-            &self,
-            ray: crate::pbrt_core::tool::RayDiff,
-        ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
-            match &self {
-                Shape::Rect(rect) => rect.interact(ray),
-                Shape::Sphere(sphere) => sphere.interact(ray),
-                Shape::Cylinder(cylinder) => cylinder.interact(ray),
-                Shape::Disk(disk)=>disk.interact(ray)
-            }
-        }
-        fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-            match &self {
-                Shape::Rect(rect) => rect.world_bound(),
-                Shape::Sphere(sphere) => sphere.world_bound(),
-                Shape::Cylinder(cylinder) => cylinder.world_bound(),
-                Shape::Disk(disk)=>disk.world_bound()
-            }
-        }
-        fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
-            match &self {
-                Shape::Rect(rect) => rect.hit_p(ray),
-                Shape::Sphere(sphere) => sphere.hit_p(ray),
-                Shape::Cylinder(cylinder) => cylinder.hit_p(ray),
-                Shape::Disk(disk)=>disk.hit_p(ray)
-            }
-        }
-        
-    }
-    impl<'a> Shape<'a> {
-        // 获得面积
-        pub fn agt_area(&self) -> f32 {
-            match self {
-                Shape::Rect(rect) => rect.get_area(),
-                Shape::Sphere(sphere) => sphere.get_area(),
-                Shape::Cylinder(cylinder) => cylinder.get_area(),
-                Shape::Disk(disk)=>disk.get_area(),
-            }
-        }
-        // 形状采样
-        pub fn sample(&self, sample_point: Vec2, common: &mut InteractionCommon, pdf: &mut f32) {
-            match self {
-                Self::Rect(rect) => rect.sample_interaction(common, sample_point, pdf),
-                Self::Sphere(sphere) => sphere.sample_interaction(common, sample_point, pdf),
-                Self::Cylinder(cylinder) => cylinder.sample_interaction(common, sample_point, pdf),
-                Self::Disk(disk)=>disk.sample_interaction(common, sample_point, pdf),
-                _=>todo!()
-            }
-        }
-        //对于在不同点采样的时，会存在不同pdf值。给定指定方向与点，确定是否有交点。
-        pub fn pdf(&self, _common: &InteractionCommon, _wi: &Vec3) -> f32 {
-            1.0 / self.agt_area()
-        }
-        pub fn get_mat(&self) -> glam::Mat4 {
-            match self {
-                Self::Rect(rect) => rect.obj_to_world,
-                Self::Sphere(sphere) => sphere.obj_to_world,
-                _=>todo!()
-            }
-        }
-        pub fn get_cos(&self,dir:Vec3)->Option<f32>{
-            match self {
-                Self::Rect(rect) => rect.get_cos(dir,Vec2::default()),
-                Self::Sphere(sphere) => sphere.get_cos(dir),
-                _=>todo!()
-            }
-        }
-    }
-}
-pub trait Primitive: Debug {
+pub mod shape;
+pub trait Primitive:BHShape+Bounded {
+
     //世界包围盒
     fn world_bound(&self) -> Bound<3>;
-    //求交
-    fn interact(&self, _ray: RayDiff) -> Option<SurfaceInteraction> {
-        None
-    }
-    //包围盒求交
-    fn interact_bound(&self, ray: &RayDiff) -> bool {
-        self.world_bound().intesect(ray)
-    }
-    //材质计算
-    fn compute_scattering(&self, _isct: &mut SurfaceInteraction, _mode: TransportMode) {}
-    //获取光源
-    fn get_light(&self) -> Option<&dyn LightAble> {
-        None
-    }
+    //表面求交
+    fn intersect(&self, _ray: RayDiff) -> Option<SurfaceInteraction>;
+    //是否有交点
+    fn intersect_p(&self, ray: &RayDiff) -> bool;
+    //获取面光源
+    fn get_light(&self)->Option<&dyn LightAble>{None}
     //获取图元面积
-    fn get_area(&self) -> f32 {
-        1.0
-    }
-    fn hit_p(&self, ray: &RayDiff) -> bool;
-    //在图元上进行采样
-    fn sample(&self,uv:Vec2, surface_common: &mut InteractionCommon,pdf:&mut f32){
-        
-    }
-
-    fn pdf(&self,interaction_common: &InteractionCommon,wi:&Vec3)->f32{
-        1.0
+    fn get_area(&self) -> f32;
+    //获取材质
+    fn get_material(&self)->Option<&dyn Material>;
+    //材质计算
+    fn compute_scattering(&self, suface: &mut SurfaceInteraction, mode: TransportMode){
+        if let Some(material)=self.get_material(){
+            material.compute_scattering_functions(suface, mode)
+        }
     }
 
-    fn get_cos(&self,dir:Vec3,uv:Vec2)->Option<f32>{
+    fn get_shape(&self)->Option<&dyn ShapeAble>;
+
+    fn get_arc_light(&self)->Option<Arc<dyn LightAble>>{
         None
     }
-
 }
+
+
 pub trait Aggregate: Sync {
-    fn interact(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
-    fn hit_p(&self, ray: &RayDiff) -> bool;
+    fn intersect(&self, ray: &RayDiff) -> Option<SurfaceInteraction>;
+    fn intersect_p(&self, ray: &RayDiff) -> bool;
 }
 #[derive(Debug)]
 pub enum ObjectType {
@@ -170,29 +65,95 @@ impl PartialEq for ObjectType {
         }
     }
 }
-#[derive(Debug)]
+
 pub struct GeometricPrimitive {
-    primitive: Arc<dyn Primitive>,
-    light: Option<Arc<Light>>,
-    node_index: usize,
+    //几何图元
+    shape: Arc<dyn ShapeAble>,
+    //材质
+    material:Option<Arc<dyn Material>>,
+    //光源
+    light: Option<Arc<dyn LightAble>>,
+    //介质
+    medium:Option<Arc<MediumInterface>>,
+    node_index:usize
 }
 unsafe impl Sync for GeometricPrimitive {}
 unsafe impl Send for GeometricPrimitive {}
 impl GeometricPrimitive {
-    pub fn new(primitive: Arc< dyn Primitive>) -> Self {
+    pub fn new(  //几何图元
+        shape: Arc<dyn ShapeAble>,
+        //材质
+        material:Option<Arc<dyn Material>>,
+        //光源
+        light: Option<Arc<dyn LightAble>>,
+        //介质
+        medium:Option<Arc<MediumInterface>>) -> Self {
         Self {
-            primitive,
-            node_index: 0,
-            light: None,
+            shape,
+            material,
+            light,
+            medium,
+            node_index:0
         }
     }
     pub fn set_light(&mut self,light: Arc<Light>){
         self.light=Some(light);
     }
 }
+impl Primitive for GeometricPrimitive{
+    fn get_area(&self) -> f32 {
+        self.shape.area()
+    }
+    fn get_light(&self)->Option<&dyn LightAble> {
+         if let Some(ref light)= self.light {
+             Some( light.deref() as &dyn LightAble)
+         }else{
+            None
+         }
+        
+    }
+    fn get_arc_light(&self)->Option<Arc<dyn LightAble>> {
+        if let Some(light) = &self.light {
+            Some(light.clone())
+        }else {
+            None
+        }
+    }
+    fn get_material(&self)->Option<& dyn Material> {
+        if let Some(ref material)= self.material {
+            Some( material.deref() as &dyn Material)
+        }else{
+           None
+        }
+    }
+    fn intersect(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
+        if let Some(common) = self.shape.intersect(ray){
+            let mut surface = SurfaceInteraction::default();
+            surface.common=common;
+            surface.light=self.get_light();
+            surface.primitive=Some(self);
+            surface.shape=Some(self.shape.as_ref());
+            Some(surface)
+        }else{
+            None
+        }
+        
+    }
+    fn intersect_p(&self, ray: &RayDiff) -> bool {
+        self.shape.intersect_p(ray)
+        
+    }
+    fn world_bound(&self) -> Bound<3> {
+        self.shape.world_bound()
+    }
+
+    fn get_shape(&self)->Option<&dyn ShapeAble> {
+       Some(self.shape.as_ref())
+    }
+}
 impl Bounded for GeometricPrimitive {
     fn aabb(&self) -> ::bvh::aabb::AABB {
-        let bound = self.primitive.world_bound();
+        let bound = self.shape.world_bound();
         bound.into()
     }
 }
@@ -202,35 +163,5 @@ impl BHShape for GeometricPrimitive{
     }
     fn bh_node_index(&self) -> usize {
         self.node_index
-    }
-}
-impl Primitive for GeometricPrimitive {
-    fn world_bound(&self) -> Bound<3> {
-        self.primitive.world_bound()
-    }
-    fn interact(&self, ray: RayDiff) -> Option<SurfaceInteraction> {
-        let mut option = self.primitive.interact(ray);
-        if let (Some(ref mut surface),Some(light))=(&mut option,&self.light){
-                surface.light= Some(light.deref());
-
-        };
-        option
-    }
-    fn interact_bound(&self, ray: &RayDiff) -> bool {
-        self.primitive.interact_bound(ray)
-    }
-    fn compute_scattering(&self, isct: &mut SurfaceInteraction, mode: TransportMode) {
-        self.primitive.compute_scattering(isct, mode)
-    }
-    fn get_light(&self) -> Option<&dyn LightAble> {
-        if let Some(light)=&self.light{
-            Some(light.deref() as &dyn LightAble)
-        }else{
-            None
-        }
-
-    }
-    fn hit_p(&self, ray: &RayDiff) -> bool {
-        self.primitive.hit_p(ray)
     }
 }

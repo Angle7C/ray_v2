@@ -1,9 +1,8 @@
-use std::{fs::File, io::Read};
 use glam::UVec2;
 
-use crate::pbrt_core::{integrator::Integrator};
+use crate::pbrt_core::integrator::Integrator;
 
-use super::{sence::Scene, setting::Setting};
+use super::sence::Scene;
 
 pub struct Context {
     //场景

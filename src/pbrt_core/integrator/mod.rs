@@ -20,7 +20,7 @@ use self::{direct::DirectIntegrator, path::PathIntegrator};
 
 use super::{
     camera::{Camera, CameraSample},
-    primitive::Primitive,
+    primitive::{shape::{self, ShapeAble}, Primitive},
     sampler::Sampler,
     tool::{color::Color, film::Film, sence::Scene, tile::Tile, Ray, RayDiff},
 };
@@ -34,7 +34,7 @@ pub enum Integrator {
 }
 
 pub trait IntegratorAble {
-    fn is_next(&self, dept: &mut usize) -> Option<f32>;
+    //求解 irradince
     fn fi(&self, ray: RayDiff, sence: &Scene, sampler: &mut Sampler,
           #[cfg(debug_assertions)]
         i:&mut i32
@@ -42,13 +42,6 @@ pub trait IntegratorAble {
 }
 
 impl IntegratorAble for Integrator {
-    fn is_next(&self, dept: &mut usize) -> Option<f32> {
-        match &self {
-            Integrator::Path(path, _, _) => path.is_next(dept),
-            _ => None,
-        }
-    }
-
     fn fi(&self, ray: RayDiff, sence: &Scene, sampler: &mut Sampler,
           #[cfg(debug_assertions)]
         i:&mut i32
@@ -231,38 +224,7 @@ pub fn uniform_sample_all_light(
     n_light_sample: Vec<usize>,
     handle_media: bool,
 ) -> Color {
-    let mut l = Color::ZERO;
-    for (index, light) in sence.light.iter().enumerate() {
-        let mut ld = Vec3::ZERO;
-        if n_light_sample[index] == 1 {
-            let u_light = sampler.sample_2d_d();
-            let _u_scattering = sampler.sample_2d_d();
-            ld += estimate_direct(
-                common,
-                light,
-                u_light,
-                sence,
-                sampler.clone(),
-                handle_media,
-                false,
-            );
-        } else {
-            for _ in 0..n_light_sample[index] {
-                ld += estimate_direct(
-                    common,
-                    light,
-                    sampler.sample_2d_d(),
-                    sence,
-                    sampler.clone(),
-                    handle_media,
-                    false,
-                );
-            }
-            ld /= n_light_sample[index] as f32
-        }
-        l += ld;
-    }
-    l
+   todo!()
 }
 
 pub fn unifrom_sample_one_light(
@@ -271,15 +233,16 @@ pub fn unifrom_sample_one_light(
     mut sampler: Sampler,
     handle_media: bool,
 ) -> Color {
-    let len = sence.light.len();
+    let len = sence.lights.len();
     let num = sampler.rand.gen_range(0..len);
-    let light = &sence.light[num];
+    let light = sence.lights[num].as_ref();
     let mut ld = Color::default();
-    let smaple = light.get_n_sample();
+    let smaple = light.get_samples();
     for _ in 0..smaple {
         ld += estimate_direct(
             common,
             light,
+            common.shape,
             sampler.sample_2d(),
             sence,
             sampler.clone(),
@@ -287,12 +250,15 @@ pub fn unifrom_sample_one_light(
             false,
         );
     }
-    ld*len as f32 / smaple  as f32
+
+    ld * len as f32 / smaple  as f32
+  
 }
 
 pub fn estimate_direct(
     inter: &SurfaceInteraction,
-    light: &Light,
+    light: &dyn LightAble,
+    shape: Option<&dyn ShapeAble>,
     u_light: Vec2,
     sence: &Scene,
     mut sampler: Sampler,
@@ -304,7 +270,7 @@ pub fn estimate_direct(
     } else {
         BxDFType::All as u32 & !BxDFType::Specular
     };
-    let mut ld = Vec3::ZERO;
+    let mut ld = Color::ZERO;
     let mut wi: Vec3 = Vec3::ZERO;
     let mut light_pdf: f32 = 0.0;
     let mut vis: Visibility = Default::default();
@@ -312,6 +278,7 @@ pub fn estimate_direct(
     let mut li = light.sample_li(
         &inter.common,
         &mut light_common,
+        shape,
         u_light,
         &mut wi,
         &mut light_pdf,
@@ -319,7 +286,7 @@ pub fn estimate_direct(
     );
     // return li;
     // 合理的pdf和采样出光线 
-    if light_pdf > 0.0 && !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+    if light_pdf > 0.0 && !li.abs_diff_eq(0.0, f32::EPSILON) {
         //计算BSDF
         let f = if let Some(ref bsdf) = inter.bsdf {
             bsdf.f(&inter.common.w0, &wi, bxdf_flags) * wi.dot(inter.shading.n).abs()
@@ -336,7 +303,7 @@ pub fn estimate_direct(
             1.0
         };
 
-        if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
+        if !li.abs_diff_eq(0.0, f32::EPSILON) {
             if LightType::is_delta(light.get_type()) {
                 ld +=  li *f* vis.g(sence) / light_pdf;
             }else if LightType::is_inf(light.get_type()){
@@ -365,7 +332,7 @@ pub fn estimate_direct(
             sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
             if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
                 let weight = if !sampled_specular {
-                    let light_pdf = light.pdf_li(inter, &wi);
+                    let light_pdf = light.pdf_li(&inter.common, &wi);
                     if light_pdf.abs() < f32::EPSILON {
                         return ld;
                     }
@@ -375,13 +342,13 @@ pub fn estimate_direct(
                 };
                 let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
                 let li =
-                if let Some(ref light_inter) = sence.interact(ray) {
+                if let Some(ref light_inter) = sence.intersect(ray) {
                     light_inter.le(ray)
                 }else{
-                    Default::default()
+                    Color::ZERO
                 };
-                if !li.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
-                    ld += li * f * weight / bsdf_pdf;
+                if !li.abs_diff_eq(0.0, f32::EPSILON) {
+                    ld += li * (f * weight / bsdf_pdf);
                 }
             }
         }
@@ -395,34 +362,34 @@ pub fn power_heuristic(nf: f32, f_pdf: f32, ng: f32, g_pdf: f32) -> f32 {
     (f * f) / (f * f + g * g)
 }
 
-pub fn get_light(
-    inter: &SurfaceInteraction,
-    sence: &Scene,
-    mut sampler: Sampler,
-) -> Color {
-    if sence.light.is_empty() {
-        return Color::ZERO;
-    }
-    let num: usize = sampler.rand.gen_range(0..sence.light.len());
-    let light = &sence.light[num];
-    let mut light_common = Default::default();
-    let mut wi = Vec3::default();
-    let mut pdf = 0.0;
-    let mut vis = Visibility::default();
-    let li = light.sample_li(
-        &inter.common,
-        &mut light_common,
-        sampler.sample_2d(),
-        &mut wi,
-        &mut pdf,
-        &mut vis,
-    );
-    let f = if let Some(ref bsdf) = inter.bsdf {
-        bsdf.f(&inter.common.w0, &wi, BxDFType::All.into())
-         * wi.dot(inter.shading.n).abs()
-    } else {
-        Vec3::ZERO
-    };
-    // return  f;
-    vis.g(sence)* f *li/pdf
-}
+// pub fn get_light(
+//     inter: &SurfaceInteraction,
+//     sence: &Scene,
+//     mut sampler: Sampler,
+// ) -> Color {
+//     if sence.light.is_empty() {
+//         return Color::ZERO;
+//     }
+//     let num: usize = sampler.rand.gen_range(0..sence.light.len());
+//     let light = &sence.light[num];
+//     let mut light_common = Default::default();
+//     let mut wi = Vec3::default();
+//     let mut pdf = 0.0;
+//     let mut vis = Visibility::default();
+//     let li = light.sample_li(
+//         &inter.common,
+//         &mut light_common,
+//         sampler.sample_2d(),
+//         &mut wi,
+//         &mut pdf,
+//         &mut vis,
+//     );
+//     let f = if let Some(ref bsdf) = inter.bsdf {
+//         bsdf.f(&inter.common.w0, &wi, BxDFType::All.into())
+//          * wi.dot(inter.shading.n).abs()
+//     } else {
+//         Vec3::ZERO
+//     };
+//     // return  f;
+//     vis.g(sence)* f *li/pdf
+// }

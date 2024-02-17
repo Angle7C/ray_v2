@@ -29,11 +29,11 @@ impl Material for Plastic {
     fn compute_scattering_functions(&self, suface: &mut crate::pbrt_core::tool::SurfaceInteraction, _mode: crate::pbrt_core::bxdf::TransportMode) {
         let kd = self.kd.evaluate(&suface.common);
         let mut bsdf = BSDF::new(suface, 1.0);
-        if kd != Vec3::ZERO {
+        if kd.abs_diff_eq(0.0, f32::EPSILON) {
             bsdf.bxdfs.push(BxDF::LambertianReflection(LambertianReflection::new(kd)));
         }
         let ks = self.ks.evaluate(&suface.common);
-        if ks != Vec3::ZERO {
+        if ks.abs_diff_eq(0.0, f32::EPSILON)  {
             bsdf.bxdfs.push(BxDF::SpecularReflection(SpecularReflection::new(ks, Fresnel::NoOP(NoOPFresnel))))
         }
     }

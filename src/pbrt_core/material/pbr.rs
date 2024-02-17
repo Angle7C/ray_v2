@@ -9,7 +9,7 @@ use crate::pbrt_core::{
         pbr::{PbrDiff, PbrReflection},
         BxDF,
     },
-    texture::Texture,
+    texture::Texture, tool::color::Color,
 };
 
 use super::{Material, BSDF};
@@ -67,18 +67,18 @@ impl Material for PbrMaterial {
         let metallic = if let Some(ref metallic) = self.metailc {
             metallic.evaluate(&suface.common)
         } else {
-            Vec3::ZERO
+            Color::ZERO
         };
-        let r0 = metallic * r + (Vec3::ONE - metallic) * Vec3::splat(0.04);
+        let r0 = metallic * r + (Color::ONE - metallic) * Vec3::splat(0.04);
         let roughness = if let Some(ref roughness) = self.roughness {
             roughness.evaluate(&suface.common)
         } else {
-            Vec3::splat(0.5)
+            Color::splat(0.5)
         };
         let roughness = roughness_to_alpha(roughness.y);
         suface.bsdf = Some(BSDF::new(suface, 1.0));
         if let Some(bsdf) = &mut suface.bsdf {
-            if r != Vec3::ZERO {
+            if r.abs_diff_eq(0.0, f32::EPSILON) {
                 bsdf.bxdfs.push(BxDF::PbrDiff(PbrDiff::new(r)));
                 bsdf.bxdfs.push(BxDF::PbrReflection(PbrReflection::new(
                     r,

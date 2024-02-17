@@ -18,7 +18,7 @@ impl DisneyDiffuse {
     }
 }
 impl BxDFAble for DisneyDiffuse {
-    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Color {
         let fo = func::schlick_weight(cos_theta(w_out).abs());
         let fi = func::schlick_weight(cos_theta(w_in).abs());
 
@@ -43,10 +43,10 @@ impl DisneyRetro {
 }
 
 impl BxDFAble for DisneyRetro{
-    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Vec3 {
+    fn f(&self, w_in: &Vec3, w_out: &Vec3) -> Color {
         let mut wh=*w_in+*w_out;
         if wh==Vec3::ZERO{
-            return Vec3::ZERO;
+            return Color::ZERO;
         };
         wh=wh.normalize();
         let cos=w_in.dot(wh);

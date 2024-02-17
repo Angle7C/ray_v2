@@ -3,53 +3,52 @@ use std::f32::consts::PI;
 use glam::{Mat4, Vec2, Vec3};
 
 use crate::pbrt_core::{
-    material::Material,
     primitive::Primitive,
     tool::{func, Bound, InteractionCommon, Ray, SurfaceInteraction}, sampler::concentric_sample_disk,
 };
 
+use super::ShapeAble;
+
 #[derive(Debug)]
-pub struct Disk<'a> {
+pub struct Disk {
     radius: f32,
     inner_radius: f32,
     pub obj_to_world: Mat4,
-    material: Option<&'a dyn Material>,
     height: f32,
 }
 
-impl<'a> Disk<'a> {
+impl Disk {
     pub fn new(
         radius: f32,
         inner_radius: f32,
         obj_to_world: Mat4,
-        material: Option<&'a dyn Material>,
         height: f32,
     ) -> Self {
         Self {
             radius,
             inner_radius,
             obj_to_world,
-            material,
             height,
         }
     }
-    pub fn sample_interaction(&self,common: &mut InteractionCommon,smaple_point: Vec2,pdf:&mut f32){
-        *pdf=1.0/self.get_area();
-        let pd=concentric_sample_disk(smaple_point);
-        let p= Vec3::new(pd.x*self.radius, pd.y*self.radius,self.height);
-        common.normal=self.obj_to_world.transform_vector3(Vec3::Z).normalize();
-        common.p=self.obj_to_world.transform_point3(p);
-        
-    }
 }
-impl<'a> Primitive for Disk<'a> {
-    fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
+impl ShapeAble for Disk {
+    fn bound(&self)->Bound<3> {
         let min = Vec3::new(-self.radius, -self.radius, self.height);
         let max = Vec3::new(self.radius, self.radius, self.height);
         Bound::<3>::new(min, max)
     }
-
-    fn hit_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
+    fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
+        let min = Vec3::new(-self.radius, -self.radius, self.height);
+        let max = Vec3::new(self.radius, self.radius, self.height);
+        let min = self.obj_to_world.transform_point3(min);
+        let max = self.obj_to_world.transform_point3(min);
+        Bound::<3>::new(min, max)
+    }
+    fn area(&self)->f32{
+        (self.radius*self.radius-self.inner_radius*self.inner_radius)*2.0*PI
+    }
+    fn intersect_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
         let o = self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let ray = Ray::new(o, dir);
@@ -57,14 +56,10 @@ impl<'a> Primitive for Disk<'a> {
         let p = ray.at(t);
         p.x * p.x + p.y * p.y < self.radius * self.radius && p.x * p.x + p.y * p.y > self.inner_radius * self.inner_radius
     }
-    fn get_area(&self) -> f32 {
-        self.radius * self.radius * std::f32::consts::PI
-            - self.inner_radius * self.inner_radius * std::f32::consts::PI
-    }
-    fn interact(
+    fn intersect(
         &self,
         ray: crate::pbrt_core::tool::RayDiff,
-    ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
+    ) -> Option<InteractionCommon> {
         let o = self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let ray = Ray::new(o, dir);
@@ -93,12 +88,30 @@ impl<'a> Primitive for Disk<'a> {
 
             let shading = crate::pbrt_core::tool::Shading::new(dpdu, dpdv, dndu, dndv);
             let n = Vec3::Z;
-            let common = InteractionCommon::new(-dir, p, n, t, uv);
-            let mut item = SurfaceInteraction::new(common, shading, Some(self), None);
-            func::transform_interaction(self.obj_to_world, &mut item);
-            Some(item)
+            let mut common = InteractionCommon::new(-dir, p, n, t, uv);
+            // let mut item = SurfaceInteraction::new(common, shading, Some(self), None);
+            common = func::transform_common(self.obj_to_world,common);
+            Some(common)
         } else {
             None
         }
+    }
+
+    fn sample(&self,u:Vec2,pdf:&mut f32)->InteractionCommon {
+        *pdf=1.0/self.area();
+        let pd=concentric_sample_disk(u);
+        let p= Vec3::new(pd.x*self.radius, pd.y*self.radius,self.height);
+        let mut common = InteractionCommon::default();
+        common.normal=self.obj_to_world.transform_vector3(Vec3::Z).normalize();
+        common.p=self.obj_to_world.transform_point3(p);
+        common
+    }
+
+    fn sample_with_ref_point(&self,common:&InteractionCommon,u:Vec2,pdf:&mut f32)->InteractionCommon {
+        todo!()
+    }
+
+    fn pdf_with_ref_point(&self,common:&InteractionCommon,w_in:&Vec3)->f32 {
+        todo!()
     }
 }

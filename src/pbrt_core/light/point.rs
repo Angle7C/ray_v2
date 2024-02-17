@@ -26,61 +26,47 @@ impl Point {
 }
 
 impl LightAble for Point {
+    fn get_samples(&self)->usize {
+        1
+    }
+
     #[inline]
-    fn le(&self, _ray: &RayDiff) -> Vec3 {
-        Vec3::ZERO
+    fn le(&self, _ray: &RayDiff) -> Color {
+        Color::ZERO
     }
     #[inline]
-    fn pdf_li(&self, _surface: &crate::pbrt_core::tool::SurfaceInteraction, _wi: &Vec3) -> f32 {
+    fn pdf_li(&self, _surface: &InteractionCommon, wi: &Vec3) -> f32 {
         0.0
     }
     #[inline]
-    fn sample_li(&self, surface_common: &InteractionCommon, light_common: &mut InteractionCommon, _u: Vec2, wi: &mut Vec3, pdf: &mut f32, vis: &mut Visibility) -> Vec3 {
-        *wi = (surface_common.p - self.p).normalize();
+    fn sample_li(&self,surface:&InteractionCommon,
+            light_face:&mut InteractionCommon,
+            _shape:Option<&dyn crate::pbrt_core::primitive::shape::ShapeAble>,
+            u:Vec2,
+            wi:&mut Vec3,pdf:&mut f32,
+            vis:&mut Visibility)->Color {
+        *wi = (surface.p - self.p).normalize();
         *pdf = 1.0;
-        light_common.p = self.p;
-        light_common.time = surface_common.time;
-        light_common.normal=-*wi;
+        light_face.p = self.p;
+        light_face.time = surface.time;
+        light_face.normal=-*wi;
         *vis = Visibility {
-            a: *light_common,
-            b: *surface_common,
+            a: *light_face,
+            b: *surface,
         };
-        self.lemit/ self.p.distance_squared(surface_common.p)
+        (self.lemit/ self.p.distance_squared(surface.p)).into()
     }
     #[inline]
     fn get_type(&self) -> LightType {
         LightType::DeltaPosition
     }
-    #[inline]
-    fn get_n_sample(&self) -> usize {
-        1
-    }
+
     #[inline]
     fn li(&self, inter: &InteractionCommon, _w: &Vec3) -> Color {
-        self.lemit*(inter.p-self.p).length_recip()
+        (self.lemit*(inter.p-self.p).length_recip()).into()
     }
-    fn get_index(&self)->usize {
-        self.index   
-    }
-}
-impl Primitive for Point {
-    fn get_area(&self) -> f32 {
-        1.0
-    }
-    fn get_light(&self) -> Option<&dyn super::LightAble> {
-        Some(self)
-    }
-    fn interact(
-        &self,
-        _ray: crate::pbrt_core::tool::RayDiff,
-    ) -> Option<crate::pbrt_core::tool::SurfaceInteraction> {
-        None
-    }
-    fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
-        
-        Bound::<3>::new(Vec3::splat(-0.0003) + self.p, Vec3::splat(0.0003) + self.p)
-    }
-    fn hit_p(&self,_ray:&RayDiff)->bool {
-        false
+
+    fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32) {
+        todo!()
     }
 }

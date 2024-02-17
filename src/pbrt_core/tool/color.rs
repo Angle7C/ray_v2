@@ -1,11 +1,39 @@
-use glam::Vec3;
+
 use std::ops::*;
 
-pub type Color = Vec3;
+use glam::Vec3;
+use rand::distributions::Slice;
+use serde::{Deserialize, Serialize};
+
+pub type Color = RGB;
+#[derive(Debug,Default,Clone, Copy,Deserialize,Serialize)]
 pub struct RGB {
     pub x: f32,
     pub y: f32,
     pub z: f32,
+}
+impl RGB{
+    pub fn powf(&self,p:f32)->RGB{
+        let x = self.x.powf(p);
+        let y = self.y.powf(p);
+        let z = self.z.powf(p);
+        RGB { x, y, z }
+    }
+    pub fn abs_diff_eq(&self,value:f32,diff:f32)->bool{
+        (self.x-value).abs()<diff||(self.y-value).abs()<diff||(self.z-value).abs()<diff
+    }
+    pub fn clamp(&self,min:Vec3,max:Vec3)->RGB{
+        let x=min.x.max(self.x).min(max.x);
+        let y=min.y.max(self.y).min(max.y);
+        let z=min.z.max(self.z).min(max.z);
+        RGB { x, y, z }
+    }
+    pub fn new(x:f32,y:f32,z:f32)->RGB{
+        Self{x,y,z}
+    }
+    pub fn splat(value:f32)->RGB{
+        Self { x:value, y: value, z: value }
+    }
 }
 ///RGB常量
 impl RGB {
@@ -64,6 +92,15 @@ impl SubAssign for RGB {
         self.x -= rhs.x;
         self.y -= rhs.y;
         self.z -= rhs.z;
+    }
+}
+
+impl Sub<f32> for RGB{
+    type Output = RGB;
+    fn sub(self, rhs: f32) -> Self::Output {
+        RGB{x:self.x-rhs,
+        y:self.y-rhs,
+        z:self.z-rhs}
     }
 }
 impl Add<RGB> for RGB {
@@ -143,5 +180,36 @@ impl Neg for RGB {
         let y = -self.y;
         let z = -self.z;
         RGB { x, y, z }
+    }
+}
+
+impl Div<Vec3> for RGB{
+    type Output = RGB;
+    fn div(self, rhs: Vec3) -> Self::Output {
+       Self{ x:self.x/rhs.x,
+             y:self.y/rhs.y,
+             z:self.z/rhs.z}
+
+    }
+}
+
+impl Mul<Vec3> for RGB{
+    type Output = RGB;
+    fn mul(self, rhs: Vec3) -> Self::Output {
+       Self{ x:self.x*rhs.x,
+             y:self.y*rhs.y,
+             z:self.z*rhs.z}
+
+    }
+}
+
+impl From<Vec3> for RGB{
+    fn from(value: Vec3) -> Self {
+        Self { x:value.x, y: value.y, z: value.z }
+    }
+}
+impl From<RGB> for Vec3{
+    fn from(value: RGB) -> Self {
+        Vec3::new(value.x, value.y, value.z)
     }
 }

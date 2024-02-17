@@ -5,6 +5,7 @@ use crate::pbrt_core::load::{FactoryType, LoadSceneFactory};
 
 pub mod pbrt_core;
 
+#[cfg(test)]
 mod test;
 
 pub fn main() {

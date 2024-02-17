@@ -138,7 +138,7 @@ pub fn transform_interaction(transform: Mat4, inter: &mut SurfaceInteraction<'_>
     inter.common = common;
     inter.shading = shading;
 }
-fn transform_common(transform: Mat4, common: InteractionCommon) -> InteractionCommon {
+pub fn transform_common(transform: Mat4, common: InteractionCommon) -> InteractionCommon {
     let p = transform.transform_point3(common.p);
     let n = transform
         .inverse()
@@ -154,7 +154,7 @@ fn transform_common(transform: Mat4, common: InteractionCommon) -> InteractionCo
         uv: common.uv,
     }
 }
-fn transform_shading(transform: Mat4, shading: Shading) -> Shading {
+pub fn transform_shading(transform: Mat4, shading: Shading) -> Shading {
     let dpdu = transform.transform_vector3(shading.dpdu);
     let dpdv = transform.transform_vector3(shading.dpdv);
     let dndu = transform.transform_vector3(shading.dndu);

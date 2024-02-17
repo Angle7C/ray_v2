@@ -22,6 +22,9 @@ pub mod texture;
 //积分器
 pub mod integrator;
 
+//次表面散射
+pub mod bssdf;
+
 pub mod load;
 
 pub mod light;

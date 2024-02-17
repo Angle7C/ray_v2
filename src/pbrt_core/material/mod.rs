@@ -5,7 +5,7 @@ use glam::{Vec2, Vec3};
 
 use super::{
     bxdf::{BxDF, TransportMode},
-    tool::SurfaceInteraction,
+    tool::{color::Color, SurfaceInteraction},
 };
 
 pub mod disney;
@@ -81,7 +81,7 @@ impl BSDF {
         };
         *pdf /= bxdfs.len() as f32;
         if bxdf.get_type() & BxDFType::Specular as u32 == 0 {
-            f = Vec3::ZERO;
+            f = Color::ZERO;
             let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
             for item in bxdfs.iter() {
                 if item.match_type(flag)
@@ -92,7 +92,7 @@ impl BSDF {
                 }
             }
         }
-        f
+        f.into()
     }
     pub fn new(si: &SurfaceInteraction, eta: f32) -> Self {
         let ss = si.shading.dpdu.normalize();
@@ -133,16 +133,16 @@ impl BSDF {
         let wi: Vec3 = self.world_to_local(*w_in);
         let wo = self.world_to_local(*w_out);
         let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
-        let mut f = Vec3::ZERO;
+        let mut f = Color::ZERO;
         for bxdf in &self.bxdfs {
             if bxdf.match_type(flag)
           //      && ((reflect && bxdf.match_type(BxDFType::Reflection as u32))
           //          || (!reflect && bxdf.match_type(BxDFType::Transmission as u32)))
             {
-                f += bxdf.f(&wo, &wi);
+                f = f + (bxdf.f(&wo, &wi));
             }
         }
-        f
+        f.into()
     }
     pub fn num_components(&self, flag: u32) -> u32 {
         let mut num = 0;

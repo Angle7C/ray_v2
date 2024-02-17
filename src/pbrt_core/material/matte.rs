@@ -35,7 +35,7 @@ impl Material for Matte {
             .clamp(Vec3::ZERO, Vec3::splat(f32::INFINITY));
         suface.bsdf = Some(BSDF::new(suface, 1.0));
         if let Some(bsdf) = &mut suface.bsdf {
-            if r != Vec3::ZERO&&self.sigma==0.0 {
+            if r.abs_diff_eq(0.0, f32::EPSILON)&&self.sigma==0.0 {
                 bsdf.bxdfs
                     .push(BxDF::LambertianReflection(LambertianReflection::new(r)))
             }else{

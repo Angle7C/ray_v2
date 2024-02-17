@@ -5,6 +5,7 @@ use std::sync::Arc;
 use crate::pbrt_core::light::LightAble;
 use crate::pbrt_core::primitive::Primitive;
 use crate::pbrt_core::texture::Texture;
+use crate::pbrt_core::tool::color::Color;
 use crate::pbrt_core::tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction, Visibility};
 
 #[derive(Debug)]
@@ -13,7 +14,7 @@ pub struct InfiniteLight {
     center: Vec3,
     color: Arc<dyn Texture>,
     obj_to_world: Mat4,
-    lemit: Vec3,
+    emit: Vec3,
     index:usize
 }
 
@@ -23,7 +24,7 @@ impl InfiniteLight {
         center: Vec3,
         color: Arc<dyn Texture>,
         obj_to_world: Mat4,
-        lemit: Vec3,
+        emit: Vec3,
         index:usize
     ) -> Self {
         Self {
@@ -31,60 +32,35 @@ impl InfiniteLight {
             color,
             center,
             obj_to_world,
-            lemit,
+            emit,
             index
         }
     }
 }
 
-impl Primitive for InfiniteLight {
-    fn world_bound(&self) -> Bound<3> {
-        let max = self.center + Vec3::splat(self.r);
-        let min = self.center - Vec3::splat(self.r);
-        Bound::<3>::new(min, max)
-    }
-    fn get_light(&self) -> Option<&dyn LightAble> {
-        Some(self)
-    }
-    fn interact(&self, _ray: RayDiff) -> Option<SurfaceInteraction> {
-        None
-        // let mut interaction = SurfaceInteraction::default();
-        // interaction.light=self.get_light();
-        // interaction.common.normal=-ray.o.dir+Vec3::ONE*0.002;
-        // interaction.common.time=f32::MAX;
-        // Some(interaction)
-    }
-    fn hit_p(&self,_ray:&RayDiff)->bool {
-        false
-    }
-}
 
 impl LightAble for InfiniteLight {
-    fn sample_li(
-        &self,
-        surface_common: &InteractionCommon,
-        light_common: &mut InteractionCommon,
-        u: Vec2,
-        wi: &mut Vec3,
-        pdf: &mut f32,
-        vis: &mut Visibility,
-    ) -> Vec3 {
-        let phi=u.x*2.0*PI;
-        let theta=u.y*PI;
-        let (sin_t, cos_t) = theta.sin_cos();
-        let (sin_phi, cos_phi) = phi.sin_cos();
-        *wi=Vec3::new(sin_t*cos_phi, sin_t*sin_phi, cos_t);
-        let p=surface_common.p+*wi*self.r*2.0;
-        *light_common=InteractionCommon::new(*wi, p, -*wi, 0.01, u);
-        *vis = Visibility {
-            a: *light_common,
-            b: *surface_common,
-        };
-        *pdf = 1.0;
-        self.color.evaluate(light_common)*self.lemit
+    fn sample_li(&self,surface:&InteractionCommon,
+            light_face:&mut InteractionCommon,
+            shape:Option<&dyn crate::pbrt_core::primitive::shape::ShapeAble>,
+            u:Vec2,
+            wi:&mut Vec3,pdf:&mut f32,
+            vis:&mut Visibility)->crate::pbrt_core::tool::color::Color {
+                let phi=u.x*2.0*PI;
+                let theta=u.y*PI;
+                let (sin_t, cos_t) = theta.sin_cos();
+                let (sin_phi, cos_phi) = phi.sin_cos();
+                *wi=Vec3::new(sin_t*cos_phi, sin_t*sin_phi, cos_t);
+                let p=surface.p+*wi*self.r*2.0;
+                *light_face=InteractionCommon::new(*wi, p, -*wi, 0.01, u);
+                *vis = Visibility {
+                    a: *light_face,
+                    b: *surface,
+                };
+                *pdf = 1.0;
+                self.color.evaluate(light_face)*self.emit
     }
-
-    fn pdf_li(&self, _surface: &SurfaceInteraction<'_>, _w_in: &Vec3) -> f32 {
+    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3)->f32 {
         1.0
     }
 
@@ -104,7 +80,7 @@ impl LightAble for InfiniteLight {
         self.color.evaluate(&common)
     }
 
-    fn le(&self, ray: &RayDiff) -> Vec3 {
+    fn le(&self, ray: &RayDiff) -> Color {
         let w = self.obj_to_world.inverse().transform_vector3(ray.o.dir).normalize();
         let mut phi = (w.y).atan2(w.x);
         //uv计算
@@ -117,7 +93,7 @@ impl LightAble for InfiniteLight {
         let uv = Vec2::new(u, v);
         let mut common = InteractionCommon::default();
         common.uv = uv;
-        self.color.evaluate(&common) * self.lemit
+        self.color.evaluate(&common) * self.emit
         //dpdu,dpdv计算
     }
 
@@ -125,11 +101,7 @@ impl LightAble for InfiniteLight {
         super::LightType::Infinite
     }
 
-    fn get_n_sample(&self) -> usize {
-        32
+    fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32) {
+        todo!()
     }
-    fn get_index(&self)->usize {
-        self.index   
-    }
-
 }
