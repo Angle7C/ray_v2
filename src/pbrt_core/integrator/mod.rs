@@ -12,7 +12,7 @@ use std::{
 };
 
 use crate::pbrt_core::bxdf::BxDFType;
-use crate::pbrt_core::light::{Light, LightAble, LightType};
+use crate::pbrt_core::light::{LightAble, LightType};
 use crate::pbrt_core::tool::tile::merage_tile;
 use crate::pbrt_core::tool::{InteractionCommon, SurfaceInteraction, Visibility};
 
@@ -20,7 +20,7 @@ use self::{direct::DirectIntegrator, path::PathIntegrator};
 
 use super::{
     camera::{Camera, CameraSample},
-    primitive::{shape::{self, ShapeAble}, Primitive},
+    primitive::{shape::{ShapeAble}, Primitive},
     sampler::Sampler,
     tool::{color::Color, film::Film, sence::Scene, tile::Tile, Ray, RayDiff},
 };
@@ -218,11 +218,11 @@ pub fn pbr() -> (MultiProgress, ProgressStyle) {
 }
 
 pub fn uniform_sample_all_light(
-    common: &SurfaceInteraction,
-    sence: &Scene,
-    mut sampler: Sampler,
-    n_light_sample: Vec<usize>,
-    handle_media: bool,
+    _common: &SurfaceInteraction,
+    _sence: &Scene,
+    _sampler: Sampler,
+    _n_light_sample: Vec<usize>,
+    _handle_media: bool,
 ) -> Color {
    todo!()
 }
@@ -332,7 +332,7 @@ pub fn estimate_direct(
             sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
             if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
                 let weight = if !sampled_specular {
-                    let light_pdf = light.pdf_li(&inter.common, &wi);
+                    let light_pdf = light.pdf_li(&inter.common, &wi,shape);
                     if light_pdf.abs() < f32::EPSILON {
                         return ld;
                     }

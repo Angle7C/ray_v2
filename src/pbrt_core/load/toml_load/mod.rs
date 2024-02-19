@@ -13,7 +13,7 @@ use crate::pbrt_core::load::toml_load::toml_meta::primitive_toml::PrimitiveToml;
 use crate::pbrt_core::load::toml_load::toml_meta::texture_toml::TextureToml;
 use crate::pbrt_core::material::Material;
 use crate::pbrt_core::primitive::shape::ShapeAble;
-use crate::pbrt_core::primitive::{GeometricPrimitive, Primitive};
+use crate::pbrt_core::primitive::{GeometricPrimitive};
 use crate::pbrt_core::texture::Texture;
 use crate::pbrt_core::tool::build::Context;
 use crate::pbrt_core::tool::sence::Scene;

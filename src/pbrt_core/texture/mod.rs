@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use glam::Vec3;
+
 
 
 use super::tool::{color::Color, InteractionCommon};

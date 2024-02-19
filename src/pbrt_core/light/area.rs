@@ -1,13 +1,15 @@
-use std::sync::Arc;
+
 use glam::{Vec2, Vec3};
-use log::info;
+
+
 
 use crate::pbrt_core::light::LightType;
 use crate::pbrt_core::primitive::shape::ShapeAble;
 use crate::pbrt_core::tool::color::Color;
+
 use crate::pbrt_core::{
     primitive::{Primitive},
-    tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction, Visibility},
+    tool::{InteractionCommon, RayDiff, Visibility},
 };
 
 use super::LightAble;
@@ -58,17 +60,28 @@ impl LightAble for DiffuseAreaLight {
             Color::ZERO
         }
     }
-    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3)->f32 {
-        todo!()
+    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3,shape: Option<&dyn ShapeAble>,)->f32 {
+        shape
+        .and_then(|item|{
+            if item.intersect_p(&face.spawn_ray(w_in)) {
+                Some(1.0/item.area())
+            }else{None}
+       }).unwrap_or(0.0)
     }
     fn get_type(&self) -> LightType {
         LightType::Area
     }
-    fn le(&self, ray: &RayDiff) -> Color {
-        unimplemented!()
+    fn le(&self, ray: &RayDiff,shape:Option<&dyn ShapeAble>) -> Color {
+        let dir = shape
+                    .and_then(|item|Some(item.obj_to_world().inverse().transform_vector3(ray.o.dir).normalize()));
+        match dir{
+            Some(value) if value.dot(Vec3::Z) >0.0 => self.emit.into(),
+            _ =>Color::ZERO,
+        }
+
     }
 
-    fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32) {
+    fn pdf_le(&self,_ray:&RayDiff,_normal:Vec3,_pdf_pos:&mut f32,_pdf_dir:&mut f32) {
         todo!()
     }
 
@@ -76,7 +89,7 @@ impl LightAble for DiffuseAreaLight {
         Color::ONE
     }
 
-    fn sample_le(&self,u1:Vec2,u2:Vec2,t:f32)->Option<bvh::ray::Ray>{
+    fn sample_le(&self,_u1:Vec2,_u2:Vec2,_t:f32)->Option<bvh::ray::Ray>{
         None
     }
 }

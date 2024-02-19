@@ -1,10 +1,10 @@
-use std::{default, f32::consts::PI, fmt::Debug};
+use std::{f32::consts::PI, fmt::Debug};
 
 use glam::{Vec2, Vec3};
 use log4rs::encode::Color;
-use rand::distributions::Slice;
 
-use super::{sampler::{self, Sampler}, tool::RayDiff};
+
+use super::{sampler::{Sampler}, tool::RayDiff};
 
 // pub mod base_phase;
 pub mod henyey_phase;
@@ -19,7 +19,7 @@ pub mod homogeneous_medium;
 const INV_4_PI:f32=1.0/PI;
 pub trait PhaseFunction {
     //计算
-   fn p(&self,wo:&Vec3,wi:Vec3)->f32{
+   fn p(&self,_wo:&Vec3,_wi:Vec3)->f32{
         1.0/(4.0*PI)
    }
    //采样计算

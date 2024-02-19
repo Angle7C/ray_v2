@@ -1,7 +1,7 @@
 
 use glam::{Mat4, Vec2, Vec3, Vec3Swizzles};
 
-use crate::pbrt_core::tool::{Bound, InteractionCommon, SurfaceInteraction};
+use crate::pbrt_core::{tool::{func::transform_common, Bound, InteractionCommon, Shading}};
 
 use super::ShapeAble;
 #[derive(Debug)]
@@ -52,16 +52,22 @@ impl ShapeAble for Rectangle {
     fn intersect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<InteractionCommon> {
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
         let o=self.obj_to_world.inverse().transform_point3(ray.o.origin);
-        let t = o.z/dir.z;
-        let p=o+t*dir;
+        let t = -o.z/dir.z;
+        let p= o+t*dir;
         if p.x<0.0||p.x>1.0||p.y<0.0||p.z>1.0{
             None
         }else{
             let mut common = InteractionCommon::default();
             common.p=p;
             common.normal=Vec3::Z;
+            common.w0=dir;
             common.time=t;
             common.uv=p.xy();
+            common.shading=Shading::default();
+            common.shading.n=Vec3::Z;
+            common.shading.dpdu=Vec3::X;
+            common.shading.dpdv=Vec3::Y;
+            common=transform_common(self.obj_to_world, common);
             Some(common)
         }
     }
@@ -74,11 +80,14 @@ impl ShapeAble for Rectangle {
         !(p.x<0.0||p.x>1.0||p.y<0.0||p.z>1.0)
     }
 
-    fn sample_with_ref_point(&self,common:&InteractionCommon,u:Vec2,pdf:&mut f32)->InteractionCommon {
+    fn sample_with_ref_point(&self,_common:&InteractionCommon,_u:Vec2,_pdf:&mut f32)->InteractionCommon {
         todo!()
     }
 
-    fn pdf_with_ref_point(&self,common:&InteractionCommon,w_in:&Vec3)->f32 {
+    fn pdf_with_ref_point(&self,_common:&InteractionCommon,_w_in:&Vec3)->f32 {
         todo!()
+    }
+    fn obj_to_world(&self)->Mat4 {
+        self.obj_to_world
     }
 }

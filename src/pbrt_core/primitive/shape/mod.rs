@@ -1,8 +1,8 @@
 use std::fmt::Debug;
 
-use glam::{Vec2, Vec3};
+use glam::{Mat4, Vec2, Vec3};
 
-use crate::pbrt_core::tool::{Bound, InteractionCommon, RayDiff, Shading, SurfaceInteraction};
+use crate::pbrt_core::tool::{Bound, InteractionCommon, RayDiff};
 
 pub mod rectangle;
 pub mod sphere;
@@ -28,8 +28,6 @@ pub trait ShapeAble:Debug {
     fn sample_with_ref_point(&self,common:&InteractionCommon,u:Vec2,pdf:&mut f32)->InteractionCommon;
     //对该点采样的PDF值
     fn pdf_with_ref_point(&self,common:&InteractionCommon,w_in:&Vec3)->f32;
-    //计算shading
-    fn computer_shadering(&self,_common:&InteractionCommon)->Shading{
-        Shading::default()
-    }
+    
+    fn obj_to_world(&self)->Mat4;
 }

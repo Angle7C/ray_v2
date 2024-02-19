@@ -53,7 +53,7 @@ impl Scene {
         }
         let mut ans = Color::default();
         for env_light in &self.env {
-                ans+=env_light.le(ray);
+                ans+=env_light.le(ray,None);
         }
         ans
     }

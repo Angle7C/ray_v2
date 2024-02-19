@@ -3,12 +3,9 @@ use std::f32::consts::PI;
 use glam::{Mat4, Vec2, Vec3};
 
 use crate::pbrt_core::{
-    material::Material,
-    primitive::Primitive,
-    sampler::concentric_sample_disk,
     tool::{
         func::{self, compute_d2, lerp, quadratic},
-        Bound, InteractionCommon, Ray, Shading, SurfaceInteraction,
+        Bound, InteractionCommon, Ray, Shading,
     },
 };
 
@@ -33,7 +30,7 @@ impl Cylinder {
             obj_to_world,
             }
     }
-    pub fn sample_interaction(&self, common: &mut InteractionCommon, smaple_point: Vec2,pdf:&mut f32) {
+    pub fn sample_interaction(&self, common: &mut InteractionCommon, smaple_point: Vec2,_pdf:&mut f32) {
         let z = lerp(smaple_point.x, 0.0, self.height);
         let pi = smaple_point.y * 2.0 * PI;
         let mut p_obj = Vec3::new(self.radius * pi.cos(), self.radius * pi.sin(), z);
@@ -84,8 +81,16 @@ impl ShapeAble for Cylinder {
         let uv = Vec2::new(u, v);
         let dpdu = Vec3::new(p.y, p.x, 0.0);
         let dpdv = Vec3::new(0.0, 0.0, 1.0);
-        let n=dpdu.cross(dpdv);
-        let mut common = InteractionCommon::new(-dir, p, n, t, uv);
+        let _n=dpdu.cross(dpdv);
+        let d2pduu = -4.0 * PI * PI *p.truncate().extend(0.0);
+        let d2pduv = Vec3::ZERO;
+        let d2pdvv = Vec3::ZERO;
+
+        let (n, dndu, dndv) = compute_d2(dpdu, dpdv, d2pduu, d2pduv, d2pdvv);
+        let shading = Shading::new(dpdu, dpdv, dndu, dndv);
+        let mut common = InteractionCommon::new(-dir, p, n, t, uv,shading);
+
+
         // let mut item = SurfaceInteraction::new(common, shading, None, None);
         common = func::transform_common(self.obj_to_world, common);
         Some(common)
@@ -123,29 +128,18 @@ impl ShapeAble for Cylinder {
         Bound::<3>::new(min, max)
     }
 
-    fn sample(&self,u:Vec2,pdf:&mut f32)->InteractionCommon {
+    fn sample(&self,_u:Vec2,_pdf:&mut f32)->InteractionCommon {
         todo!()
     }
 
-    fn sample_with_ref_point(&self,common:&InteractionCommon,u:Vec2,pdf:&mut f32)->InteractionCommon {
+    fn sample_with_ref_point(&self,_common:&InteractionCommon,_u:Vec2,_pdf:&mut f32)->InteractionCommon {
         todo!()
     }
 
-    fn computer_shadering(&self,common:&InteractionCommon)->Shading {
-       let  common = func::transform_common(self.obj_to_world.inverse(), *common);
-        let dpdu = Vec3::new(common.p.y, common.p.x, 0.0);
-        let dpdv = Vec3::new(0.0, 0.0, 1.0);
-
-        let d2pduu = -4.0 * PI * PI *common.p.truncate().extend(0.0);
-        let d2pduv = Vec3::ZERO;
-        let d2pdvv = Vec3::ZERO;
-
-        let (n, dndu, dndv) = compute_d2(dpdu, dpdv, d2pduu, d2pduv, d2pdvv);
-        let shading = Shading::new(dpdu, dpdv, dndu, dndv);
-        func::transform_shading(self.obj_to_world,shading)
-    }
-
-    fn pdf_with_ref_point(&self,common:&InteractionCommon,w_in:&Vec3)->f32 {
+    fn pdf_with_ref_point(&self,_common:&InteractionCommon,_w_in:&Vec3)->f32 {
         todo!()
+    }
+    fn obj_to_world(&self)->Mat4 {
+        self.obj_to_world
     }
 }

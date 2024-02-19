@@ -6,8 +6,8 @@ transform = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, -3.0, 0.
 
 [[shape]]
 mode = "Sphere"
-transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 1.2] }
-r=1.0
+transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 1.0] }
+r=0.8
 
 [[shape]]
 mode = "Sphere"
@@ -18,7 +18,7 @@ r=2000.0
 mode = "Infinite"
 world_center = [0.0, 0.0, 0.0]
 world_radius = 1000.0
-emit = 1000.0
+emit = 1.0
 skybox = 1
 
 [[material]]
@@ -60,7 +60,7 @@ material_index=0
 [[primitive]]
 mode = "GeometricPrimitive"
 shape_index=1
-material_index=0
+material_index=1
 
 [[primitive]]
 mode = "GeometricPrimitive"

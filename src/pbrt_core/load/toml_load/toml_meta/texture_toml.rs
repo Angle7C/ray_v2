@@ -1,6 +1,6 @@
 use std::path::Path;
 use std::sync::Arc;
-use glam::Vec3;
+
 use image::io::Reader as ImageReader;
 use serde::{Deserialize, Serialize};
 use crate::pbrt_core::texture::constant::ConstantTexture;

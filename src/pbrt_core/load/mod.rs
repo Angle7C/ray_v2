@@ -1,5 +1,5 @@
 use crate::pbrt_core::tool::build::Context;
-use crate::pbrt_core::tool::sence::Scene;
+
 
 use self::toml_load::TomlLoader;
 

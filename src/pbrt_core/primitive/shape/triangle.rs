@@ -5,10 +5,8 @@ use glam::{Vec2, Vec3,Mat4,
 };
 
 use crate::pbrt_core::{
-    bxdf::TransportMode,
-    material::Material,
-    primitive::{mesh::Mesh, Primitive},
-    tool::{Bound, InteractionCommon, RayDiff, Shading, SurfaceInteraction},
+    primitive::{mesh::Mesh},
+    tool::{Bound, InteractionCommon, RayDiff, Shading},
 };
 
 use super::ShapeAble;
@@ -165,20 +163,22 @@ impl ShapeAble for Triangle {
             unimplemented!();
         }
     }
-
+    fn obj_to_world(&self)->Mat4 {
+        self.obj_to_world
+    }
 
     fn intersect_p(&self, ray: &RayDiff) -> bool {
         let p0 = self.point(0);
         let p1 = self.point(1);
         let p2 = self.point(2);
 
-        let n0 = self.normal(0);
-        let n1 = self.normal(1);
-        let n2 = self.normal(2);
+        let _n0 = self.normal(0);
+        let _n1 = self.normal(1);
+        let _n2 = self.normal(2);
 
-        let uv0 = self.uv(0);
-        let uv1 = self.uv(1);
-        let uv2 = self.uv(2);
+        let _uv0 = self.uv(0);
+        let _uv1 = self.uv(1);
+        let _uv2 = self.uv(2);
 
         let e1 = p1 - p0;
         let e2 = p2 - p0;
@@ -199,15 +199,15 @@ impl ShapeAble for Triangle {
         todo!()
     }
 
-    fn sample(&self,u:Vec2,pdf:&mut f32)->crate::pbrt_core::tool::InteractionCommon {
+    fn sample(&self,_u:Vec2,_pdf:&mut f32)->crate::pbrt_core::tool::InteractionCommon {
         todo!()
     }
 
-    fn sample_with_ref_point(&self,common:&crate::pbrt_core::tool::InteractionCommon,u:Vec2,pdf:&mut f32)->crate::pbrt_core::tool::InteractionCommon {
+    fn sample_with_ref_point(&self,_common:&crate::pbrt_core::tool::InteractionCommon,_u:Vec2,_pdf:&mut f32)->crate::pbrt_core::tool::InteractionCommon {
         todo!()
     }
 
-    fn pdf_with_ref_point(&self,common:&crate::pbrt_core::tool::InteractionCommon,w_in:&Vec3)->f32 {
+    fn pdf_with_ref_point(&self,_common:&crate::pbrt_core::tool::InteractionCommon,_w_in:&Vec3)->f32 {
         todo!()
     }
 }

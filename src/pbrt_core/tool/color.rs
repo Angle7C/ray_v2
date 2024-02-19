@@ -2,7 +2,7 @@
 use std::ops::*;
 
 use glam::Vec3;
-use rand::distributions::Slice;
+
 use serde::{Deserialize, Serialize};
 
 pub type Color = RGB;

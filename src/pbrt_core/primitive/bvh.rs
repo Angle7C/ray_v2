@@ -1,5 +1,5 @@
 
-use std::sync::Arc;
+
 
 use crate::pbrt_core::tool::SurfaceInteraction;
 

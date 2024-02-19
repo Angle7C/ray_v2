@@ -1,9 +1,9 @@
 use std::{
-    fmt::Debug, ops::{BitAnd, BitOr}, sync::Arc, todo
+    fmt::Debug, ops::{BitAnd, BitOr}, todo
 };
 
 use crate::pbrt_core::tool::color::Color;
-use crate::pbrt_core::tool::{Bound, RayDiff};
+use crate::pbrt_core::tool::{RayDiff};
 use bvh::ray::Ray;
 use glam::{Vec2, Vec3};
 use crate::pbrt_core::light::area::DiffuseAreaLight;
@@ -32,11 +32,11 @@ pub trait LightAble {
         Color::ONE
     }
     //计算击中光源的radince 
-    fn le(&self,ray:&RayDiff)->Color;
+    fn le(&self,ray:&RayDiff,shape:Option<&dyn ShapeAble>)->Color;
     //计算从face上完w_in方向进行采样的PDF
-    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3)->f32;
+    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3,shape: Option<&dyn ShapeAble>,)->f32;
     //进行radince采样
-    fn sample_le(&self,u1:Vec2,u2:Vec2,t:f32)->Option<Ray>{
+    fn sample_le(&self,_u1:Vec2,_u2:Vec2,_t:f32)->Option<Ray>{
         None
     }
     //获取光源类型
@@ -65,11 +65,11 @@ impl LightAble for Light {
             u:Vec2,
             wi:&mut Vec3,pdf:&mut f32,
             vis:&mut Visibility)->Color {
-                match &self {
-                    Self::AreaLight(area) => area.sample_li(surface,light_face,shape,u,wi,pdf,vis),
-                    Self::Infinite(inf)=>inf.sample_li(surface,light_face,shape,u,wi,pdf,vis),
-                    Self::PointLight(point)=>point.sample_li(surface,light_face,shape,u,wi,pdf,vis),
-                }
+        match &self {
+            Self::AreaLight(area) => area.sample_li(surface,light_face,shape,u,wi,pdf,vis),
+            Self::Infinite(inf)=>inf.sample_li(surface,light_face,shape,u,wi,pdf,vis),
+            Self::PointLight(point)=>point.sample_li(surface,light_face,shape,u,wi,pdf,vis),
+        }
     }
     fn power(&self)->Color {
         match &self {
@@ -79,19 +79,19 @@ impl LightAble for Light {
         }
     }
 
-    fn le(&self,ray:&RayDiff)->Color {
+    fn le(&self,ray:&RayDiff,shape:Option<&dyn ShapeAble>)->Color {
         match &self {
-            Self::AreaLight(area) => area.le(ray),
-            Self::Infinite(inf)=>inf.le(ray),
-            Self::PointLight(point)=>point.le(ray),
+            Self::AreaLight(area) => area.le(ray,shape),
+            Self::Infinite(inf)=>inf.le(ray,shape),
+            Self::PointLight(point)=>point.le(ray,shape),
         }
     }
 
-    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3)->f32 {
+    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3,shape: Option<&dyn ShapeAble>,)->f32 {
         match &self {
-            Self::AreaLight(area) => area.pdf_li(face,w_in),
-            Self::Infinite(inf)=>inf.pdf_li(face,w_in),
-            Self::PointLight(point)=>point.pdf_li(face,w_in),
+            Self::AreaLight(area) => area.pdf_li(face,w_in,shape),
+            Self::Infinite(inf)=>inf.pdf_li(face,w_in,shape),
+            Self::PointLight(point)=>point.pdf_li(face,w_in,shape),
         }
     }
 
@@ -111,11 +111,11 @@ impl LightAble for Light {
         }
     }
 
-    fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32) {
+    fn pdf_le(&self,_ray:&RayDiff,_normal:Vec3,_pdf_pos:&mut f32,_pdf_dir:&mut f32) {
         todo!()
     }
 
-    fn li(&self,light_face:&InteractionCommon,wi:&Vec3)->Color {
+    fn li(&self,_light_face:&InteractionCommon,_wi:&Vec3)->Color {
         todo!()
     }
 }

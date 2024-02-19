@@ -3,7 +3,7 @@ use std::f32::consts::*;
 use glam::f32::Vec3;
 
 
-use crate::pbrt_core::tool::{color::{Color, RGB}, func::same_hemisphere};
+use crate::pbrt_core::tool::{color::{Color}, func::same_hemisphere};
 
 use super::{
     frensnel::Fresnel,

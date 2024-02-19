@@ -1,14 +1,8 @@
 use std::sync::Arc;
 
-use glam::Vec3;
+
 
 use crate::pbrt_core::{
-    bxdf::{
-        frensnel::{ConductorFresnel, Fresnel},
-        microfacet_distribution::{roughness_to_alpha, TrowbridgeReitzDistribution},
-        reflection::MicrofacetReflection,
-    },
-    material::BSDF,
     texture::Texture,
 };
 
@@ -46,7 +40,7 @@ impl<'a> MetalMaterial<'a> {
 impl<'a> Material for MetalMaterial<'a> {
     fn compute_scattering_functions(
         &self,
-        surface: &mut crate::pbrt_core::tool::SurfaceInteraction,
+        _surface: &mut crate::pbrt_core::tool::SurfaceInteraction,
         _mode: crate::pbrt_core::bxdf::TransportMode,
     ) {
         // let mut bsdf = BSDF::new(surface, 1.0);

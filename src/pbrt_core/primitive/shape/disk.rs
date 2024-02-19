@@ -3,8 +3,7 @@ use std::f32::consts::PI;
 use glam::{Mat4, Vec2, Vec3};
 
 use crate::pbrt_core::{
-    primitive::Primitive,
-    tool::{func, Bound, InteractionCommon, Ray, SurfaceInteraction}, sampler::concentric_sample_disk,
+    tool::{func, Bound, InteractionCommon, Ray}, sampler::concentric_sample_disk,
 };
 
 use super::ShapeAble;
@@ -40,7 +39,7 @@ impl ShapeAble for Disk {
     }
     fn world_bound(&self) -> crate::pbrt_core::tool::Bound<3> {
         let min = Vec3::new(-self.radius, -self.radius, self.height);
-        let max = Vec3::new(self.radius, self.radius, self.height);
+        let _max = Vec3::new(self.radius, self.radius, self.height);
         let min = self.obj_to_world.transform_point3(min);
         let max = self.obj_to_world.transform_point3(min);
         Bound::<3>::new(min, max)
@@ -88,7 +87,7 @@ impl ShapeAble for Disk {
 
             let shading = crate::pbrt_core::tool::Shading::new(dpdu, dpdv, dndu, dndv);
             let n = Vec3::Z;
-            let mut common = InteractionCommon::new(-dir, p, n, t, uv);
+            let mut common = InteractionCommon::new(-dir, p, n, t, uv,shading);
             // let mut item = SurfaceInteraction::new(common, shading, Some(self), None);
             common = func::transform_common(self.obj_to_world,common);
             Some(common)
@@ -107,11 +106,14 @@ impl ShapeAble for Disk {
         common
     }
 
-    fn sample_with_ref_point(&self,common:&InteractionCommon,u:Vec2,pdf:&mut f32)->InteractionCommon {
+    fn sample_with_ref_point(&self,_common:&InteractionCommon,_u:Vec2,_pdf:&mut f32)->InteractionCommon {
         todo!()
     }
 
-    fn pdf_with_ref_point(&self,common:&InteractionCommon,w_in:&Vec3)->f32 {
+    fn pdf_with_ref_point(&self,_common:&InteractionCommon,_w_in:&Vec3)->f32 {
         todo!()
+    }
+    fn obj_to_world(&self)->Mat4 {
+        self.obj_to_world
     }
 }

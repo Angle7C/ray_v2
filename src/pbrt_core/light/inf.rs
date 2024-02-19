@@ -3,10 +3,11 @@ use std::f32::consts::PI;
 use std::sync::Arc;
 
 use crate::pbrt_core::light::LightAble;
-use crate::pbrt_core::primitive::Primitive;
+use crate::pbrt_core::primitive::shape::ShapeAble;
+
 use crate::pbrt_core::texture::Texture;
 use crate::pbrt_core::tool::color::Color;
-use crate::pbrt_core::tool::{Bound, InteractionCommon, RayDiff, SurfaceInteraction, Visibility};
+use crate::pbrt_core::tool::{InteractionCommon, RayDiff, Shading, Visibility};
 
 #[derive(Debug)]
 pub struct InfiniteLight {
@@ -42,7 +43,7 @@ impl InfiniteLight {
 impl LightAble for InfiniteLight {
     fn sample_li(&self,surface:&InteractionCommon,
             light_face:&mut InteractionCommon,
-            shape:Option<&dyn crate::pbrt_core::primitive::shape::ShapeAble>,
+            _shape:Option<&dyn crate::pbrt_core::primitive::shape::ShapeAble>,
             u:Vec2,
             wi:&mut Vec3,pdf:&mut f32,
             vis:&mut Visibility)->crate::pbrt_core::tool::color::Color {
@@ -52,7 +53,7 @@ impl LightAble for InfiniteLight {
                 let (sin_phi, cos_phi) = phi.sin_cos();
                 *wi=Vec3::new(sin_t*cos_phi, sin_t*sin_phi, cos_t);
                 let p=surface.p+*wi*self.r*2.0;
-                *light_face=InteractionCommon::new(*wi, p, -*wi, 0.01, u);
+                *light_face=InteractionCommon::new(*wi, p, -*wi, 0.01, u,Shading::default());
                 *vis = Visibility {
                     a: *light_face,
                     b: *surface,
@@ -60,7 +61,7 @@ impl LightAble for InfiniteLight {
                 *pdf = 1.0;
                 self.color.evaluate(light_face)*self.emit
     }
-    fn pdf_li(&self,face:&InteractionCommon,w_in:&Vec3)->f32 {
+    fn pdf_li(&self,_face:&InteractionCommon,_w_in:&Vec3,_shape: Option<&dyn ShapeAble>,)->f32 {
         1.0
     }
 
@@ -76,11 +77,11 @@ impl LightAble for InfiniteLight {
             self.obj_to_world
                 .transform_vector3(Vec3::new(sin_t * cos_phi, sin_t * sin_phi, cos_t));
         let hit_p = inter.p + w_in * 2.0 * self.r;
-        let common = InteractionCommon::new(*wi, hit_p, *wi, 01.0, Vec2::new(phi / 2.0 * PI, theta / PI));
+        let common = InteractionCommon::new(*wi, hit_p, *wi, 01.0, Vec2::new(phi / 2.0 * PI, theta / PI),Shading::default());
         self.color.evaluate(&common)
     }
 
-    fn le(&self, ray: &RayDiff) -> Color {
+    fn le(&self, ray: &RayDiff,_shape:Option<&dyn ShapeAble>) -> Color {
         let w = self.obj_to_world.inverse().transform_vector3(ray.o.dir).normalize();
         let mut phi = (w.y).atan2(w.x);
         //uv计算
@@ -101,7 +102,7 @@ impl LightAble for InfiniteLight {
         super::LightType::Infinite
     }
 
-    fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32) {
+    fn pdf_le(&self,_ray:&RayDiff,_normal:Vec3,_pdf_pos:&mut f32,_pdf_dir:&mut f32) {
         todo!()
     }
 }

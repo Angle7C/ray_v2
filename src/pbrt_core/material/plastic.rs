@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use glam::Vec3;
+
 use crate::pbrt_core::bxdf::BxDF;
 use crate::pbrt_core::bxdf::frensnel::{Fresnel, NoOPFresnel};
 use crate::pbrt_core::bxdf::reflection::LambertianReflection;

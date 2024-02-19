@@ -3,8 +3,8 @@
 use glam::{Vec2, Vec3};
 
 use crate::pbrt_core::{
-    primitive::Primitive,
-    tool::{Bound, InteractionCommon, Visibility, RayDiff},
+    primitive::{shape::ShapeAble},
+    tool::{InteractionCommon, RayDiff, Visibility},
 };
 use crate::pbrt_core::light::LightType;
 use crate::pbrt_core::tool::color::Color;
@@ -31,18 +31,18 @@ impl LightAble for Point {
     }
 
     #[inline]
-    fn le(&self, _ray: &RayDiff) -> Color {
+    fn le(&self, _ray: &RayDiff,_shape:Option<&dyn ShapeAble>) -> Color {
         Color::ZERO
     }
     #[inline]
-    fn pdf_li(&self, _surface: &InteractionCommon, wi: &Vec3) -> f32 {
+    fn pdf_li(&self, _surface: &InteractionCommon, _wi: &Vec3,_shape: Option<&dyn ShapeAble>,) -> f32 {
         0.0
     }
     #[inline]
     fn sample_li(&self,surface:&InteractionCommon,
             light_face:&mut InteractionCommon,
             _shape:Option<&dyn crate::pbrt_core::primitive::shape::ShapeAble>,
-            u:Vec2,
+            _u:Vec2,
             wi:&mut Vec3,pdf:&mut f32,
             vis:&mut Visibility)->Color {
         *wi = (surface.p - self.p).normalize();
@@ -66,7 +66,7 @@ impl LightAble for Point {
         (self.lemit*(inter.p-self.p).length_recip()).into()
     }
 
-    fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32) {
+    fn pdf_le(&self,_ray:&RayDiff,_normal:Vec3,_pdf_pos:&mut f32,_pdf_dir:&mut f32) {
         todo!()
     }
 }

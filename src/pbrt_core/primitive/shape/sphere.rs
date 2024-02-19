@@ -1,8 +1,8 @@
 use std::f32::consts::PI;
-use std::sync::Arc;
+
 
 use glam::{Mat4, Vec2, Vec3};
-use crate::pbrt_core::tool::{func::{self, unifrom_sample_sphere}, Bound, InteractionCommon, Shading, SurfaceInteraction};
+use crate::pbrt_core::tool::{func::{self, unifrom_sample_sphere}, Bound, InteractionCommon, Shading};
 
 use super::ShapeAble;
 #[derive(Debug)]
@@ -68,22 +68,22 @@ impl ShapeAble for Sphere{
         let dpdu = 2.0 * PI * Vec3::new(-p.y, p.x, 0.0);
         let dpdv = PI * Vec3::new(p.z * cos_phi, p.z * sin_phi, -self.r * theta.sin());
         //dndv,dndv计算
-        // let d2pduu = -4.0 * PI * PI * p.truncate().extend(0.0);
-        // let d2pduv = -PI * p.z * 2.0 * PI * Vec3::new(-sin_phi, cos_phi, 0.0);
-        // let d2pdvv = -(PI * PI) * p;
+        let d2pduu = -4.0 * PI * PI * p.truncate().extend(0.0);
+        let d2pduv = -PI * p.z * 2.0 * PI * Vec3::new(-sin_phi, cos_phi, 0.0);
+        let d2pdvv = -(PI * PI) * p;
 
-        // let e = dpdu.dot(dpdu);
-        // let f = dpdu.dot(dpdv);
-        // let g = dpdv.dot(dpdv);
+        let e = dpdu.dot(dpdu);
+        let f = dpdu.dot(dpdv);
+        let g = dpdv.dot(dpdv);
         let n = dpdu.cross(dpdv).normalize();
-        // let ee = n.dot(d2pduu);
-        // let ff = n.dot(d2pduv);
-        // let gg = n.dot(d2pdvv);
-        // let inv_egf = 1.0 / (e * g - f * f);
-        // let dndu = (ff * f - ee * g) * inv_egf * dpdu + (ee * f - ff * e) * inv_egf * dpdv;
-        // let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
-        // let shading = Shading::new(dpdu, dpdv, dndu, dndv);
-        let common = InteractionCommon::new(-dir, p, n, t, uv);
+        let ee = n.dot(d2pduu);
+        let ff = n.dot(d2pduv);
+        let gg = n.dot(d2pdvv);
+        let inv_egf = 1.0 / (e * g - f * f);
+        let dndu = (ff * f - ee * g) * inv_egf * dpdu + (ee * f - ff * e) * inv_egf * dpdv;
+        let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
+        let shading = Shading::new(dpdu, dpdv, dndu, dndv);
+        let common = InteractionCommon::new(-dir, p, n, t, uv,shading);
         // let mut item = SurfaceInteraction::new(common, shading, Some(self), None);
         let common=func::transform_common(self.obj_to_world, common);
         Some(common)
@@ -125,11 +125,14 @@ impl ShapeAble for Sphere{
         common
     }
 
-    fn sample_with_ref_point(&self,common:&InteractionCommon,u:Vec2,pdf:&mut f32)->InteractionCommon {
+    fn sample_with_ref_point(&self,_common:&InteractionCommon,_u:Vec2,_pdf:&mut f32)->InteractionCommon {
         todo!()
     }
 
-    fn pdf_with_ref_point(&self,common:&InteractionCommon,w_in:&Vec3)->f32 {
+    fn pdf_with_ref_point(&self,_common:&InteractionCommon,_w_in:&Vec3)->f32 {
         todo!()
+    }
+    fn obj_to_world(&self)->Mat4 {
+        self.obj_to_world
     }
 }

@@ -172,16 +172,22 @@ pub struct InteractionCommon {
     pub normal: Vec3,
     pub time: f32,
     pub uv: Vec2,
+    pub shading: Shading,
 }
 impl InteractionCommon {
-    pub fn new(w0: Vec3, p: Vec3, normal: Vec3, time: f32, uv: Vec2) -> Self {
+    pub fn new(w0: Vec3, p: Vec3, normal: Vec3, time: f32, uv: Vec2,shading:Shading) -> Self {
         Self {
             w0,
             p,
             normal,
             time,
             uv,
+            shading
         }
+    }
+    pub fn spawn_ray(&self, wi: &Vec3) -> RayDiff {
+        let ray = Ray::new(self.p, *wi);
+        RayDiff::new(ray)
     }
 }
 #[derive(Default)]
@@ -226,12 +232,12 @@ impl<'a> SurfaceInteraction<'a> {
     }
     #[inline]
     pub fn spawn_ray(&self, wi: &Vec3) -> RayDiff {
-        let ray = Ray::new(self.common.p, *wi);
-        RayDiff::new(ray)
+        self.common.spawn_ray(wi)
+        // RayDiff::new(ray)
     }
     pub fn le(&self, ray: RayDiff) -> Color {
         if let Some(light) = self.light {
-            light.le(&ray)
+            light.le(&ray,self.shape)           
         } else {
             Color::ZERO
         }
@@ -241,7 +247,7 @@ impl<'a> SurfaceInteraction<'a> {
         self.le(ray)
     }
 }
-#[derive(Default,Clone, Copy)]
+#[derive(Default,Clone, Copy,Debug)]
 pub struct Shading {
     pub n: Vec3,
     pub dpdu: Vec3,

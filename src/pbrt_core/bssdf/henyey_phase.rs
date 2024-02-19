@@ -13,7 +13,7 @@ impl PhaseFunction for HenyeyGreenstein{
         phase_h_g(wo.dot(wi), self.g)
     }
 
-    fn sample_p(&self,wo:&glam::Vec3,wi:&mut glam::Vec3,u:glam::Vec2)->f32 {
+    fn sample_p(&self,_wo:&glam::Vec3,_wi:&mut glam::Vec3,_u:glam::Vec2)->f32 {
         todo!()
     }
 }
