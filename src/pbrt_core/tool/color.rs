@@ -112,6 +112,16 @@ impl Add<RGB> for RGB {
         Self { x, y, z }
     }
 }
+impl Add<Vec3> for RGB {
+    type Output = RGB;
+    fn add(self, rhs: Vec3) -> Self::Output {
+        let x = self.x + rhs.x;
+        let y = self.y + rhs.y;
+        let z = self.z + rhs.y;
+        Self { x, y, z }
+    }
+}
+
 impl AddAssign for RGB {
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;

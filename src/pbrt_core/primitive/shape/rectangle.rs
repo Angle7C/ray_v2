@@ -36,7 +36,7 @@ impl ShapeAble for Rectangle {
         //计算点
         common.p= self
         .obj_to_world
-        .transform_point3(u.extend(0.0));;
+        .transform_point3(u.extend(0.0));
         //计算法线
         common.normal = self
             .obj_to_world
@@ -54,7 +54,7 @@ impl ShapeAble for Rectangle {
         let o=self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let t = -o.z/dir.z;
         let p= o+t*dir;
-        if p.x<0.0||p.x>1.0||p.y<0.0||p.z>1.0{
+        if p.x<0.0||p.x>1.0||p.y<0.0||p.y>1.0{
             None
         }else{
             let mut common = InteractionCommon::default();
@@ -77,7 +77,7 @@ impl ShapeAble for Rectangle {
         let o=self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let t = o.z/dir.z;
         let p=o+t*dir;
-        !(p.x<0.0||p.x>1.0||p.y<0.0||p.z>1.0)
+        !(p.x<0.0||p.x>1.0||p.y<0.0||p.y>1.0)
     }
 
     fn sample_with_ref_point(&self,_common:&InteractionCommon,_u:Vec2,_pdf:&mut f32)->InteractionCommon {

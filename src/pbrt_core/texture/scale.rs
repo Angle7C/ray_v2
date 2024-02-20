@@ -9,7 +9,7 @@ pub struct ScaleTexture{
 impl Texture for ScaleTexture
 {
     fn  evaluate(&self,inter:&crate::pbrt_core::tool::InteractionCommon)->Color{
-        (self.tex1.evaluate(inter)*self.tex2.evaluate(inter)).into()
+        self.tex1.evaluate(inter)*self.tex2.evaluate(inter)
     }
 }
 impl std::fmt::Debug for ScaleTexture{

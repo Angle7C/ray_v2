@@ -106,7 +106,7 @@ impl TomlLoader{
     }
     fn build_primitive(&self,primitives: Vec<PrimitiveToml>,materials:&[Arc<dyn Material>],lights:&[Arc<dyn LightAble>], shapes: &[Arc<dyn ShapeAble>])->Vec<GeometricPrimitive>{
         primitives.iter()
-        .map(|item|item.get(&materials, shapes, lights))
+        .map(|item|item.get(materials, shapes, lights))
         .collect::<Vec<_>>()
     }
 

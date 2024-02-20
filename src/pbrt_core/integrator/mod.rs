@@ -2,6 +2,7 @@ use glam::{UVec2, Vec2, Vec3};
 use image::{Rgb, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::info;
+
 use rand::Rng;
 use std::{
     ops::Sub,
@@ -20,8 +21,8 @@ use self::{direct::DirectIntegrator, path::PathIntegrator};
 
 use super::{
     camera::{Camera, CameraSample},
-    primitive::{shape::{ShapeAble}, Primitive},
-    sampler::Sampler,
+    primitive::{shape::ShapeAble, Primitive},
+    sampler::{self, Sampler},
     tool::{color::Color, film::Film, sence::Scene, tile::Tile, Ray, RayDiff},
 };
 
@@ -218,13 +219,39 @@ pub fn pbr() -> (MultiProgress, ProgressStyle) {
 }
 
 pub fn uniform_sample_all_light(
-    _common: &SurfaceInteraction,
-    _sence: &Scene,
-    _sampler: Sampler,
-    _n_light_sample: Vec<usize>,
-    _handle_media: bool,
+    common: &SurfaceInteraction,
+    sence: &Scene,
+    sampler: Sampler,
+    handle_media: bool,
 ) -> Color {
-   todo!()
+    let len = sence.lights.len();
+    if len==0{
+        return Color::ZERO;
+    }
+    let mut ld = Color::default();
+    let mut sampler=sampler.clone();
+    let mut light_shape_index=0;
+    for light in &sence.lights {
+        let smaple = light.get_samples();
+        let mut li=Color::ZERO;
+        let u = sampler.sample_2d();
+        let shape = sence.shapes_light.get(light_shape_index).and_then(|shape|Some(shape.as_ref()));
+        for _ in 0..smaple {
+            li += estimate_direct(
+                common,
+                light.as_ref(),
+                shape,
+                u,
+                sence,
+                sampler.clone(),
+                handle_media,
+                false,
+            );
+        }
+        light_shape_index+=1;
+        ld+=li / smaple as f32;
+    }
+    ld
 }
 
 pub fn unifrom_sample_one_light(
@@ -238,11 +265,12 @@ pub fn unifrom_sample_one_light(
     let light = sence.lights[num].as_ref();
     let mut ld = Color::default();
     let smaple = light.get_samples();
+    let shape = sence.shapes_light.get(num).and_then(|shape|Some(shape.as_ref()));
     for _ in 0..smaple {
         ld += estimate_direct(
             common,
             light,
-            common.shape,
+            shape,
             sampler.sample_2d(),
             sence,
             sampler.clone(),

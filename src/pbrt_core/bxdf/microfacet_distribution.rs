@@ -11,7 +11,7 @@ use super::{
     func::{ cos2_phi, cos2_theta, cos_theta, sin2_phi, sin2_theta, sin_theta},
     MicrofacetDistribution,
 };
-
+const  LIMIT:f32 = 1e-3;
 //使用Beckmann概率分布，适用各项同性
 pub struct BeckmannDistribution {
     alphax: f32,
@@ -31,9 +31,9 @@ impl BeckmannDistribution {
 pub fn roughness_to_alpha(roughness: f32) -> f32 {
     return roughness;
     // let mut roughness = roughness;
-    let limit = 1e-3;
-    if limit > roughness {
-        roughness = limit;
+ 
+    if LIMIT > roughness {
+        roughness = LIMIT;
     }
     let x = roughness.ln(); // natural (base e) logarithm
     1.62142

@@ -3,8 +3,6 @@ use glam::Vec3;
 use serde::{Deserialize, Serialize};
 
 use crate::pbrt_core::{
-    light::LightAble,
-    primitive::Primitive,
     sampler::Sampler,
     tool::{color::Color, sence::Scene, RayDiff},
 };
@@ -36,10 +34,7 @@ impl DirectIntegrator {
     ) -> Color {
         let mut ans = Color::ZERO;
         let beta = Vec3::ONE;
-        let mut n_sample = vec![];
-        for i in &sence.lights {
-            n_sample.push(i.get_samples());
-        }
+   
         let mode = crate::pbrt_core::bxdf::TransportMode::Radiance;
         if let Some(mut item) = sence.intersect(ray) {
             if item.light.is_some() {
@@ -48,8 +43,9 @@ impl DirectIntegrator {
             }
             item.compute_scattering(ray, mode);
             if let Some(_bsdf) = &item.bsdf {
-                // return (item.common.normal+Vec3::ONE)/2.0;
-                ans +=  uniform_sample_all_light(&item, sence, sampler.clone(),n_sample,false)*beta;
+                // return Color::X;
+                // return (Color::ONE+item.common.normal)/2.0;
+                ans +=  uniform_sample_all_light(&item, sence, sampler.clone(),false)*beta;
                 // ans+=beta *get_light(&item,sampler.sample_2d(),sence,sampler.clone(),false,false);
             }
         }

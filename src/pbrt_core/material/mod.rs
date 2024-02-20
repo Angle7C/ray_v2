@@ -139,7 +139,7 @@ impl BSDF {
           //      && ((reflect && bxdf.match_type(BxDFType::Reflection as u32))
           //          || (!reflect && bxdf.match_type(BxDFType::Transmission as u32)))
             {
-                f = f + (bxdf.f(&wo, &wi));
+                f += bxdf.f(&wo, &wi);
             }
         }
         f.into()

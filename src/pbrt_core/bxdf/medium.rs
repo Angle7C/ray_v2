@@ -88,6 +88,6 @@ impl PhaseFunction for HenyeyGreenstein{
     fn p(&self,wo:&Vec3,wi:&Vec3)->f32{
         let cos=wi.dot(*wo);
 
-        return HenyeyGreenstein::phase_hg(cos,self.g);
+        HenyeyGreenstein::phase_hg(cos,self.g)
     }
 }

@@ -9,7 +9,7 @@ transform = { r = [0.0, 1.0, 0.0, -90.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 0
 [[shape]]
 mode = "Rect"
 transform = { r = [0.0, 1.0, 0.0, 90.0], s = [6.0, 6.0, 1.0], t = [3.0, 0.0, 6.0] }
-##top
+#top
 [[shape]]
 mode = "Rect"
 transform = { r = [0.0, 1.0, 0.0, 180.0], s = [6.0, 6.0, 1.0], t = [3.0, 0.0, 6.0] }
@@ -18,19 +18,19 @@ transform = { r = [0.0, 1.0, 0.0, 180.0], s = [6.0, 6.0, 1.0], t = [3.0, 0.0, 6.
 mode = "Rect"
 transform = { r = [1.0, 0.0, 0.0, 90.0], s = [6.0, 6.0, 1.0], t = [-3.0, 0.0, 0.0] }
 
-# [[shape]]
-# mode = "Sphere"
-# transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-1.0, 2.0, 4.0] }
-# r=1.0
+[[shape]]
+mode = "Sphere"
+transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-1.0, 2.0, 4.0] }
+r=1.0
 
-# [[shape]]
-# mode = "Sphere"
-# transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.5, 3.0, 2.0] }
-# r=1.0
+[[shape]]
+mode = "Sphere"
+transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [1.5, 3.0, 2.0] }
+r=1.0
 
 [[shape]]
 mode = "Rect"
-transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-0.5, 3.0, 5.5] }
+transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-0.5, 3.0, 5.9] }
 
 
 [[light]]
@@ -62,23 +62,25 @@ mode = "GeometricPrimitive"
 shape_index=0
 material_index=0
 
-[[primitive]]
-mode = "GeometricPrimitive"
-shape_index=1
-material_index=0
-[[primitive]]
-mode = "GeometricPrimitive"
-shape_index=2
-material_index=0
+# [[primitive]]
+# mode = "GeometricPrimitive"
+# shape_index=1
+# material_index=0
 
-[[primitive]]
-mode = "GeometricPrimitive"
-shape_index=3
-material_index=0
-[[primitive]]
-mode = "GeometricPrimitive"
-shape_index=4
-material_index=0
+# [[primitive]]
+# mode = "GeometricPrimitive"
+# shape_index=2
+# material_index=0
+
+# [[primitive]]
+# mode = "GeometricPrimitive"
+# shape_index=3
+# material_index=0
+
+# [[primitive]]
+# mode = "GeometricPrimitive"
+# shape_index=4
+# material_index=0
 
 # [[primitive]]
 # mode = "GeometricPrimitive"
@@ -92,7 +94,7 @@ material_index=0
 
 [[primitive]]
 mode = "GeometricPrimitive"
-shape_index=5
+shape_index=7
 light_index =0
 
 

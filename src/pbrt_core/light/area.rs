@@ -25,9 +25,6 @@ impl DiffuseAreaLight {
     }
 }
 impl LightAble for DiffuseAreaLight {
-    fn get_samples(&self) -> usize {
-        32
-    }
     fn sample_li(&self,surface:&InteractionCommon,
             light_face:&mut InteractionCommon,
             shape:Option<&dyn ShapeAble>,
@@ -48,7 +45,7 @@ impl LightAble for DiffuseAreaLight {
                             a:*light_face,
                             b:*surface
                         };
-                        self.li(&light_face, wi)
+                        self.li(light_face, wi)
                      }
                 }
                 ans
@@ -72,8 +69,7 @@ impl LightAble for DiffuseAreaLight {
         LightType::Area
     }
     fn le(&self, ray: &RayDiff,shape:Option<&dyn ShapeAble>) -> Color {
-        let dir = shape
-                    .and_then(|item|Some(item.obj_to_world().inverse().transform_vector3(ray.o.dir).normalize()));
+        let dir = shape.map(|item| item.obj_to_world().inverse().transform_vector3(ray.o.dir).normalize());
         match dir{
             Some(value) if value.dot(Vec3::Z) >0.0 => self.emit.into(),
             _ =>Color::ZERO,

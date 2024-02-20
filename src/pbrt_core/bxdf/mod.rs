@@ -90,7 +90,7 @@ impl BxDF {
             Self::MicrofacetReflection(microfacet_reflection) => {
                 microfacet_reflection.match_type(flag)
             }
-            _ => todo!(),
+           
         }
     }
     pub fn f(&self, w_out: &Vec3, w_in: &Vec3) -> Color {
@@ -103,7 +103,7 @@ impl BxDF {
             Self::MicrofacetReflection(microfacet_reflection) => {
                 microfacet_reflection.f(w_in, w_out)
             }
-            _ => todo!(),
+            
         }
     }
     pub fn sample_f(&self, w_out: &Vec3, wi: &mut Vec3, u: Vec2, pdf: &mut f32) -> Color {
@@ -116,7 +116,7 @@ impl BxDF {
             Self::MicrofacetReflection(microfacet_reflection) => {
                 microfacet_reflection.sample_f(wi, w_out, u, pdf)
             }
-            _ => todo!(),
+           
         }
     }
     pub fn get_type(&self) -> u32 {

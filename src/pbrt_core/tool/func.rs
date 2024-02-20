@@ -1,9 +1,6 @@
 use std::f32::consts::PI;
 
 use glam::{Mat4, Vec2, Vec3};
-use rand::{
-    distributions::uniform::{UniformSampler},
-};
 
 use crate::pbrt_core::bxdf::func::{cos_phi, cos_theta, sin_phi};
 
@@ -152,7 +149,7 @@ pub fn transform_common(transform: Mat4, common: InteractionCommon) -> Interacti
         normal: n,
         time: common.time,
         uv: common.uv,
-        shading:shading
+        shading
     }
 }
 pub fn transform_shading(transform: Mat4, shading: Shading) -> Shading {

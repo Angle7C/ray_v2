@@ -129,17 +129,11 @@ pub enum LightType {
 
 impl LightType {
     pub fn is_delta(flag: LightType) -> bool {
-        match flag {
-            LightType::DeltaDirection => true,
-            LightType::DeltaPosition => true,
-            _ => false,
-        }
+    
+        matches!(flag,LightType::DeltaDirection|LightType::DeltaPosition)
     }
     pub fn is_inf(flag: LightType)->bool{
-        match flag {
-            LightType::Infinite=>true,
-            _=>false
-        }
+       matches!(flag,LightType::Infinite)
     }
 }
 

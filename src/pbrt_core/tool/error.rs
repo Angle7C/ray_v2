@@ -1,7 +1,7 @@
 use std::fmt::Display;
 #[derive(Debug)]
 pub struct BizError{
-    message:String,
+    _message:String,
 }
 
 impl Display for BizError{

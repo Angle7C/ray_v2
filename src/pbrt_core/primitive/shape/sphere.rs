@@ -104,7 +104,7 @@ impl ShapeAble for Sphere{
         } else {
             return false;
         }
-        return true;
+        true
     }
 
     fn area(&self)->f32 {

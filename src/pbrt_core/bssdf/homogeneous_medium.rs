@@ -1,8 +1,8 @@
 use crate::pbrt_core::tool::color::Color;
 
 pub struct HomogeneousMedium{
-    simgma_a:Color,
-    simgma_b:Color,
-    simgma_t:Color,
-    g:f32,
+    _simgma_a:Color,
+    _simgma_b:Color,
+    _simgma_t:Color,
+    _g:f32,
 }

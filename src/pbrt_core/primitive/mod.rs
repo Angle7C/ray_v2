@@ -68,7 +68,7 @@ impl PartialEq for ObjectType {
 
 pub struct GeometricPrimitive {
     //几何图元
-    shape: Arc<dyn ShapeAble>,
+   pub shape: Arc<dyn ShapeAble>,
     //材质
     material:Option<Arc<dyn Material>>,
     //光源
