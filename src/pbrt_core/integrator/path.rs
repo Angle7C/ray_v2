@@ -30,7 +30,7 @@ impl PathIntegrator{
             if p > self.q {
                 None
             } else {
-                Some(self.q)
+                Some(1.0-self.q)
             }
         } else {
             Some(1.0)

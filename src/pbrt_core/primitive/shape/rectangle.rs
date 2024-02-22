@@ -50,7 +50,7 @@ impl ShapeAble for Rectangle {
     }
 
     fn intersect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<InteractionCommon> {
-        let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
+        let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir).normalize();
         let o=self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let t = -o.z/dir.z;
         let p= o+t*dir;
@@ -73,11 +73,11 @@ impl ShapeAble for Rectangle {
     }
 
     fn intersect_p(&self, ray: &crate::pbrt_core::tool::RayDiff) -> bool {
-        let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir);
+        let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir).normalize();
         let o=self.obj_to_world.inverse().transform_point3(ray.o.origin);
-        let t = o.z/dir.z;
-        let p=o+t*dir;
-        !(p.x<0.0||p.x>1.0||p.y<0.0||p.y>1.0)
+        let t = -o.z/dir.z;
+        let p= o+t*dir;
+        p.x>0.0&&p.x<=1.0&&p.y>0.0&&p.y<=1.0
     }
 
     fn sample_with_ref_point(&self,_common:&InteractionCommon,_u:Vec2,_pdf:&mut f32)->InteractionCommon {

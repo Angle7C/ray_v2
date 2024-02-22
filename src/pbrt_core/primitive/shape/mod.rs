@@ -18,7 +18,7 @@ pub trait ShapeAble:Debug {
     fn world_bound(&self)->Bound<3>;
     //表面求交
     fn intersect(&self, ray: RayDiff) -> Option<InteractionCommon>;
-    //是否有交点
+    //是否 有交点
     fn intersect_p(&self, ray: &RayDiff) -> bool;
     //形状面积
     fn area(&self)->f32;

@@ -1,5 +1,5 @@
 use glam::{UVec2, Vec2, Vec3};
-use image::{Rgb, RgbImage};
+use image::{error, Rgb, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::info;
 
@@ -317,31 +317,31 @@ pub fn estimate_direct(
     if light_pdf > 0.0 && !li.abs_diff_eq(0.0, f32::EPSILON) {
         //计算BSDF
         let f = if let Some(ref bsdf) = inter.bsdf {
-            bsdf.f(&inter.common.w0, &wi, bxdf_flags) * wi.dot(inter.shading.n).abs()
+            bsdf.f(&inter.common.w0, &-wi, bxdf_flags) * wi.dot(inter.shading.n).abs()
         } else {
             Vec3::ZERO
         };
-        //计算光贡献
-        if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && !vis.is_vis(sence) {
+        // 计算光贡献
+        if f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) || !vis.is_vis(sence) {
             li = Color::ZERO;
         }
+
         let scattle_pdf = if let Some(ref bsdf) = inter.bsdf {
             bsdf.pdf(&inter.common.w0, &-wi, bxdf_flags)
         } else {
             1.0
         };
 
-        if !li.abs_diff_eq(0.0, f32::EPSILON) {
-            if LightType::is_delta(light.get_type()) {
+        if LightType::is_delta(light.get_type()) {
                 ld +=  li *f* vis.g(sence) / light_pdf;
-            }else if LightType::is_inf(light.get_type()){
+        }else if LightType::is_inf(light.get_type()){
                 ld+=li*f*vis.g_inf(sence) / light_pdf;
-            }
-             else {
-                let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
-                ld +=  li *f * vis.g(sence)*weight/light_pdf;
-            }
         }
+        else {
+            let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
+                ld +=  li *f * vis.g(sence)*weight/light_pdf;
+        }
+       
     }
     //BSDF重要性采样
     if !LightType::is_delta(light.get_type()) {
@@ -389,35 +389,3 @@ pub fn power_heuristic(nf: f32, f_pdf: f32, ng: f32, g_pdf: f32) -> f32 {
     let g = ng * g_pdf;
     (f * f) / (f * f + g * g)
 }
-
-// pub fn get_light(
-//     inter: &SurfaceInteraction,
-//     sence: &Scene,
-//     mut sampler: Sampler,
-// ) -> Color {
-//     if sence.light.is_empty() {
-//         return Color::ZERO;
-//     }
-//     let num: usize = sampler.rand.gen_range(0..sence.light.len());
-//     let light = &sence.light[num];
-//     let mut light_common = Default::default();
-//     let mut wi = Vec3::default();
-//     let mut pdf = 0.0;
-//     let mut vis = Visibility::default();
-//     let li = light.sample_li(
-//         &inter.common,
-//         &mut light_common,
-//         sampler.sample_2d(),
-//         &mut wi,
-//         &mut pdf,
-//         &mut vis,
-//     );
-//     let f = if let Some(ref bsdf) = inter.bsdf {
-//         bsdf.f(&inter.common.w0, &wi, BxDFType::All.into())
-//          * wi.dot(inter.shading.n).abs()
-//     } else {
-//         Vec3::ZERO
-//     };
-//     // return  f;
-//     vis.g(sence)* f *li/pdf
-// }

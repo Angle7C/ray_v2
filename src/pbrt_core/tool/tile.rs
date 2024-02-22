@@ -36,7 +36,6 @@ impl Buffer {
                 for j in 0..Film::BLOCK_SIZE.y {
                     let y = y_start + j;
                     let index = j + i * Film::BLOCK_SIZE.x;
-                    info!("{} {}", x_start, y_start);
                     let color = unsafe { tile.buffer.get_unchecked(index as usize) };
                     rbg_buffer.put_pixel(x, y, Self::to_color(*color, ssp))
                 }

@@ -1,5 +1,5 @@
 
-use std::ops::*;
+use std::{fmt::Display, ops::*};
 
 use glam::Vec3;
 
@@ -11,6 +11,11 @@ pub struct RGB {
     pub x: f32,
     pub y: f32,
     pub z: f32,
+}
+impl Display for RGB{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f,"[{},{},{}]",self.x,self.y,self.z)
+    }
 }
 impl RGB{
     pub fn powf(&self,p:f32)->RGB{

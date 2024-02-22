@@ -289,7 +289,7 @@ impl Visibility {
         let ray_diff = RayDiff::new(
             Ray::from_with_t(b, dir,0.0001,dir.length()-0.0001)
         );
-        !sence.intersect_p(&ray_diff)
+        sence.intersect_p(&ray_diff)
     }
     #[inline]
     pub fn g(&self, sence: &Scene) -> f32 {
