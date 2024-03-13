@@ -2,12 +2,10 @@ use std::f32::consts::PI;
 
 use glam::{Mat4, Vec2, Vec3};
 
-use crate::pbrt_core::{
-    tool::{
+use crate::pbrt_core::tool::{
         func::{self, compute_d2, lerp, quadratic},
         Bound, InteractionCommon, Ray, Shading,
-    },
-};
+    };
 
 use super::ShapeAble;
 

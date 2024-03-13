@@ -301,13 +301,10 @@ impl Visibility {
     }
     #[inline]
     pub fn g(&self, sence: &Scene) -> f32 {
-        let vis = if self.is_vis(sence) { 1.0 } else { 0.0 };
-        let mut dir = self.a.p - self.b.p;
+            let mut dir = self.a.p - self.b.p;
         let length=dir.length_squared();
         dir=dir.normalize();
-        let value: f32 = vis
-            * self.a.normal.dot(dir).abs()
-            * self.b.normal.dot(dir).abs();
+        let value: f32 =self.a.normal.dot(dir).abs() * self.b.normal.dot(dir).abs();
             value / length        
     }
     #[inline]

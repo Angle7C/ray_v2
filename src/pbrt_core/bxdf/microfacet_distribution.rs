@@ -29,8 +29,8 @@ impl BeckmannDistribution {
 }
 // 粗糙度转换
 pub fn roughness_to_alpha(roughness: f32) -> f32 {
-    return roughness;
-    // let mut roughness = roughness;
+    // return roughness;
+    let mut roughness = roughness;
  
     if LIMIT > roughness {
         roughness = LIMIT;

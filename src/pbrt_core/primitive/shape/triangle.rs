@@ -5,7 +5,7 @@ use glam::{Vec2, Vec3,Mat4,
 };
 
 use crate::pbrt_core::{
-    primitive::{mesh::Mesh},
+    primitive::mesh::Mesh,
     tool::{Bound, InteractionCommon, RayDiff, Shading},
 };
 

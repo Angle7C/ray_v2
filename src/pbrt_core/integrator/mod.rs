@@ -372,53 +372,54 @@ pub fn estimate_direct(
             1.0
         };
         // return li*f* vis.g(sence)/light_pdf;
-        // if LightType::is_delta(light.get_type()) {
-            ld += li * f * vis.g(sence) / light_pdf;
-        // } else if LightType::is_inf(light.get_type()) {
-        //     ld += li * f * vis.g_inf(sence) / light_pdf;
-        // } else {
-        //     let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
-        //     ld += li * f * vis.g(sence) * weight / light_pdf;
-        // }
+        if LightType::is_delta(light.get_type()) {
+            ld += li * f 
+            * vis.g(sence) / light_pdf;
+        } else if LightType::is_inf(light.get_type()) {
+            ld += li * f * vis.g_inf(sence) / light_pdf;
+        } else {
+            let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
+            ld += li * f * vis.g(sence) * weight / light_pdf;
+        }
     }
-    // //BSDF重要性采样
-    // if !LightType::is_delta(light.get_type()) {
-    //     let mut sampled_specular = false;
-    //     let mut smapled_type = BxDFType::None as u32;
-    //     let mut bsdf_pdf = 0.0;
-    //     if let Some(ref bsdf) = inter.bsdf {
-    //         let f = bsdf.sample_f(
-    //             &inter.common.w0,
-    //             &mut wi,
-    //             sampler.sample_2d_d(),
-    //             &mut bsdf_pdf,
-    //             bxdf_flags,
-    //             &mut smapled_type,
-    //         ) * wi.dot(inter.shading.n).abs();
-    //         sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
-    //         if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
-    //             let weight = if !sampled_specular {
-    //                 let light_pdf = light.pdf_li(&inter.common, &wi,shape);
-    //                 if light_pdf.abs() < f32::EPSILON {
-    //                     return ld;
-    //                 }
-    //                 power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
-    //             } else {
-    //                 1.0
-    //             };
-    //             let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
-    //             let li =
-    //             if let Some(ref light_inter) = sence.intersect(ray) {
-    //                 light_inter.le(ray)
-    //             }else{
-    //                 Color::ZERO
-    //             };
-    //             if !li.abs_diff_eq(0.0, f32::EPSILON) {
-    //                 ld += li * (f * weight / bsdf_pdf);
-    //             }
-    //         }
-    //     }
-    // };
+    //BSDF重要性采样
+    if !LightType::is_delta(light.get_type()) {
+        let mut sampled_specular = false;
+        let mut smapled_type = BxDFType::None as u32;
+        let mut bsdf_pdf = 0.0;
+        if let Some(ref bsdf) = inter.bsdf {
+            let f = bsdf.sample_f(
+                &inter.common.w0,
+                &mut wi,
+                sampler.sample_2d_d(),
+                &mut bsdf_pdf,
+                bxdf_flags,
+                &mut smapled_type,
+            ) * wi.dot(inter.common.shading.n).abs();
+            sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
+            if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
+                let weight = if !sampled_specular {
+                    let light_pdf = light.pdf_li(&inter.common, &wi,shape);
+                    if light_pdf.abs() < f32::EPSILON {
+                        return ld;
+                    }
+                    power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
+                } else {
+                    1.0
+                };
+                let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
+                let li =
+                if let Some(ref light_inter) = sence.intersect(ray) {
+                    light_inter.le(ray)
+                }else{
+                    Color::ZERO
+                };
+                if !li.abs_diff_eq(0.0, f32::EPSILON) {
+                    ld += li * (f * weight / bsdf_pdf);
+                }
+            }
+        }
+    };
     ld
 }
 

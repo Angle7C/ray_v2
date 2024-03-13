@@ -3,7 +3,7 @@ use std::{
 };
 
 use crate::pbrt_core::tool::color::Color;
-use crate::pbrt_core::tool::{RayDiff};
+use crate::pbrt_core::tool::RayDiff;
 use bvh::ray::Ray;
 use glam::{Vec2, Vec3};
 use crate::pbrt_core::light::area::DiffuseAreaLight;
