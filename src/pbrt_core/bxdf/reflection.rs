@@ -10,7 +10,7 @@ use super::{
     func::{self, cos_theta},
     BxDFAble, BxDFType, MicrofacetDistribution,
 };
-
+//漫反射
 pub struct LambertianReflection {
     r: Color,
 }
@@ -37,7 +37,7 @@ impl LambertianReflection {
         Self { r }
     }
 }
-
+//oren 漫反射
 pub struct OrenNayar {
     r: Color,
     a: f32,
@@ -79,11 +79,15 @@ impl BxDFAble for OrenNayar {
     }
 }
 
+//微表面反射
 pub struct MicrofacetReflection {
     r: Color,
+    //微表面分布
     distribution: Box<dyn MicrofacetDistribution>,
+    //菲涅尔项
     fresnel: Fresnel,
 }
+
 impl MicrofacetReflection {
     pub fn new(r: Color, distribution: Box<dyn MicrofacetDistribution>, fresnel: Fresnel) -> Self {
         Self {
@@ -93,6 +97,7 @@ impl MicrofacetReflection {
         }
     }
 }
+
 impl BxDFAble for MicrofacetReflection {
     fn match_type(&self, flag: u32) -> bool {
         (BxDFType::Reflection | BxDFType::Glossy) & flag > 0

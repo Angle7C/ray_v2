@@ -23,7 +23,7 @@ pub trait Material: Debug {
 pub struct BSDF {
     //折射率，默认值 1.0
     pub eta: f32,
-    //阴影法线
+    //shading法线
     pub ns: Vec3,
     //几何法线
     pub ng: Vec3,
@@ -31,36 +31,49 @@ pub struct BSDF {
     pub ss: Vec3,
     //切线
     pub ts: Vec3,
+    //brdf方程
     bxdfs: Vec<BxDF>,
 }
 
 impl BSDF {
     pub fn sample_f(
         &self,
+        //出射方向
         w_out: &Vec3,
+        //入射方向
         w_in: &mut Vec3,
+        //采样随机数
         u: Vec2,
+        //pdf值
         pdf: &mut f32,
+        // 类型
         flag: u32,
+        //采样类型
         sampled_type: &mut u32,
     ) -> Vec3 {
+        //过滤出符合条件的类型
         let bxdfs = self
             .bxdfs
             .iter()
             .filter(|item| item.match_type(flag))
             .collect::<Vec<_>>();
+
         if bxdfs.is_empty() {
             return Vec3::ZERO;
         }
+        //随机选择一个bxdf
         let num = (u.x * bxdfs.len() as f32).clamp(0.0, bxdfs.len() as f32) as usize;
 
         let bxdf = bxdfs[num];
         let mut wi = Vec3::ZERO;
+        //变换到局部坐标系
         let w_out = self.world_to_local(*w_out);
-        if w_out.z == 0.0 {
+        //平行线，0.0 不能作为入射方向
+        if w_out.z.abs()<f32::EPSILON{
             return Vec3::ZERO;
         }
         *pdf = 0.0;
+
         if *sampled_type !=0{
             *sampled_type = bxdf.get_type();
         }
@@ -85,8 +98,6 @@ impl BSDF {
             let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
             for item in bxdfs.iter() {
                 if item.match_type(flag)
-                //    && ((reflect && item.match_type(BxDFType::Reflection.into()))
-                //        || (!reflect && item.match_type(BxDFType::Transmission.into())))
                 {
                     f += item.f(&w_out, w_in)
                 }
@@ -95,13 +106,13 @@ impl BSDF {
         f.into()
     }
     pub fn new(si: &SurfaceInteraction, eta: f32) -> Self {
-        let ss = si.shading.dpdu.normalize();
+        let ss = si.common.shading.dpdu.normalize();
         Self {
             eta,
-            ns: si.shading.n,
+            ns: si.common.shading.n,
             ng: si.common.normal,
             ss,
-            ts: si.shading.n.cross(ss).normalize(),
+            ts: si.common.shading.n.cross(ss).normalize(),
             bxdfs: vec![],
         }
     }
@@ -134,15 +145,21 @@ impl BSDF {
         let wo = self.world_to_local(*w_out);
         let _reflect = w_in.dot(self.ng) * w_out.dot(self.ng) > 0.0;
         let mut f = Color::ZERO;
+        let mut count=0.0;
         for bxdf in &self.bxdfs {
             if bxdf.match_type(flag)
           //      && ((reflect && bxdf.match_type(BxDFType::Reflection as u32))
           //          || (!reflect && bxdf.match_type(BxDFType::Transmission as u32)))
             {
                 f += bxdf.f(&wo, &wi);
+                count+=1.0;
             }
         }
-        f.into()
+        if count>1.0{
+           (f/count).into()
+        }else{
+            f.into()
+        }
     }
     pub fn num_components(&self, flag: u32) -> u32 {
         let mut num = 0;

@@ -167,11 +167,17 @@ impl Add<Bound<3>> for Bound<3> {
 /// 求交集合
 #[derive(Default, Clone, Copy, Debug)]
 pub struct InteractionCommon {
+    // 光源方向
     pub w0: Vec3,
+    //交点
     pub p: Vec3,
+    //法向量
     pub normal: Vec3,
+    //时间
     pub time: f32,
+    //uv坐标
     pub uv: Vec2,
+    //  shading
     pub shading: Shading,
 }
 impl InteractionCommon {
@@ -192,49 +198,46 @@ impl InteractionCommon {
 }
 #[derive(Default)]
 pub struct SurfaceInteraction<'a> {
+    //基本几何信息。
     pub common: InteractionCommon,
-    //求交的图元信息
+    //求交的形状信息。
     pub shape: Option<&'a dyn ShapeAble>,
-    // 渲染信息与几何信息
-    pub shading: Shading,
-    // BSDF采样值。表示表面的对光的作用。
+    // 该点的BSDF值。
     pub bsdf: Option<BSDF>,
     //该交点是不是光源。
     pub light: Option<&'a dyn LightAble>,
-
+    //求交的图元信息。
     pub primitive:Option<&'a dyn Primitive>
-    //交点的两边的介质
-    // pub medium:MediumInterface
+    //交点的两边的介质。
 }
 impl<'a> SurfaceInteraction<'a> {
+    #[inline]
     pub fn new(
         common:InteractionCommon,
-        shading:Shading,
         shape: Option<&'a dyn ShapeAble>,
         light: Option<&'a dyn LightAble>,
         primitive:Option<&'a dyn Primitive>
-        // medium:MediumInterface
     ) -> Self {
         Self {
             common,
             shape,
-            shading,
             bsdf: None,
             light,
             primitive
-            // medium,
         }
     }
+    #[inline]
     pub fn compute_scattering(&mut self, _ray: RayDiff, _mode: TransportMode) {
         if let Some(primitive) = self.primitive {
             primitive.compute_scattering(self, TransportMode::Importance);
         }
     }
+
     #[inline]
     pub fn spawn_ray(&self, wi: &Vec3) -> RayDiff {
         self.common.spawn_ray(wi)
-        // RayDiff::new(ray)
     }
+    #[inline]
     pub fn le(&self, ray: RayDiff) -> Color {
         if let Some(light) = self.light {
             light.le(&ray,self.shape)           
@@ -242,6 +245,7 @@ impl<'a> SurfaceInteraction<'a> {
             Color::ZERO
         }
     }
+    #[inline]
     pub fn le_dir(&self,o:Vec3,dir:Vec3)->Color{
         let ray=RayDiff::new(Ray::new(o, dir));
         self.le(ray)
@@ -280,25 +284,31 @@ impl Visibility {
             let sign=self.a.normal.dot(w).signum();
             self.a.p+sign* self.a.normal*Self::DET
         };
+
         let b={
             let w=(self.a.p-self.b.p).normalize();
             let sign=self.b.normal.dot(w).signum();
-            self.b.p+sign* self.b.normal*Self::DET
+            self.b.p+ sign * self.b.normal*Self::DET
         };
+        
         let dir=a-b;
+
         let ray_diff = RayDiff::new(
             Ray::from_with_t(b, dir,0.0001,dir.length()-0.0001)
         );
+        
         sence.intersect_p(&ray_diff)
     }
     #[inline]
     pub fn g(&self, sence: &Scene) -> f32 {
         let vis = if self.is_vis(sence) { 1.0 } else { 0.0 };
-        let dir = self.a.p - self.b.p;
-        let value = vis
-            * self.a.normal.dot(dir.normalize()).abs()
-            * self.b.normal.dot(dir.normalize()).abs();
-        value / dir.length_squared()
+        let mut dir = self.a.p - self.b.p;
+        let length=dir.length_squared();
+        dir=dir.normalize();
+        let value: f32 = vis
+            * self.a.normal.dot(dir).abs()
+            * self.b.normal.dot(dir).abs();
+            value / length        
     }
     #[inline]
     pub fn g_inf(&self, sence: &Scene) -> f32 {

@@ -130,9 +130,7 @@ pub fn quadratic(a: f32, b: f32, c: f32) -> Option<(f32, f32)> {
 }
 pub fn transform_interaction(transform: Mat4, inter: &mut SurfaceInteraction<'_>) {
     let common = transform_common(transform, inter.common);
-    let shading = transform_shading(transform, inter.shading);
     inter.common = common;
-    inter.shading = shading;
 }
 pub fn transform_common(transform: Mat4, common: InteractionCommon) -> InteractionCommon {
     let p = transform.transform_point3(common.p);

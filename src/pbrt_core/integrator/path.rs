@@ -1,4 +1,5 @@
 use glam::Vec3;
+use log::info;
 
 use crate::pbrt_core::{
     bxdf::BxDFType,
@@ -30,7 +31,7 @@ impl PathIntegrator{
             if p > self.q {
                 None
             } else {
-                Some(1.0-self.q)
+                Some(p)
             }
         } else {
             Some(1.0)
@@ -48,7 +49,7 @@ impl IntegratorAble for PathIntegrator {
         sampler: &mut Sampler,
         #[cfg(debug_assertions)] i: &mut i32,
     ) -> Color {
-        let mut ans = Color::ZERO;
+        let mut lte = Color::ZERO;
         let mut dept = 0;
         let mut beta: Vec3 = Vec3::ONE;
         let mut ray = ray;
@@ -59,15 +60,15 @@ impl IntegratorAble for PathIntegrator {
             if let Some(mut item) = scene.intersect(ray) {
                 //击中光源，立即返回
                 if item.light.is_some() {
-                    ans +=  item.le(ray)*beta;
-                    return ans;
+                    lte +=  item.le(ray)*beta;
+                    return lte;
                 }
                 //计算该点的材质
                 item.compute_scattering(ray, mode);
                 //计算BSDF
                 if let Some(bsdf) = &item.bsdf {
                     //场景光源采样
-                    ans +=
+                    lte +=
                          unifrom_sample_one_light(&item, scene, sampler.clone(), false)*beta / p;
                     //BRDF 采样生成光线
                     let w_out = -ray.o.dir;
@@ -81,7 +82,7 @@ impl IntegratorAble for PathIntegrator {
                         &mut pdf,
                         BxDFType::All.into(),
                         &mut samped_type,
-                    ) * w_in.dot(item.shading.n).abs()
+                    ) * w_in.dot(item.common.shading.n).abs()
                         / pdf;
                     if f.is_nan() || f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
                         break;
@@ -94,13 +95,13 @@ impl IntegratorAble for PathIntegrator {
                     }
                 }
             } else {
-                ans +=  scene.sample_env_light(&ray)*beta;
+                lte +=  scene.sample_env_light(&ray)*beta;
                 //环境光采样
                 break;
             }
-            // beta = beta / p;
+            beta = beta / p;
         }
-        ans
+        lte
     }
 }
 

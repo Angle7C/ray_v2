@@ -86,8 +86,12 @@ pub fn merage_tile(list: Vec<Vec<Tile>>, size: UVec2) -> Buffer {
         .into_iter()
         .flat_map(|item| item.into_iter())
         .collect::<Vec<_>>();
+
     list.sort();
+    
     let mut buffer = Buffer::new(size);
+    
     buffer.buffer = list;
+    
     buffer
 }

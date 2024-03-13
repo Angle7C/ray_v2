@@ -1,5 +1,5 @@
-use glam::{UVec2, Vec2, Vec3};
-use image::{error, Rgb, RgbImage};
+use glam::{UVec2, Vec3};
+use image::{Rgb, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use log::info;
 
@@ -21,7 +21,7 @@ use self::{direct::DirectIntegrator, path::PathIntegrator};
 
 use super::{
     camera::{Camera, CameraSample},
-    primitive::{shape::ShapeAble, Primitive},
+    primitive::shape::ShapeAble,
     sampler::{self, Sampler},
     tool::{color::Color, film::Film, sence::Scene, tile::Tile, Ray, RayDiff},
 };
@@ -36,24 +36,38 @@ pub enum Integrator {
 
 pub trait IntegratorAble {
     //求解 irradince
-    fn fi(&self, ray: RayDiff, sence: &Scene, sampler: &mut Sampler,
-          #[cfg(debug_assertions)]
-        i:&mut i32
+    fn fi(
+        &self,
+        ray: RayDiff,
+        sence: &Scene,
+        sampler: &mut Sampler,
+        #[cfg(debug_assertions)] i: &mut i32,
     ) -> Color;
 }
 
 impl IntegratorAble for Integrator {
-    fn fi(&self, ray: RayDiff, sence: &Scene, sampler: &mut Sampler,
-          #[cfg(debug_assertions)]
-        i:&mut i32
+    fn fi(
+        &self,
+        ray: RayDiff,
+        sence: &Scene,
+        sampler: &mut Sampler,
+        #[cfg(debug_assertions)] i: &mut i32,
     ) -> Color {
         match &self {
-            Integrator::Path(path, _, _) => path.fi(ray, sence, sampler,
+            Integrator::Path(path, _, _) => path.fi(
+                ray,
+                sence,
+                sampler,
                 #[cfg(debug_assertions)]
-                i),
-            Integrator::Direct(direct, _, _) => direct.fi(ray, sence, sampler,
+                i,
+            ),
+            Integrator::Direct(direct, _, _) => direct.fi(
+                ray,
+                sence,
+                sampler,
                 #[cfg(debug_assertions)]
-                i),
+                i,
+            ),
         }
     }
 }
@@ -78,7 +92,7 @@ impl Integrator {
         let t1 = Instant::now();
         let (m, style) = pbr();
         let core = self.get_num();
-        let len = film.render_size() / (core*4) as u32;
+        let len = film.render_size() / (core * 4) as u32;
         let num = self.get_sample().num;
         thread::scope(|scope| {
             for i in 0..core {
@@ -91,7 +105,7 @@ impl Integrator {
                     scene,
                     self.get_sample(),
                     pb,
-                    i
+                    i,
                 ));
             }
             drop(sender);
@@ -111,21 +125,21 @@ impl Integrator {
         scene: &'a Scene,
         mut sampler: Sampler,
         pb: ProgressBar,
-        index:usize
+        index: usize,
     ) -> impl FnOnce() + 'a
     where
         'b: 'a,
     {
         move || {
             let n = sampler.num;
-            let mut i=0;
+            let mut i = 0;
             let mut tiles: Vec<Tile> = vec![];
             while let Some(item) = film.iter() {
                 let index = item.index;
                 let mut tile = Tile::new(index);
                 for (u, v) in item {
                     let mut color = Color::ZERO;
-                    i=0;
+                    i = 0;
                     //ssp 抗锯齿
                     for _ in 0..n {
                         //相机采样
@@ -133,18 +147,21 @@ impl Integrator {
                         //光线采样
                         let ray = camera.generate_ray(camera_sample);
                         //颜色生成
-                        color += self.fi(ray, scene, &mut sampler,
+                        color += self.fi(
+                            ray,
+                            scene,
+                            &mut sampler,
                             #[cfg(debug_assertions)]
-                            &mut i
+                            &mut i,
                         );
                     }
                     tile.push(color);
                 }
-                
+
                 pb.inc(1);
                 tiles.push(tile);
             }
-            info!("thread {} close",index);
+            info!("thread {} close", index);
             pb.finish();
             send.send(tiles).expect("send 失败");
         }
@@ -157,10 +174,9 @@ impl Integrator {
         let buffer = merage_tile(list, size);
         let path =
             Path::new("./image").join(format!("thread_{}_{}_{name}_{num}.png", size.x, size.y));
-        
+
         buffer.write(image::ImageFormat::Jpeg, num as f32, &path);
         println!("{}", format!("渲染完成，图像输出:{}", path.display()));
-
     }
 
     pub fn render_process_debug(self, name: &str, num: u64, sence: &Scene, size: UVec2) {
@@ -171,16 +187,19 @@ impl Integrator {
         let camera = sence.camera;
         let bar = ProgressBar::new(bar_size as u64);
         let mut image = RgbImage::new(size.x, size.y);
-        let mut i=0;
+        let mut i = 0;
         while let Some(item) = film.iter() {
             for (u, v) in item {
                 let mut color = Color::ZERO;
                 for _ in 0..n {
                     let camera_sample = CameraSample::new(u, v, &mut sampler);
                     let ray = camera.generate_ray(camera_sample);
-                    color += self.fi(ray, sence, &mut sampler,
+                    color += self.fi(
+                        ray,
+                        sence,
+                        &mut sampler,
                         #[cfg(debug_assertions)]
-                        &mut i
+                        &mut i,
                     );
                 }
                 image.put_pixel(u as u32, v as u32, to_color(color, num as f32));
@@ -200,7 +219,7 @@ impl Integrator {
 pub fn to_color(color: Color, ssp: f32) -> Rgb<u8> {
     let vec = (color / ssp).powf(2.0);
     let rgb = vec * 255.0;
-    
+
     Rgb([
         rgb.x.clamp(0.0, 255.0) as u8,
         rgb.y.clamp(0.0, 255.0) as u8,
@@ -225,53 +244,65 @@ pub fn uniform_sample_all_light(
     handle_media: bool,
 ) -> Color {
     let len = sence.lights.len();
-    if len==0{
+    if len == 0 {
         return Color::ZERO;
     }
     let mut ld = Color::default();
-    let mut sampler=sampler.clone();
-    let mut light_shape_index=0;
+    let mut sampler = sampler.clone();
+    let mut light_shape_index = 0;
     for light in &sence.lights {
         let smaple = light.get_samples();
-        let mut li=Color::ZERO;
+        let mut li = Color::ZERO;
         let u = sampler.sample_2d();
-        let shape = sence.shapes_light.get(light_shape_index).and_then(|shape|Some(shape.as_ref()));
+        let shape = sence
+            .shapes_light
+            .get(light_shape_index)
+            .and_then(|shape| Some(shape.as_ref()));
         for _ in 0..smaple {
             li += estimate_direct(
                 common,
                 light.as_ref(),
                 shape,
-                u,
                 sence,
                 sampler.clone(),
                 handle_media,
                 false,
             );
         }
-        light_shape_index+=1;
-        ld+=li / smaple as f32;
+        light_shape_index += 1;
+        ld += li / smaple as f32;
     }
     ld
 }
 
 pub fn unifrom_sample_one_light(
+    //交点的几何信息
     common: &SurfaceInteraction,
+    //场景信息
     sence: &Scene,
+    //采样器
     mut sampler: Sampler,
+    //体渲染
     handle_media: bool,
 ) -> Color {
+    //随机选择一个光源
     let len = sence.lights.len();
     let num = sampler.rand.gen_range(0..len);
     let light = sence.lights[num].as_ref();
+
     let mut ld = Color::default();
+    //该光源的采样数量
     let smaple = light.get_samples();
-    let shape = sence.shapes_light.get(num).and_then(|shape|Some(shape.as_ref()));
+    let shape = sence
+        .shapes_light
+        .get(num)
+        .and_then(|shape| Some(shape.as_ref()));
+
     for _ in 0..smaple {
         ld += estimate_direct(
             common,
             light,
             shape,
-            sampler.sample_2d(),
             sence,
             sampler.clone(),
             handle_media,
@@ -279,30 +310,39 @@ pub fn unifrom_sample_one_light(
         );
     }
 
-    ld * len as f32 / smaple  as f32
-  
+    ld * len as f32 / smaple as f32
 }
 
 pub fn estimate_direct(
+    //几何信息
     inter: &SurfaceInteraction,
+    //光源引用
     light: &dyn LightAble,
+    //光源形状
     shape: Option<&dyn ShapeAble>,
-    u_light: Vec2,
+    //光源采样随机数
+
+    //场景
     sence: &Scene,
+    //采样器
     mut sampler: Sampler,
     _handle_media: bool,
+    //是否支持高光
     specular: bool,
 ) -> Color {
+    //采样类型
     let bxdf_flags = if specular {
         BxDFType::All.into()
     } else {
         BxDFType::All as u32 & !BxDFType::Specular
     };
+    let u_light = sampler.sample_2d();
     let mut ld = Color::ZERO;
     let mut wi: Vec3 = Vec3::ZERO;
     let mut light_pdf: f32 = 0.0;
     let mut vis: Visibility = Default::default();
     let mut light_common: InteractionCommon = Default::default();
+    //对光源进行采样
     let mut li = light.sample_li(
         &inter.common,
         &mut light_common,
@@ -313,11 +353,11 @@ pub fn estimate_direct(
         &mut vis,
     );
     // return li;
-    // 合理的pdf和采样出光线 
-    if light_pdf > 0.0 && !li.abs_diff_eq(0.0, f32::EPSILON) {
+    // 合理的pdf和采样出光线
+    if light_pdf.abs()>f32::EPSILON && !li.abs_diff_eq(0.0, f32::EPSILON) {
         //计算BSDF
         let f = if let Some(ref bsdf) = inter.bsdf {
-            bsdf.f(&inter.common.w0, &-wi, bxdf_flags) * wi.dot(inter.shading.n).abs()
+            bsdf.f(&inter.common.w0, &wi, bxdf_flags) * wi.dot(inter.common.shading.n).abs()
         } else {
             Vec3::ZERO
         };
@@ -327,60 +367,58 @@ pub fn estimate_direct(
         }
 
         let scattle_pdf = if let Some(ref bsdf) = inter.bsdf {
-            bsdf.pdf(&inter.common.w0, &-wi, bxdf_flags)
+            bsdf.pdf(&inter.common.w0, &wi, bxdf_flags)
         } else {
             1.0
         };
-
-        if LightType::is_delta(light.get_type()) {
-                ld +=  li *f* vis.g(sence) / light_pdf;
-        }else if LightType::is_inf(light.get_type()){
-                ld+=li*f*vis.g_inf(sence) / light_pdf;
-        }
-        else {
-            let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
-                ld +=  li *f * vis.g(sence)*weight/light_pdf;
-        }
-       
+        // return li*f* vis.g(sence)/light_pdf;
+        // if LightType::is_delta(light.get_type()) {
+            ld += li * f * vis.g(sence) / light_pdf;
+        // } else if LightType::is_inf(light.get_type()) {
+        //     ld += li * f * vis.g_inf(sence) / light_pdf;
+        // } else {
+        //     let weight = power_heuristic(1.0, light_pdf, 1.0, scattle_pdf);
+        //     ld += li * f * vis.g(sence) * weight / light_pdf;
+        // }
     }
-    //BSDF重要性采样
-    if !LightType::is_delta(light.get_type()) {
-        let mut sampled_specular = false;
-        let mut smapled_type = BxDFType::None as u32;
-        let mut bsdf_pdf = 0.0;
-        if let Some(ref bsdf) = inter.bsdf {
-            let f = bsdf.sample_f(
-                &inter.common.w0,
-                &mut wi,
-                sampler.sample_2d_d(),
-                &mut bsdf_pdf,
-                bxdf_flags,
-                &mut smapled_type,
-            ) * wi.dot(inter.shading.n).abs();
-            sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
-            if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
-                let weight = if !sampled_specular {
-                    let light_pdf = light.pdf_li(&inter.common, &wi,shape);
-                    if light_pdf.abs() < f32::EPSILON {
-                        return ld;
-                    }
-                    power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
-                } else {
-                    1.0
-                };
-                let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
-                let li =
-                if let Some(ref light_inter) = sence.intersect(ray) {
-                    light_inter.le(ray)
-                }else{
-                    Color::ZERO
-                };
-                if !li.abs_diff_eq(0.0, f32::EPSILON) {
-                    ld += li * (f * weight / bsdf_pdf);
-                }
-            }
-        }
-    };
+    // //BSDF重要性采样
+    // if !LightType::is_delta(light.get_type()) {
+    //     let mut sampled_specular = false;
+    //     let mut smapled_type = BxDFType::None as u32;
+    //     let mut bsdf_pdf = 0.0;
+    //     if let Some(ref bsdf) = inter.bsdf {
+    //         let f = bsdf.sample_f(
+    //             &inter.common.w0,
+    //             &mut wi,
+    //             sampler.sample_2d_d(),
+    //             &mut bsdf_pdf,
+    //             bxdf_flags,
+    //             &mut smapled_type,
+    //         ) * wi.dot(inter.shading.n).abs();
+    //         sampled_specular = BxDFType::Specular as u32 & smapled_type > 0;
+    //         if !f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) && bsdf_pdf > 0.0 {
+    //             let weight = if !sampled_specular {
+    //                 let light_pdf = light.pdf_li(&inter.common, &wi,shape);
+    //                 if light_pdf.abs() < f32::EPSILON {
+    //                     return ld;
+    //                 }
+    //                 power_heuristic(1.0, bsdf_pdf, 1.0, light_pdf)
+    //             } else {
+    //                 1.0
+    //             };
+    //             let ray = RayDiff::new(Ray::new(inter.common.p, -wi));
+    //             let li =
+    //             if let Some(ref light_inter) = sence.intersect(ray) {
+    //                 light_inter.le(ray)
+    //             }else{
+    //                 Color::ZERO
+    //             };
+    //             if !li.abs_diff_eq(0.0, f32::EPSILON) {
+    //                 ld += li * (f * weight / bsdf_pdf);
+    //             }
+    //         }
+    //     }
+    // };
     ld
 }
 

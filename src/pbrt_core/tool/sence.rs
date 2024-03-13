@@ -57,7 +57,7 @@ impl Scene {
 
 impl Scene {
     pub fn sample_env_light(&self, ray: &RayDiff) -> Color {
-       
+        
         if self.env.is_empty(){
             return Color::ZERO
         }

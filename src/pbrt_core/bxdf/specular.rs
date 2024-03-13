@@ -9,6 +9,7 @@ use super::{frensnel::Fresnel, func::cos_theta, BxDFAble, BxDFType, TransportMod
 pub struct SpecularReflection {
     //光谱颜色
     r: Color,
+    //菲涅尔项
     frensnel: Fresnel,
 }
 impl SpecularReflection {

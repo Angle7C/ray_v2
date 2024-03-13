@@ -36,11 +36,12 @@ impl LightAble for DiffuseAreaLight {
                 let mut ans=Color::ZERO;
                 if let Some(shape) =  shape {
                      *light_face=shape.sample(u, pdf);
-                    ans=if(pdf.abs()<f32::EPSILON)||(surface.p-light_face.p).length_squared().abs()<f32::EPSILON{
+                     // 采样到的点是不是光源上的一个点
+                    ans = if pdf.abs()<f32::EPSILON || (surface.p-light_face.p).length_squared().abs()<f32::EPSILON{
                         *pdf=0.0;
                         Color::ZERO
                      }else{
-                        *wi=(light_face.p-surface.p).normalize();
+                        *wi=(surface.p-light_face.p).normalize();
                         *vis=Visibility{
                             a:*light_face,
                             b:*surface
@@ -69,7 +70,7 @@ impl LightAble for DiffuseAreaLight {
         LightType::Area
     }
     fn le(&self, ray: &RayDiff,shape:Option<&dyn ShapeAble>) -> Color {
-        let dir = shape.map(|item| item.obj_to_world().inverse().transform_vector3(ray.o.dir).normalize());
+        let dir = shape.map(|item| item.obj_to_world().inverse().transform_vector3(-ray.o.dir).normalize());
         match dir{
             Some(value) if value.dot(Vec3::Z) >0.0 => self.emit.into(),
             _ =>Color::ZERO,

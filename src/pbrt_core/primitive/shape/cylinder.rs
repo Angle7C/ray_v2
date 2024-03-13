@@ -89,9 +89,6 @@ impl ShapeAble for Cylinder {
         let (n, dndu, dndv) = compute_d2(dpdu, dpdv, d2pduu, d2pduv, d2pdvv);
         let shading = Shading::new(dpdu, dpdv, dndu, dndv);
         let mut common = InteractionCommon::new(-dir, p, n, t, uv,shading);
-
-
-        // let mut item = SurfaceInteraction::new(common, shading, None, None);
         common = func::transform_common(self.obj_to_world, common);
         Some(common)
     }

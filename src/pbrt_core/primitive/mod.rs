@@ -133,7 +133,6 @@ impl Primitive for GeometricPrimitive{
             surface.light=self.get_light();
             surface.primitive=Some(self);
             surface.shape=Some(self.shape.as_ref());
-            surface.shading=common.shading;
             Some(surface)
         }else{
             None

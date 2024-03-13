@@ -1,7 +1,7 @@
 
 use glam::{Mat4, Vec2, Vec3, Vec3Swizzles};
 
-use crate::pbrt_core::{tool::{func::transform_common, Bound, InteractionCommon, Shading}};
+use crate::pbrt_core::tool::{func::{self, transform_common}, Bound, InteractionCommon, Shading};
 
 use super::ShapeAble;
 #[derive(Debug)]
@@ -34,19 +34,12 @@ impl ShapeAble for Rectangle {
         
         let mut common=InteractionCommon::default();
         //计算点
-        common.p= self
-        .obj_to_world
-        .transform_point3(u.extend(0.0));
+        common.p= u.extend(0.0);
         //计算法线
-        common.normal = self
-            .obj_to_world
-            .inverse()
-            .transpose()
-            .transform_vector3(Vec3::Z)
-            .normalize();
+        common.normal = Vec3::Z;
         //计算PDF
         *pdf=1.0/self.area();
-        common
+        func::transform_common(self.obj_to_world, common)
     }
 
     fn intersect(&self, ray: crate::pbrt_core::tool::RayDiff) -> Option<InteractionCommon> {
@@ -60,7 +53,7 @@ impl ShapeAble for Rectangle {
             let mut common = InteractionCommon::default();
             common.p=p;
             common.normal=Vec3::Z;
-            common.w0=dir;
+            common.w0=-dir;
             common.time=t;
             common.uv=p.xy();
             common.shading=Shading::default();
