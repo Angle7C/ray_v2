@@ -59,8 +59,10 @@ impl IntegratorAble for PathIntegrator {
             //光线求交
             if let Some(mut item) = scene.intersect(ray) {
                 //击中光源，立即返回
-                if item.light.is_some() {
-                    lte +=  item.le(ray)*beta;
+                if item.light.is_some(){
+                    if dept==1{
+                        return item.le(ray);
+                    }
                     return lte;
                 }
                 //计算该点的材质
@@ -82,12 +84,10 @@ impl IntegratorAble for PathIntegrator {
                         &mut pdf,
                         BxDFType::All.into(),
                         &mut samped_type,
-                    ) * w_in.dot(item.common.shading.n).abs()
-                        / pdf;
+                    ) * w_in.dot(item.common.shading.n).abs()/pdf;
                     if f.is_nan() || f.abs_diff_eq(Vec3::ZERO, f32::EPSILON) {
                         break;
                     }
-                    beta *= f;
                     ray = item.spawn_ray(&w_in);
                     #[cfg(debug_assertions)]
                     {

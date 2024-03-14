@@ -84,7 +84,6 @@ impl ShapeAble for Sphere{
         let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
         let shading = Shading::new(dpdu, dpdv, dndu, dndv);
         let common = InteractionCommon::new(-dir, p, n, t, uv,shading);
-        // let mut item = SurfaceInteraction::new(common, shading, Some(self), None);
         let common=func::transform_common(self.obj_to_world, common);
         Some(common)
     }
