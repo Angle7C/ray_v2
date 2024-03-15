@@ -45,7 +45,7 @@ impl ShapeAble for Sphere{
         let c = o.dot(o) - self.r * self.r;
         let t: f32;
         if let Some((t1, t2)) = func::quadratic(a, b, c) {
-            t = (t1.min(t2)).max(ray.o.t_min);
+            t = t1.min(t2);
             if t <= ray.o.t_min {
                 return None;
             }
@@ -83,7 +83,7 @@ impl ShapeAble for Sphere{
         let dndu = (ff * f - ee * g) * inv_egf * dpdu + (ee * f - ff * e) * inv_egf * dpdv;
         let dndv = (gg * f - ff * g) * inv_egf * dpdu + (ff * f - gg * e) * inv_egf * dpdv;
         let shading = Shading::new(dpdu, dpdv, dndu, dndv);
-        let common = InteractionCommon::new(-dir, p, n, t, uv,shading);
+        let common = InteractionCommon::new(dir, p, n, t, uv,shading);
         let common=func::transform_common(self.obj_to_world, common);
         Some(common)
     }
@@ -96,8 +96,8 @@ impl ShapeAble for Sphere{
         let c = o.dot(o) - self.r * self.r;
         let t: f32;
         if let Some((t1, t2)) = func::quadratic(a, b, c) {
-            t = (t1.min(t2)).max(ray.o.t_min);
-            if t <= ray.o.t_min {
+            t = t1.min(t2);
+            if t<ray.o.t_min||t>ray.o.t_max{
                 return false;
             }
         } else {

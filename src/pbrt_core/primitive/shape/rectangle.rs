@@ -70,6 +70,9 @@ impl ShapeAble for Rectangle {
         let o=self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let t = -o.z/dir.z;
         let p= o+t*dir;
+        if t<ray.o.t_min||t>ray.o.t_max{
+            return false;
+        }
         p.x>0.0&&p.x<=1.0&&p.y>0.0&&p.y<=1.0
     }
 

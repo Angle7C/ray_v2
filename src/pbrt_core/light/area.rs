@@ -41,12 +41,12 @@ impl LightAble for DiffuseAreaLight {
                         *pdf=0.0;
                         Color::ZERO
                      }else{
-                        *wi=(surface.p-light_face.p).normalize();
+                        *wi=(light_face.p-surface.p).normalize();
                         *vis=Visibility{
-                            a:*light_face,
-                            b:*surface
+                            a:*surface,
+                            b:*light_face
                         };
-                        self.li(light_face, wi)
+                        self.li(light_face, &-*wi)
                      }
                 }
                 ans

@@ -13,7 +13,7 @@ fov = 110.0
 
 [integrator]
 mode = "Path"
-core_num = 8
-sample_num = 16
+core_num = 7
+sample_num = 4
 q = 0.9
 max_depth = 5
