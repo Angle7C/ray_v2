@@ -26,6 +26,7 @@ impl Context {
     }
     pub fn render(self) {
         #[cfg(not(debug_assertions))]{
+
             self.integrator     
             .render_process(&self.name, &self.scene, self.size);
         

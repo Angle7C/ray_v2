@@ -125,7 +125,11 @@ pub fn quadratic(a: f32, b: f32, c: f32) -> Option<(f32, f32)> {
     } else {
         let t1 = (-b + det.sqrt()) / (2.0 * a);
         let t2 = (-b - det.sqrt()) / (2.0 * a);
-        Some((t1, t2))
+        if t1<t2{
+            Some((t1, t2))
+        }else{
+            Some((t2, t1))
+        }
     }
 }
 pub fn transform_interaction(transform: Mat4, inter: &mut SurfaceInteraction<'_>) {

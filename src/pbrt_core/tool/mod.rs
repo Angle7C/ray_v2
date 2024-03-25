@@ -276,7 +276,7 @@ pub struct Visibility {
     pub b: InteractionCommon,
 }
 impl Visibility {
-    const DET:f32=0.0001;
+    const DET:f32=0.01;
     //是否可视
     pub fn is_vis(&self, sence: &Scene) -> bool {
         let a={
@@ -290,14 +290,13 @@ impl Visibility {
             let sign=self.b.normal.dot(w).signum();
             self.b.p+ sign * self.b.normal*Self::DET
         };
-        
         let dir=a-b;
 
-        let ray_diff = RayDiff::new(
-            Ray::from_with_t(b, dir,0.0001,dir.length()-0.0001)
+        let  ray= RayDiff::new(
+            Ray::from_with_t(b, dir,0.0,dir.length())
         );
         
-        sence.intersect_p(&ray_diff)
+        !sence.intersect_p(&ray)
     }
     #[inline]
     pub fn g(&self, sence: &Scene) -> f32 {

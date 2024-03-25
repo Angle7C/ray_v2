@@ -37,6 +37,7 @@ impl ShapeAble for Rectangle {
         common.p= u.extend(0.0);
         //计算法线
         common.normal = Vec3::Z;
+        common.w0=Vec3::Z;
         //计算PDF
         *pdf=1.0/self.area();
         func::transform_common(self.obj_to_world, common)
@@ -69,11 +70,8 @@ impl ShapeAble for Rectangle {
         let dir = self.obj_to_world.inverse().transform_vector3(ray.o.dir).normalize();
         let o=self.obj_to_world.inverse().transform_point3(ray.o.origin);
         let t = -o.z/dir.z;
-        let p= o+t*dir;
-        if t<ray.o.t_min||t>ray.o.t_max{
-            return false;
-        }
-        p.x>0.0&&p.x<=1.0&&p.y>0.0&&p.y<=1.0
+        return (t<ray.o.t_min||t>ray.o.t_max)&&t>0.0
+       
     }
 
     fn sample_with_ref_point(&self,_common:&InteractionCommon,_u:Vec2,_pdf:&mut f32)->InteractionCommon {

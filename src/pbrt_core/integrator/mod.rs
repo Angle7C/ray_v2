@@ -136,6 +136,7 @@ impl Integrator {
             let mut tiles: Vec<Tile> = vec![];
             while let Some(item) = film.iter() {
                 let index = item.index;
+                
                 let mut tile = Tile::new(index);
                 for (u, v) in item {
                     let mut color = Color::ZERO;
@@ -248,16 +249,18 @@ pub fn uniform_sample_all_light(
         return Color::ZERO;
     }
     let mut ld = Color::default();
-    let mut sampler = sampler.clone();
+    
     let mut light_shape_index = 0;
     for light in &sence.lights {
         let smaple = light.get_samples();
         let mut li = Color::ZERO;
-        let u = sampler.sample_2d();
+        
         let shape = sence
             .shapes_light
             .get(light_shape_index)
             .and_then(|shape| Some(shape.as_ref()));
+
+        
         for _ in 0..smaple {
             li += estimate_direct(
                 common,
@@ -352,7 +355,6 @@ pub fn estimate_direct(
         &mut light_pdf,
         &mut vis,
     );
-    // return li;
     // 合理的pdf和采样出光线
     if light_pdf.abs()>f32::EPSILON && !li.abs_diff_eq(0.0, f32::EPSILON) {
         //计算BSDF

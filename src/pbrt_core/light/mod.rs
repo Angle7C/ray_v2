@@ -42,7 +42,7 @@ pub trait LightAble {
     //获取光源类型
     fn get_type(&self)->LightType;
     //获取采样样本
-    fn get_samples(&self)->usize{32}
+    fn get_samples(&self)->usize{8}
 
     fn pdf_le(&self,ray:&RayDiff,normal:Vec3,pdf_pos:&mut f32,pdf_dir:&mut f32);
 

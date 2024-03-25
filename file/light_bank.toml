@@ -1,53 +1,20 @@
-
-[[primitive]]
+[[shape]]
 mode = "Rect"
-transform = { r = [1.0, 0.0, 0.0, 0.0], s = [15.0, 2.0, 1.0], t = [-5.0, 1.0, -2.0] }
-material_index = 1
+transform = { r = [1.0, 0.0, 0.0, 0.0], s = [6.0, 6.0, 1.0], t = [-3.0, -3.0, 0.0] }
 
-[[primitive]]
-mode = "Rect"
-transform = { r = [1.0, 0.0, 0.0, -20.0], s = [15.0, 2.0, 1.0], t = [-5.0, -1.0, -1.5] }
-material_index = 1
 
-[[primitive]]
-mode = "Rect"
-transform = { r = [1.0, 0.0, 0.0, -40.0], s = [15.0, 2.0, 1.0], t = [-5.0, -2.0, 0.5] }
-material_index = 1
-
-[[primitive]]
-mode = "Rect"
-transform = { r = [1.0, 0.0, 0.0, -60.0], s = [15.0, 2.0, 1.0], t = [-5.0, -3.0, 2.0] }
-material_index = 1
-
-[[primitive]]
+[[shape]]
 mode = "Sphere"
-transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-3.0, -2.0, 3.0] }
-r=1.0
-material_index = 0
-
-[[primitive]]
-mode = "Sphere"
-transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [-0.0, -2.0, 3.0] }
-r=0.7
-material_index = 0
-
-[[primitive]]
-mode = "Sphere"
-transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [3.0, -2.0, 3.0] }
-r=0.5
-material_index = 0
-
-[[primitive]]
-mode = "Sphere"
-transform = { r = [1.0, 0.0, 0.0, 0.0], s = [1.0, 1.0, 1.0], t = [6.0, -2.0, 3.0] }
+transform = { r = [1.0, 0.0, 0.0, 180.0], s = [1.0, 1.0, 1.0], t = [0.0, 0.0, 1.0] }
 r=0.3
-material_index = 0
+
+[[shape]]
+mode = "Rect"
+transform = { r = [1.0, 0.0, 0.0, 180.0], s = [1.0, 1.0, 1.0], t = [0.0,0.0, 3.0] }
 
 [[light]]
-mode = "Infinite"
-world_center = [0.0, 0.0, 0.0]
-world_radius = 1000.0
-skybox = 1
+mode = "Area"
+emit = [100.0, 100.0, 100.0]
 
 [[material]]
 mode = "Matte"
@@ -56,26 +23,32 @@ sigma = 0.0
 
 [[material]]
 mode = "Mirror"
-kr = 0
+kr = 1
 sigma = 0.0
-
-[[material]]
-mode = "Metal"
-eta = 0
-k = 0
-roughness = 2
 
 
 [[texture]]
 mode = "Constant"
 value = [0.7, 0.7, 0.7]
 
-
-[[texture]]
-mode = "Image"
-path = "./resource/tree shade.jpg"
-
-
 [[texture]]
 mode = "Constant"
-value = [0.1, 0.1, 0.1]
+value = [0.4, 0.8, 0.1]
+
+
+[[primitive]]
+mode = "GeometricPrimitive"
+shape_index=0
+material_index=0
+
+[[primitive]]
+mode = "GeometricPrimitive"
+shape_index=1
+material_index=0
+
+[[primitive]]
+mode = "GeometricPrimitive"
+shape_index=2
+light_index =0
+
+

@@ -31,7 +31,7 @@ impl Aggregate for BVH {
         let mut t = f32::MAX;
         for shape in iter {
             match shape.intersect(o_ray) {
-                Some(v) if v.common.time > t_min && v.common.time < t_max && t > v.common.time => {
+                Some(v) if v.common.time >= t_min && v.common.time <= t_max && t >= v.common.time => {
                     t = v.common.time;
                     ans = Some(v);
                 }

@@ -43,10 +43,7 @@ impl DirectIntegrator {
             }
             item.compute_scattering(ray, mode);
             if let Some(_bsdf) = &item.bsdf {
-                // return Color::X;
-                // return (Color::ONE+item.common.normal)/2.0;
                 ans +=  uniform_sample_all_light(&item, sence, sampler.clone(),false)*beta;
-                // ans+=beta *get_light(&item,sampler.sample_2d(),sence,sampler.clone(),false,false);
             }
         }
         ans
